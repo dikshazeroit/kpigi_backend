@@ -1,7 +1,7 @@
 
 import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDown, faAngleUp, faChartArea, faChartBar, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
 import { faAngular, faBootstrap, faReact, faVuejs } from "@fortawesome/free-brands-svg-icons";
 import { Col, Row, Card, Image, Button, ListGroup, ProgressBar } from '@themesberg/react-bootstrap';
 import { CircleChart, BarChart, SalesValueChart, SalesValueChartphone } from "./Charts";
@@ -16,7 +16,6 @@ import teamMembers from "../data/teamMembers";
 
 export const ProfileCardWidget = () => {
   const history = useHistory(); // ✅ for navigation
-
   return (
     <Card border="light" className="text-center p-0 mb-4 position-relative">
       {/* Cover Image */}
@@ -49,23 +48,22 @@ export const ProfileCardWidget = () => {
         <FontAwesomeIcon
           icon={faPen}
           onClick={() => history.push("/editProfile")}
-          // onClick={() => navigate("/profile/edit")}
           style={{
             position: "absolute",
-            top: "345px",          // move to top instead of bottom
+            top: "345px",
             right: "15px",
             cursor: "pointer",
             color: "#555",
             background: "#fff",
-            padding: "8px",       // a bit more padding
-            borderRadius: "50%",  // makes it perfectly round
+            padding: "8px",
+            borderRadius: "50%",
             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-            height: "30px",       // fixed height
-            width: "30px",        // fixed width
-            display: "flex",      // center icon
+            height: "30px",
+            width: "30px",
+            display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "10px"      // icon size
+            fontSize: "10px"
           }}
 
         />
@@ -413,33 +411,4 @@ export const SalesValueWidgetPhone = (props) => {
   );
 };
 
-export const AcquisitionWidget = () => {
-  return (
-    <Card border="light" className="shadow-sm">
-      <Card.Body>
-        <h5>Acquisition</h5>
-        <p>Tells you where your visitors originated from, such as search engines, social networks or website referrals.</p>
-        <div className="d-block">
-          <div className="d-flex align-items-center pt-3 me-5">
-            <div className="icon icon-shape icon-sm icon-shape-danger rounded me-3">
-              <FontAwesomeIcon icon={faChartBar} />
-            </div>
-            <div className="d-block">
-              <label className="mb-0">Bounce Rate</label>
-              <h4 className="mb-0">33.50%</h4>
-            </div>
-          </div>
-          <div className="d-flex align-items-center pt-3">
-            <div className="icon icon-shape icon-sm icon-shape-quaternary rounded me-3">
-              <FontAwesomeIcon icon={faChartArea} />
-            </div>
-            <div className="d-block">
-              <label className="mb-0">Sessions</label>
-              <h4 className="mb-0">9,567</h4>
-            </div>
-          </div>
-        </div>
-      </Card.Body>
-    </Card>
-  );
-};
+

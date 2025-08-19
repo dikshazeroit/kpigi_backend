@@ -3,7 +3,7 @@ import React from "react";
 import { faCashRegister, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row } from '@themesberg/react-bootstrap';
 
-import { CounterWidget, CircleChartWidget, BarChartWidget, TeamMembersWidget, ProgressTrackWidget, RankingWidget, SalesValueWidget, SalesValueWidgetPhone, AcquisitionWidget } from "../../components/Widgets";
+import { CounterWidget, CircleChartWidget, BarChartWidget, TeamMembersWidget, ProgressTrackWidget, RankingWidget, SalesValueWidget, SalesValueWidgetPhone } from "../../components/Widgets";
 import { trafficShares, totalOrders } from "../../data/charts";
 
 export default () => {
@@ -85,10 +85,6 @@ export default () => {
 
                 <Col xs={12} className="px-0 mb-4">
                   <RankingWidget />
-                </Col>
-
-                <Col xs={12} className="px-0">
-                  <AcquisitionWidget />
                 </Col>
               </Row>
             </Col>

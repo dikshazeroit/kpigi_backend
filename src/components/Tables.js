@@ -1,35 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { Card, Table, Button, Image, Modal, Form } from "@themesberg/react-bootstrap";
+import {
+  Card,
+  Table,
+  Button,
+  Image,
+  Modal,
+  Form,
+  Spinner,
+  Pagination
+} from "@themesberg/react-bootstrap";
 
-// Dummy Data
+import profileImg from "../assets/img/pages/Profile.png";
+
+// Dummy Data (added more users to test pagination)
 const initialUsers = [
   {
     id: 1,
     name: "John Doe",
     email: "john@example.com",
     phone: "+91 9876543210",
-    image: "https://via.placeholder.com/50"
+    image: profileImg
   },
   {
     id: 2,
     name: "Jane Smith",
     email: "jane@example.com",
     phone: "+91 9123456789",
-    image: "https://via.placeholder.com/50"
+    image: profileImg
   },
   {
     id: 3,
     name: "Robert Brown",
     email: "robert@example.com",
     phone: "+91 9988776655",
-    image: "https://via.placeholder.com/50"
+    image: profileImg
   },
 ];
 
 export const PageUserTable = () => {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 5; // show 5 users per page
 
   // Modals state
   const [showViewModal, setShowViewModal] = useState(false);
@@ -41,32 +57,46 @@ export const PageUserTable = () => {
   // Edit form state
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
-  // Open View Modal
+  // Simulate API call
+  useEffect(() => {
+    setTimeout(() => {
+      setUsers(initialUsers);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  // Pagination logic
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / usersPerPage);
+
+  // Handlers
   const handleOpenViewModal = (user) => {
     setSelectedUser(user);
     setShowViewModal(true);
   };
 
-  // Open Edit Modal
   const handleOpenEditModal = (user) => {
     setSelectedUser(user);
     setFormData({ name: user.name, email: user.email, phone: user.phone });
     setShowEditModal(true);
   };
 
-  // Close Modals
   const handleCloseViewModal = () => setShowViewModal(false);
   const handleCloseEditModal = () => setShowEditModal(false);
 
-  // Handle form input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Save Edit (update table data also)
   const handleSaveEdit = () => {
     setShowEditModal(false);
+  };
+
+  const handleDelete = (id) => {
+    // setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
   const TableRow = ({ id, name, email, phone, image }) => {
@@ -74,13 +104,7 @@ export const PageUserTable = () => {
       <tr>
         <td>{id}</td>
         <td>
-          <Image
-            src={image}
-            roundedCircle
-            width={40}
-            height={40}
-            className="me-2"
-          />
+          <Image src={image} roundedCircle width={40} height={40} className="me-2" />
         </td>
         <td>{name}</td>
         <td>{email}</td>
@@ -102,7 +126,7 @@ export const PageUserTable = () => {
           >
             <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
           </Button>
-          <Button variant="danger" size="sm">
+          <Button variant="danger" size="sm" onClick={() => handleDelete(id)}>
             <FontAwesomeIcon icon={faTrashAlt} className="me-1" /> Delete
           </Button>
         </td>
@@ -117,23 +141,57 @@ export const PageUserTable = () => {
           <h5 className="mb-0">Users List</h5>
         </Card.Header>
         <Card.Body className="pt-0">
-          <Table hover className="user-table align-items-center">
-            <thead>
-              <tr>
-                <th className="border-bottom">Sr No.</th>
-                <th className="border-bottom">Image</th>
-                <th className="border-bottom">Name</th>
-                <th className="border-bottom">Email</th>
-                <th className="border-bottom">Phone No.</th>
-                <th className="border-bottom">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <TableRow key={user.id} {...user} />
-              ))}
-            </tbody>
-          </Table>
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center p-5">
+              <Spinner animation="border" role="status" />
+              <span className="ms-2">Loading...</span>
+            </div>
+          ) : (
+            <>
+              <Table hover className="user-table align-items-center">
+                <thead>
+                  <tr>
+                    <th className="border-bottom">Sr No.</th>
+                    <th className="border-bottom">Image</th>
+                    <th className="border-bottom">Name</th>
+                    <th className="border-bottom">Email</th>
+                    <th className="border-bottom">Phone No.</th>
+                    <th className="border-bottom">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentUsers.map((user) => (
+                    <TableRow key={user.id} {...user} />
+                  ))}
+                </tbody>
+              </Table>
+
+              {/* Pagination */}
+              <div className="d-flex justify-content-center mt-3">
+                <Pagination>
+                  <Pagination.Prev
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  />
+                  {[...Array(totalPages)].map((_, i) => (
+                    <Pagination.Item
+                      key={i + 1}
+                      active={i + 1 === currentPage}
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                  />
+                </Pagination>
+              </div>
+            </>
+          )}
         </Card.Body>
       </Card>
 
@@ -167,30 +225,15 @@ export const PageUserTable = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
+              <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Phone</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-              />
+              <Form.Control type="text" name="phone" value={formData.phone} onChange={handleChange} />
             </Form.Group>
           </Form>
         </Modal.Body>

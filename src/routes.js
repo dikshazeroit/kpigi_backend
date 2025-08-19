@@ -5,7 +5,7 @@ export const Routes = {
     DashboardOverview: { path: "/dashboard" },
     Profile: { path: "/profile" },
     EditProfile: { path: "/editProfile" },
-    BootstrapTables: { path: "/tables/bootstrap-tables" },
+    BootstrapTables: { path: "/tables/user-tables" },
     Signin: { path: "/sign-in" },
     Signup: { path: "/examples/sign-up" },
     ForgotPassword: { path: "/forgot-password" },

@@ -13,9 +13,8 @@ import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesb
 
 import { Routes } from "../routes";
 // Dummy Logo Image (You can replace with your own)
-import authlogo from "../assets/img/pages/authlogo.svg"; // <--- your dummy logo file
+// import authlogo from "../assets/img/pages/authlogo.svg"; 
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
-
 export default (props = {}) => {
   const location = useLocation();
   const { pathname } = location;
@@ -111,11 +110,11 @@ export default (props = {}) => {
         className="navbar-theme-primary px-4 d-md-none"
       >
         <Navbar.Brand
-          className="me-lg-5"
+          className="me-lg-5 text-white fw-bold"
           as={Link}
           to={Routes.DashboardOverview.path}
         >
-          <Image src={authlogo} className="navbar-brand-light" /> {/* Dummy logo */}
+          Admin Panel {/* Replaced dummy logo with text */}
         </Navbar.Brand>
         <Navbar.Toggle as={Button} aria-controls="main-navbar" onClick={onCollapse}>
           <span className="navbar-toggler-icon" />
@@ -128,14 +127,9 @@ export default (props = {}) => {
           className={`collapse ${showClass} sidebar d-md-block bg-primary text-white`}
         >
           <div className="sidebar-inner px-4 pt-3">
-            {/* Dummy Logo for Desktop */}
+            {/* Admin Panel Title for Desktop */}
             <div className="text-center mb-4">
-              <Image
-                src={authlogo}
-                width={140}
-                alt="Dummy Logo"
-                className="mb-2"
-              />
+              <h4 className="fw-bold text-white">Admin Pannel</h4>
             </div>
 
             {/* Mobile user card */}

@@ -5,7 +5,7 @@ import { Col, Row, Form, Card, Button, Container, InputGroup } from "@themesberg
 import { Link } from "react-router-dom";
 
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/signin.svg";
+import BgImage from "../../assets/img/illustrations/forgot.svg";
 
 export default function ForgotPassword() {
   return (
