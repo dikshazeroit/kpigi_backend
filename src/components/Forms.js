@@ -1,13 +1,10 @@
 import React, { useState } from "react";
-import moment from "moment-timezone";
-import Datetime from "react-datetime";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt, faEye, faEyeSlash, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faPen } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row, Card, Form, InputGroup, Button } from "@themesberg/react-bootstrap";
 import avatar from "../assets/img/pages/avatar.jpg";
 
 export const GeneralInfoForm = () => {
-  const [birthday, setBirthday] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profileImg, setProfileImg] = useState(avatar); // default is avatar image
