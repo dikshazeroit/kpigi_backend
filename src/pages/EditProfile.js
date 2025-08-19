@@ -1,0 +1,48 @@
+import React from "react";
+// import { faBoxOpen, faCartArrowDown, faChartPie, faChevronDown, faClipboard, faCommentDots, faFileAlt, faPlus, faRocket, faStore } from '@fortawesome/free-solid-svg-icons';
+import { Col, Row, Breadcrumb } from '@themesberg/react-bootstrap';
+import { GeneralInfoForm } from "../components/Forms";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+
+
+// import Profile3 from "../assets/img/team/profile-picture-3.jpg";
+
+
+export default () => {
+    return (
+        <>
+            {/* 🔹 Breadcrumb Header Section */}
+            <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+                <div className="d-block mb-4 mb-xl-0">
+                    <Breadcrumb
+                        className="d-none d-md-inline-block"
+                        listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
+                    >
+                        <Breadcrumb.Item>
+                            <FontAwesomeIcon icon={faHome} />
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Profile</Breadcrumb.Item>
+                        <Breadcrumb.Item active> Edit Profile</Breadcrumb.Item>
+                    </Breadcrumb>
+                </div>
+            </div>
+
+      {/* 🔹Edit Profile Content */}
+
+            <Row>
+                <Col xs={12} xl={20}>
+                    <Row>
+                        <Col>
+                            <GeneralInfoForm />
+
+                        </Col>
+                    </Row>
+
+                </Col>
+
+            </Row>
+        </>
+    );
+};
