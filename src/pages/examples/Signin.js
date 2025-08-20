@@ -24,7 +24,7 @@ export default function Signin() {
               <FontAwesomeIcon icon={faAngleLeft} className="me-2" /> Back to homepage
             </Card.Link>
           </p> */}
-          <Row className="justify-content-center form-bg-image" style={{ backgroundImage: `url(${BgImage})` }}>
+          <Row className="justify-content-center form-bg-image" style={{ backgroundImage: `url(${BgImage})`, backgroundSize: "cover", backgroundPosition: "center" }}>
             <Col xs={12} className="d-flex align-items-center justify-content-center">
               <div className="bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
                 <div className="text-center text-md-center mb-4 mt-md-0">
@@ -65,7 +65,7 @@ export default function Signin() {
                     <Form.Check type="checkbox">
                       <FormCheck.Input id="defaultCheck5" className="me-2" />
                       <FormCheck.Label htmlFor="defaultCheck5" className="mb-0">
-                        Remember me
+                        Remember me 
                       </FormCheck.Label>
                     </Form.Check>
                     <Card.Link as={Link} to="/forgot-password" className="small text-end">

@@ -113,7 +113,7 @@ export const PageUserTable = () => {
           <Button
             variant="info"
             size="sm"
-            className="me-2"
+            className="me-2 btn-xs"
             onClick={() => handleOpenViewModal({ id, name, email, phone, image })}
           >
             <FontAwesomeIcon icon={faEye} className="me-1" /> View
@@ -121,12 +121,12 @@ export const PageUserTable = () => {
           <Button
             variant="primary"
             size="sm"
-            className="me-2"
+            className="me-2 btn-xs"
             onClick={() => handleOpenEditModal({ id, name, email, phone, image })}
           >
             <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
           </Button>
-          <Button variant="danger" size="sm" onClick={() => handleDelete(id)}>
+          <Button variant="danger" size="sm" className="btn-xs" onClick={() => handleDelete(id)}>
             <FontAwesomeIcon icon={faTrashAlt} className="me-1" /> Delete
           </Button>
         </td>
@@ -141,6 +141,7 @@ export const PageUserTable = () => {
           <h5 className="mb-0">Users List</h5>
         </Card.Header>
         <Card.Body className="pt-0">
+         
           {loading ? (
             <div className="d-flex justify-content-center align-items-center p-5">
               <Spinner animation="border" role="status" />
@@ -196,7 +197,13 @@ export const PageUserTable = () => {
       </Card>
 
       {/* View Modal */}
-      <Modal show={showViewModal} onHide={handleCloseViewModal} centered>
+      <Modal
+        show={showViewModal}
+        onHide={handleCloseViewModal}
+        centered
+        backdrop="static"   // prevents closing on outside click
+        keyboard={false}    // disables ESC close
+      >
         <Modal.Header closeButton>
           <Modal.Title>User Details</Modal.Title>
         </Modal.Header>
@@ -217,7 +224,13 @@ export const PageUserTable = () => {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal show={showEditModal} onHide={handleCloseEditModal} centered>
+      <Modal
+        show={showEditModal}
+        onHide={handleCloseEditModal}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Edit User</Modal.Title>
         </Modal.Header>
@@ -225,15 +238,30 @@ export const PageUserTable = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Name</Form.Label>
-              <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} />
+              <Form.Control
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Phone</Form.Label>
-              <Form.Control type="text" name="phone" value={formData.phone} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>

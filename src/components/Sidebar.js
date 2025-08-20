@@ -5,6 +5,7 @@ import { CSSTransition } from "react-transition-group";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartPie,
+  faFile,
   faSignOutAlt,
   faTimes,
   faUser
@@ -172,7 +173,26 @@ export default (props = {}) => {
                 title="User Management"
                 icon={faUser}
               >
-                <NavItem title="User List" link={Routes.BootstrapTables.path} />
+                <NavItem
+                  title={<span className="fs-6">User List</span>}
+                  link={Routes.BootstrapTables.path}
+                />
+                {/* <NavItem
+                  title={<span className="fs-6">User Table</span>}
+                /> */}
+
+              </CollapsableNavItem>
+
+              <CollapsableNavItem
+                eventKey="banner/"
+                title="Banner"
+                icon={faFile}
+              >
+                <NavItem
+                  title={<span className="fs-6">Create Banner</span>}
+                  link={Routes.CreateBanner.path}
+                />
+
               </CollapsableNavItem>
 
               <Dropdown.Divider className="my-3 border-indigo" />
