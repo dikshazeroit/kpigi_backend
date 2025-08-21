@@ -1,6 +1,3 @@
-
-
-
 export const Routes = {
     DashboardOverview: { path: "/dashboard" },
     Profile: { path: "/profile" },

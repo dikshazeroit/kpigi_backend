@@ -9,7 +9,7 @@ import { trafficShares, totalOrders } from "../../data/charts";
 export default () => {
   return (
     <>
-      <Row className="justify-content-md-center">
+      <Row className="justify-content-md-center mt-4">
         <Col xs={12} sm={6} xl={4} className="mb-4">
           <CounterWidget
             category="Customers"
@@ -54,7 +54,7 @@ export default () => {
 
       </Row>
 
-      <Row>
+      <Row >
         <Col xs={12} xl={12} className="mb-4">
           <Row>
             <Col xs={12} xl={8} className="mb-4">

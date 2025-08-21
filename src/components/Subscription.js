@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Row,
     Col,
@@ -6,35 +6,13 @@ import {
     Table,
     Button,
     Modal,
-    Form
+    Form,
+    Spinner
 } from "@themesberg/react-bootstrap";
 
 const SubscriptionPage = () => {
-    const [subscriptions, setSubscriptions] = useState([
-        {
-            id: 1,
-            name: "Yearly Plan",
-            price: "$999.9",
-            duration: "Yearly",
-            features: [
-                "Access to premium job listings",
-                "Profile visibility boost",
-                "Priority support"
-            ]
-        },
-        {
-            id: 2,
-            name: "Monthly Plan",
-            price: "$99.9",
-            duration: "Monthly",
-            features: [
-                "Unlimited access to premium content",
-                "Ad-free experience",
-                "Priority customer support",
-                "Early access to new features"
-            ]
-        }
-    ]);
+    const [subscriptions, setSubscriptions] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -45,6 +23,39 @@ const SubscriptionPage = () => {
         duration: "",
         features: ""
     });
+
+    // Simulate API Call
+    useEffect(() => {
+        setLoading(true);
+        setTimeout(() => {
+            setSubscriptions([
+                {
+                    id: 1,
+                    name: "Yearly Plan",
+                    price: "$999.9",
+                    duration: "Yearly",
+                    features: [
+                        "Access to premium job listings",
+                        "Profile visibility boost",
+                        "Priority support"
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Monthly Plan",
+                    price: "$99.9",
+                    duration: "Monthly",
+                    features: [
+                        "Unlimited access to premium content",
+                        "Ad-free experience",
+                        "Priority customer support",
+                        "Early access to new features"
+                    ]
+                }
+            ]);
+            setLoading(false);
+        }, 1500); // 1.5s fake API delay
+    }, []);
 
     // Open Add Modal
     const handleOpenAdd = () => {
@@ -66,48 +77,9 @@ const SubscriptionPage = () => {
         setShowModal(true);
     };
 
-    // Save (Add or Update)
-    // const handleSave = () => {
-    //     if (!formData.name || !formData.price) return;
-
-    //     if (editMode) {
-    //         // Update existing subscription
-    //         setSubscriptions(
-    //             subscriptions.map((sub) =>
-    //                 sub.id === currentId
-    //                     ? {
-    //                         ...sub,
-    //                         name: formData.name,
-    //                         price: formData.price,
-    //                         duration: formData.duration,
-    //                         features: formData.features.split(",").map((f) => f.trim())
-    //                     }
-    //                     : sub
-    //             )
-    //         );
-    //     } else {
-    //         // Add new subscription
-    //         setSubscriptions([
-    //             ...subscriptions,
-    //             {
-    //                 id: subscriptions.length + 1,
-    //                 name: formData.name,
-    //                 price: formData.price,
-    //                 duration: formData.duration,
-    //                 features: formData.features.split(",").map((f) => f.trim())
-    //             }
-    //         ]);
-    //     }
-
-    //     setShowModal(false);
-    //     setFormData({ name: "", price: "", duration: "", features: "" });
-    //     setCurrentId(null);
-    //     setEditMode(false);
-    // };
-
     // Delete
     const handleDelete = (id) => {
-        // setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+        setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
     };
 
     return (
@@ -121,52 +93,59 @@ const SubscriptionPage = () => {
                         </Button>
                     </Card.Header>
                     <Card.Body>
-                        <Table striped bordered hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>Sr.No</th>
-                                    <th>Plan Name</th>
-                                    <th>Price</th>
-                                    <th>Duration</th>
-                                    <th>Features</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subscriptions.map((sub, index) => (
-                                    <tr key={sub.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{sub.name}</td>
-                                        <td>{sub.price}</td>
-                                        <td>{sub.duration}</td>
-                                        <td>
-                                            <ul style={{ paddingLeft: "18px" }}>
-                                                {sub.features.map((f, i) => (
-                                                    <li key={i}>{f}</li>
-                                                ))}
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <Button
-                                                variant="warning"
-                                                size="sm"
-                                                className="me-2"
-                                                onClick={() => handleOpenEdit(sub)}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                onClick={() => handleDelete(sub.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </td>
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <Spinner animation="border" variant="primary" />
+                                <p className="mt-2">Loading subscriptions...</p>
+                            </div>
+                        ) : (
+                            <Table striped bordered hover responsive>
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th>Plan Name</th>
+                                        <th>Price</th>
+                                        <th>Duration</th>
+                                        <th>Features</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                    {subscriptions.map((sub, index) => (
+                                        <tr key={sub.id}>
+                                            <td>{index + 1}</td>
+                                            <td>{sub.name}</td>
+                                            <td>{sub.price}</td>
+                                            <td>{sub.duration}</td>
+                                            <td>
+                                                <ul style={{ paddingLeft: "18px" }}>
+                                                    {sub.features.map((f, i) => (
+                                                        <li key={i}>{f}</li>
+                                                    ))}
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <Button
+                                                    variant="warning"
+                                                    size="sm"
+                                                    className="me-2"
+                                                    onClick={() => handleOpenEdit(sub)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="danger"
+                                                    size="sm"
+                                                    onClick={() => handleDelete(sub.id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        )}
                     </Card.Body>
                 </Card>
             </Col>
@@ -204,14 +183,16 @@ const SubscriptionPage = () => {
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Duration</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Monthly / Yearly"
+                            <Form.Select
                                 value={formData.duration}
                                 onChange={(e) =>
                                     setFormData({ ...formData, duration: e.target.value })
                                 }
-                            />
+                            >
+                                <option value="">Select Duration</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Yearly">Yearly</option>
+                            </Form.Select>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Features</Form.Label>
