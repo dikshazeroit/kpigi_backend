@@ -19,7 +19,7 @@ export default () => {
             <Breadcrumb.Item>Tables</Breadcrumb.Item>
             <Breadcrumb.Item active>User tables</Breadcrumb.Item>
           </Breadcrumb>
-          <h4>User tables</h4>
+          {/* <h4>User tables</h4> */}
         </div>
       </div>
 

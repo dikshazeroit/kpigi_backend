@@ -29,6 +29,7 @@ import Navs from "./components/Navs";
 import Navbars from "./components/Navbars";
 import Tables from "./components/Tables";
 import CreateBanner from './banner/CreateBanner';
+import CreateSubscription from './subscription/CreateSubscription';
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -95,6 +96,7 @@ export default () => (
     <RouteWithSidebar exact path={Routes.EditProfile.path} component={EditProfile} />
     <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />
     <RouteWithSidebar exact path={Routes.CreateBanner.path} component={CreateBanner} />
+    <RouteWithSidebar exact path={Routes.CreateSubscription.path} component={CreateSubscription} />
 
     {/* components */}
     <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />

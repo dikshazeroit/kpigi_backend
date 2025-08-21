@@ -7,6 +7,7 @@ export const Routes = {
     EditProfile: { path: "/editProfile" },
     BootstrapTables: { path: "/tables/user-tables" },
     CreateBanner: { path: "/banner" },
+    CreateSubscription: { path: "/subscription" },
     Signin: { path: "/sign-in" },
     Signup: { path: "/examples/sign-up" },
     ForgotPassword: { path: "/forgot-password" },

@@ -141,7 +141,7 @@ export const PageUserTable = () => {
           <h5 className="mb-0">Users List</h5>
         </Card.Header>
         <Card.Body className="pt-0">
-         
+
           {loading ? (
             <div className="d-flex justify-content-center align-items-center p-5">
               <Spinner animation="border" role="status" />

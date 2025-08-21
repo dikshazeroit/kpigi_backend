@@ -7,6 +7,7 @@ import {
   faChartPie,
   faFile,
   faSignOutAlt,
+  faSubscript,
   faTimes,
   faUser
 } from "@fortawesome/free-solid-svg-icons";
@@ -191,6 +192,17 @@ export default (props = {}) => {
                 <NavItem
                   title={<span className="fs-6">Create Banner</span>}
                   link={Routes.CreateBanner.path}
+                />
+
+              </CollapsableNavItem>
+              <CollapsableNavItem
+                eventKey="subscription/"
+                title="Subscription"
+                icon={faSubscript}
+              >
+                <NavItem
+                  title={<span className="fs-6">Create Subscription</span>}
+                  link={Routes.CreateSubscription.path}
                 />
 
               </CollapsableNavItem>
