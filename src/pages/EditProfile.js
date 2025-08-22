@@ -4,10 +4,7 @@ import { Col, Row, Breadcrumb } from '@themesberg/react-bootstrap';
 import { GeneralInfoForm } from "../components/Forms";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-
-
-// import Profile3 from "../assets/img/team/profile-picture-3.jpg";
+import { Link } from 'react-router-dom';
 
 
 export default () => {
@@ -20,7 +17,7 @@ export default () => {
                         className="d-none d-md-inline-block"
                         listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
                     >
-                        <Breadcrumb.Item>
+                        <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
                             <FontAwesomeIcon icon={faHome} />
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Profile</Breadcrumb.Item>
@@ -29,7 +26,7 @@ export default () => {
                 </div>
             </div>
 
-      {/* 🔹Edit Profile Content */}
+            {/* 🔹Edit Profile Content */}
 
             <Row>
                 <Col xs={12} xl={20}>

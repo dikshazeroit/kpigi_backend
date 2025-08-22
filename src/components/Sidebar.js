@@ -6,10 +6,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartPie,
   faFile,
+  faQuestion,
   faSignOutAlt,
   faSubscript,
   faTimes,
-  faUser
+  faUser,
+  faVideo
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
 
@@ -203,6 +205,30 @@ export default (props = {}) => {
                 <NavItem
                   title={<span className="fs-6">Create Subscription</span>}
                   link={Routes.CreateSubscription.path}
+                />
+
+              </CollapsableNavItem>
+
+              <CollapsableNavItem
+                eventKey="Animated Video/"
+                title="Animated Video"
+                icon={faVideo}
+              >
+                <NavItem
+                  title={<span className="fs-6">Add Animated Video</span>}
+                  link={Routes.CreateAnimatedVideo.path}
+                />
+
+              </CollapsableNavItem>
+
+              <CollapsableNavItem
+                eventKey="FAQ Management/"
+                title="FAQ Management"
+                icon={faQuestion}
+              >
+                <NavItem
+                  title={<span className="fs-6">Add FAQ</span>}
+                  link={Routes.FaqManagement.path}
                 />
 
               </CollapsableNavItem>

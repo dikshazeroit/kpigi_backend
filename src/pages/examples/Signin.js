@@ -65,7 +65,7 @@ export default function Signin() {
                     <Form.Check type="checkbox">
                       <FormCheck.Input id="defaultCheck5" className="me-2" />
                       <FormCheck.Label htmlFor="defaultCheck5" className="mb-0">
-                        Remember me 
+                        Remember me
                       </FormCheck.Label>
                     </Form.Check>
                     <Card.Link as={Link} to="/forgot-password" className="small text-end">

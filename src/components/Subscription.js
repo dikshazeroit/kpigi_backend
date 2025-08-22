@@ -79,7 +79,7 @@ const SubscriptionPage = () => {
 
     // Delete
     const handleDelete = (id) => {
-        setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+        // setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
     };
 
     return (

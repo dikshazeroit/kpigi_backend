@@ -5,6 +5,8 @@ export const Routes = {
     BootstrapTables: { path: "/tables/user-tables" },
     CreateBanner: { path: "/banner" },
     CreateSubscription: { path: "/subscription" },
+    CreateAnimatedVideo: { path: "/animated-video" },
+    FaqManagement: { path: "/faq-management" },
     Signin: { path: "/sign-in" },
     Signup: { path: "/examples/sign-up" },
     ForgotPassword: { path: "/forgot-password" },
