@@ -3,6 +3,7 @@ import SimpleBar from "simplebar-react";
 import { useLocation, Link } from "react-router-dom";
 import { CSSTransition } from "react-transition-group";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import logo from "../assets/img/pages/demdey1.png"; // Import your logo image here
 import {
   faChartPie,
   faFile,
@@ -118,7 +119,7 @@ export default (props = {}) => {
           as={Link}
           to={Routes.DashboardOverview.path}
         >
-          Admin Panel {/* Replaced dummy logo with text */}
+
         </Navbar.Brand>
         <Navbar.Toggle as={Button} aria-controls="main-navbar" onClick={onCollapse}>
           <span className="navbar-toggler-icon" />
@@ -133,7 +134,10 @@ export default (props = {}) => {
           <div className="sidebar-inner px-4 pt-3">
             {/* Admin Panel Title for Desktop */}
             <div className="text-center mb-4">
-              <h4 className="fw-bold text-white">Admin Pannel</h4>
+              <img
+                src={logo} height="100"
+                alt="demdey Logo"
+              />
             </div>
 
             {/* Mobile user card */}

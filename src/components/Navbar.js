@@ -56,14 +56,25 @@ export default function TopNavbar(props) {
         <div className="d-flex justify-content-between w-100">
           {/* Search bar */}
           <div className="d-flex align-items-center">
-            <Form className="navbar-search">
-              <Form.Group id="topbarSearch">
-                <InputGroup className="input-group-merge search-bar">
-                  <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text>
-                  <Form.Control type="text" placeholder="Search" />
-                </InputGroup>
-              </Form.Group>
-            </Form>
+            <div
+              className="d-flex align-items-center px-3 py-2 rounded shadow-sm"
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+                minWidth: "320px",
+                fontSize: "14px",
+                color: "#000",
+              }}
+            >
+              <span role="img" aria-label="search" className="me-2">
+                🔍
+              </span>
+              <span>
+                Hello, <strong>Welcome Admin</strong> – this is your{" "}
+                <strong style={{ color: "#1b2cc1" }}>DEMDEY Admin Panel</strong>
+              </span>
+            </div>
           </div>
 
           <Nav className="align-items-center">

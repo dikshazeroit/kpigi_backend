@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, {useRef} from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
 import { faAngular, faBootstrap, faReact, faVuejs } from "@fortawesome/free-brands-svg-icons";
@@ -15,13 +14,62 @@ import teamMembers from "../data/teamMembers";
 
 
 export const ProfileCardWidget = () => {
-  const history = useHistory(); // ✅ for navigation
+  const history = useHistory();
+  const fileInputRef = useRef(null); // ✅ create ref
+
+  // ✅ handle cover image change
+  const handleCoverChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // For now, just log the file
+      console.log("Selected file:", file);
+      // You can later upload it or preview it using URL.createObjectURL(file)
+    }
+  };
+
   return (
     <Card border="light" className="text-center p-0 mb-4 position-relative">
       {/* Cover Image */}
       <div
-        style={{ backgroundImage: `url(${ProfileCover})` }}
+        style={{ backgroundImage: `url(${ProfileCover})`, height: "200px", backgroundSize: "cover", backgroundPosition: "center" }}
         className="profile-cover rounded-top"
+      />
+      {/* Cover Image Edit Icon */}
+      <FontAwesomeIcon
+        icon={faPen}
+        title="Edit Cover Image"
+        onClick={() => fileInputRef.current.click()}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "20px",
+          cursor: "pointer",
+          color: "#333",
+          background: "#fff",
+          padding: "10px",
+          borderRadius: "50%",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+          height: "36px",
+          width: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.3s ease",
+          zIndex: 10,
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = "scale(1.1)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = "scale(1)";
+        }}
+      />
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleCoverChange}
       />
 
       {/* Profile Image and Basic Info */}
@@ -33,7 +81,6 @@ export const ProfileCardWidget = () => {
         />
         <Card.Title>abc</Card.Title>
         <Card.Subtitle className="fw-normal">Admin</Card.Subtitle>
-        {/* <Card.Text className="text-gray mb-4">Kharar, Mohali</Card.Text> */}
 
         {/* Profile Information Section */}
         <div className="text-start px-4">
@@ -65,13 +112,11 @@ export const ProfileCardWidget = () => {
             justifyContent: "center",
             fontSize: "10px"
           }}
-
         />
       </Card.Body>
     </Card>
   );
 };
-
 
 // export const ChoosePhotoWidget = (props) => {
 //   const { title, photo } = props;

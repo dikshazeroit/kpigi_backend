@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEdit, faTrashAlt, faSearch } from "@fortawesome/free-solid-svg-icons";
 import {
   Card,
   Table,
@@ -9,12 +9,14 @@ import {
   Modal,
   Form,
   Spinner,
-  Pagination
+  Pagination,
+  InputGroup,
+  FormControl
 } from "@themesberg/react-bootstrap";
 
 import profileImg from "../assets/img/pages/Profile.png";
 
-// Dummy Data (added more users to test pagination)
+// Dummy Data
 const initialUsers = [
   {
     id: 1,
@@ -42,6 +44,7 @@ const initialUsers = [
 export const PageUserTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,11 +68,18 @@ export const PageUserTable = () => {
     }, 1000);
   }, []);
 
+  // Filter users based on search term
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // Pagination logic
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(users.length / usersPerPage);
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   // Handlers
   const handleOpenViewModal = (user) => {
@@ -97,6 +107,10 @@ export const PageUserTable = () => {
 
   const handleDelete = (id) => {
     // setUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const TableRow = ({ id, name, email, phone, image }) => {
@@ -138,7 +152,19 @@ export const PageUserTable = () => {
     <>
       <Card border="light" className="table-wrapper table-responsive shadow-sm">
         <Card.Header>
-          <h5 className="mb-0">Users List</h5>
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">All Registered Users</h5>
+            <InputGroup style={{ width: "300px" }}>
+              <InputGroup.Text>
+                <FontAwesomeIcon icon={faSearch} />
+              </InputGroup.Text>
+              <FormControl
+                placeholder="Search by name or email"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </InputGroup>
+          </div>
         </Card.Header>
         <Card.Body className="pt-0">
 
@@ -201,8 +227,8 @@ export const PageUserTable = () => {
         show={showViewModal}
         onHide={handleCloseViewModal}
         centered
-        backdrop="static"   // prevents closing on outside click
-        keyboard={false}    // disables ESC close
+        backdrop="static"
+        keyboard={false}
       >
         <Modal.Header closeButton>
           <Modal.Title>User Details</Modal.Title>
