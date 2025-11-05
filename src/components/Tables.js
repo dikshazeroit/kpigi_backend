@@ -11,210 +11,232 @@ import {
   Spinner,
   Pagination,
   InputGroup,
-  FormControl
+  FormControl,
+  Badge,
 } from "@themesberg/react-bootstrap";
 
 import profileImg from "../assets/img/pages/Profile.png";
 
-// Dummy Data
+// Dummy data
 const initialUsers = [
   {
     id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+91 9876543210",
-    image: profileImg
+    name: "Priya Sharma",
+    email: "priya@example.com",
+    phone: "+91 9812345678",
+    role: "Organizer",
+    kycStatus: "Pending",
+    walletBalance: "₹12,450",
+    dateJoined: "20 Sep 2025",
+    image: profileImg,
+    livenessScore: 92,
+    idProof: profileImg,
+    selfie: profileImg,
+    circlesJoined: [
+      { id: 1, name: "Weekly Savings", role: "Member" },
+      { id: 2, name: "Monthly ROSCA", role: "Organizer" },
+    ],
+    paymentHistory: [
+      { id: 1, date: "01 Oct 2025", amount: "₹1,000", circle: "Weekly Savings" },
+      { id: 2, date: "08 Oct 2025", amount: "₹1,000", circle: "Weekly Savings" },
+    ],
   },
   {
     id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "+91 9123456789",
-    image: profileImg
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "+91 9876543210",
+    role: "Member",
+    kycStatus: "Verified",
+    walletBalance: "₹2,350",
+    dateJoined: "15 Oct 2025",
+    image: profileImg,
+    livenessScore: 95,
+    idProof: profileImg,
+    selfie: profileImg,
+    circlesJoined: [{ id: 3, name: "Monthly ROSCA", role: "Member" }],
+    paymentHistory: [
+      { id: 1, date: "01 Oct 2025", amount: "₹500", circle: "Monthly ROSCA" },
+    ],
   },
-  {
-    id: 3,
-    name: "Robert Brown",
-    email: "robert@example.com",
-    phone: "+91 9988776655",
-    image: profileImg
-  },
+
 ];
 
 export const PageUserTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
-  // Pagination states
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5; // show 5 users per page
+  const usersPerPage = 5;
 
-  // Modals state
+  // Modal
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-
-  // Selected user
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Edit form state
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  // Rejection reason
+  const [rejectReason, setRejectReason] = useState("");
+  const [showRejectInput, setShowRejectInput] = useState(false);
 
-  // Simulate API call
   useEffect(() => {
     setTimeout(() => {
       setUsers(initialUsers);
       setLoading(false);
-    }, 1000);
+    }, 800);
   }, []);
 
-  // Filter users based on search term
-  const filteredUsers = users.filter(
-    (user) =>
+  // Filter + Search logic
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "All" || user.kycStatus === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
-  // Pagination logic
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  // Handlers
   const handleOpenViewModal = (user) => {
     setSelectedUser(user);
     setShowViewModal(true);
+    setShowRejectInput(false);
+    setRejectReason("");
   };
-
-  const handleOpenEditModal = (user) => {
-    setSelectedUser(user);
-    setFormData({ name: user.name, email: user.email, phone: user.phone });
-    setShowEditModal(true);
-  };
-
   const handleCloseViewModal = () => setShowViewModal(false);
-  const handleCloseEditModal = () => setShowEditModal(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleApprove = () => {
+    if (!selectedUser) return;
+    if (window.confirm(`Are you sure you want to approve KYC for ${selectedUser.name}?`)) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === selectedUser.id ? { ...u, kycStatus: "Verified" } : u
+        )
+      );
+      handleCloseViewModal();
+    }
   };
 
-  const handleSaveEdit = () => {
-    setShowEditModal(false);
+  const handleReject = () => {
+    setShowRejectInput(true);
   };
 
-  const handleDelete = (id) => {
-    // setUsers((prev) => prev.filter((u) => u.id !== id));
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const TableRow = ({ id, name, email, phone, image }) => {
-    return (
-      <tr>
-        <td>{id}</td>
-        <td>
-          <Image src={image} roundedCircle width={40} height={40} className="me-2" />
-        </td>
-        <td>{name}</td>
-        <td>{email}</td>
-        <td>{phone}</td>
-        <td>
-          <Button
-            variant="info"
-            size="sm"
-            className="me-2 btn-xs"
-            onClick={() => handleOpenViewModal({ id, name, email, phone, image })}
-          >
-            <FontAwesomeIcon icon={faEye} className="me-1" /> View
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            className="me-2 btn-xs"
-            onClick={() => handleOpenEditModal({ id, name, email, phone, image })}
-          >
-            <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
-          </Button>
-          <Button variant="danger" size="sm" className="btn-xs" onClick={() => handleDelete(id)}>
-            <FontAwesomeIcon icon={faTrashAlt} className="me-1" /> Delete
-          </Button>
-        </td>
-      </tr>
+  const submitReject = () => {
+    if (!rejectReason) {
+      alert("Please enter rejection reason.");
+      return;
+    }
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === selectedUser.id
+          ? { ...u, kycStatus: "Rejected", rejectReason }
+          : u
+      )
     );
+    handleCloseViewModal();
   };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Verified":
+        return <Badge bg="success">{status}</Badge>;
+      case "Pending":
+        return <Badge bg="warning">{status}</Badge>;
+      case "Rejected":
+        return <Badge bg="danger">{status}</Badge>;
+      case "Suspicious":
+        return <Badge bg="secondary">{status}</Badge>;
+      default:
+        return <Badge bg="light">{status}</Badge>;
+    }
+  };
+
+  const TableRow = ({ id, name, email, phone, role, kycStatus, walletBalance, dateJoined, image }) => (
+    <tr>
+      <td>{id}</td>
+      <td><Image src={image} roundedCircle width={40} height={40} className="me-2" /></td>
+      <td>{name}</td>
+      <td>{email}</td>
+      <td>{phone}</td>
+      <td>{role}</td>
+      <td>{getStatusBadge(kycStatus)}</td>
+      <td>{walletBalance}</td>
+      <td>{dateJoined}</td>
+      <td>
+        <Button variant="info" size="sm" className="me-2 btn-xs" onClick={() => handleOpenViewModal(users.find(u => u.id === id))}>
+          <FontAwesomeIcon icon={faEye} /> View
+        </Button>
+      </td>
+    </tr>
+  );
 
   return (
     <>
       <Card border="light" className="table-wrapper table-responsive shadow-sm">
         <Card.Header>
-          <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">All Registered Users</h5>
-            <InputGroup style={{ width: "300px" }}>
-              <InputGroup.Text>
-                <FontAwesomeIcon icon={faSearch} />
-              </InputGroup.Text>
-              <FormControl
-                placeholder="Search by name or email"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-            </InputGroup>
+          <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <h5 className="mb-0">👥 All Registered Users</h5>
+            <div className="d-flex gap-2 mt-2 mt-sm-0">
+              <Form.Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ width: "180px" }}>
+                <option value="All">All Status</option>
+                <option value="Verified">Verified</option>
+                <option value="Pending">Pending</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Suspicious">Suspicious</option>
+              </Form.Select>
+              <InputGroup style={{ width: "250px" }}>
+                <InputGroup.Text><FontAwesomeIcon icon={faSearch} /></InputGroup.Text>
+                <FormControl placeholder="Search by name or email" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              </InputGroup>
+            </div>
           </div>
         </Card.Header>
         <Card.Body className="pt-0">
-
           {loading ? (
             <div className="d-flex justify-content-center align-items-center p-5">
-              <Spinner animation="border" role="status" />
-              <span className="ms-2">Loading...</span>
+              <Spinner animation="border" role="status" /><span className="ms-2">Loading...</span>
             </div>
           ) : (
             <>
               <Table hover className="user-table align-items-center">
                 <thead>
                   <tr>
-                    <th className="border-bottom">Sr No.</th>
-                    <th className="border-bottom">Image</th>
-                    <th className="border-bottom">Name</th>
-                    <th className="border-bottom">Email</th>
-                    <th className="border-bottom">Phone No.</th>
-                    <th className="border-bottom">Action</th>
+                    <th>Sr No.</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>KYC Status</th>
+                    <th>Wallet</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentUsers.map((user) => (
-                    <TableRow key={user.id} {...user} />
-                  ))}
+                  {currentUsers.length > 0 ? currentUsers.map(user => <TableRow key={user.id} {...user} />) : (
+                    <tr><td colSpan="10" className="text-center py-4">No users found</td></tr>
+                  )}
                 </tbody>
               </Table>
 
-              {/* Pagination */}
               <div className="d-flex justify-content-center mt-3">
                 <Pagination>
-                  <Pagination.Prev
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  />
+                  <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
                   {[...Array(totalPages)].map((_, i) => (
-                    <Pagination.Item
-                      key={i + 1}
-                      active={i + 1 === currentPage}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
+                    <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => setCurrentPage(i + 1)}>
                       {i + 1}
                     </Pagination.Item>
                   ))}
-                  <Pagination.Next
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
-                    disabled={currentPage === totalPages}
-                  />
+                  <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
                 </Pagination>
               </div>
             </>
@@ -223,81 +245,88 @@ export const PageUserTable = () => {
       </Card>
 
       {/* View Modal */}
-      <Modal
-        show={showViewModal}
-        onHide={handleCloseViewModal}
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
+      <Modal show={showViewModal} onHide={handleCloseViewModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>User Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedUser && (
-            <div className="text-left">
-              <h5>{selectedUser.name}</h5>
-              <p>Email: {selectedUser.email}</p>
-              <p>Phone: {selectedUser.phone}</p>
-            </div>
+            <>
+              <div className="text-center mb-3">
+                <Image src={selectedUser.image} roundedCircle width={70} height={70} />
+              </div>
+              <p><b>Name:</b> {selectedUser.name}</p>
+              <p><b>Email:</b> {selectedUser.email}</p>
+              <p><b>Phone:</b> {selectedUser.phone}</p>
+              <p><b>Role:</b> {selectedUser.role}</p>
+              <p><b>KYC Status:</b> {selectedUser.kycStatus}</p>
+              <p><b>Liveness Score:</b> {selectedUser.livenessScore}%</p>
+              <p><b>Wallet Balance:</b> {selectedUser.walletBalance}</p>
+              <p><b>Date Joined:</b> {selectedUser.dateJoined}</p>
+
+              {/* ID Proof & Selfie */}
+              <div className="d-flex gap-3 my-2">
+                <div>
+                  <p><b>ID Proof:</b></p>
+                  <Image src={selectedUser.idProof} thumbnail width={100} height={100} />
+                </div>
+                <div>
+                  <p><b>Selfie:</b></p>
+                  <Image src={selectedUser.selfie} thumbnail width={100} height={100} />
+                </div>
+              </div>
+
+              {/* Circles Joined */}
+              <p><b>Circles Joined:</b> {selectedUser.circlesJoined.length}</p>
+              <ul>
+                {selectedUser.circlesJoined.map(c => <li key={c.id}>{c.name} ({c.role})</li>)}
+              </ul>
+
+              {/* Payment History */}
+              <h6>Payment History</h6>
+              <Table size="sm" bordered hover>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Circle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedUser.paymentHistory.map(p => (
+                    <tr key={p.id}>
+                      <td>{p.date}</td>
+                      <td>{p.amount}</td>
+                      <td>{p.circle}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+
+              {/* Reject reason input */}
+              {showRejectInput && (
+                <Form.Group className="mt-2">
+                  <Form.Label>Reason for Rejection</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter reason"
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                  />
+                </Form.Group>
+              )}
+            </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseViewModal}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        show={showEditModal}
-        onHide={handleCloseEditModal}
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Edit User</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Phone</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseEditModal}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSaveEdit}>
-            Save Changes
-          </Button>
+          {!showRejectInput && selectedUser && selectedUser.kycStatus === "Pending" && (
+            <>
+              <Button variant="success" onClick={handleApprove}>✅ Approve</Button>
+              <Button variant="danger" onClick={handleReject}>❌ Reject</Button>
+            </>
+          )}
+          {showRejectInput && <Button variant="danger" onClick={submitReject}>Submit Rejection</Button>}
+          <Button variant="secondary" onClick={handleCloseViewModal}>Close</Button>
         </Modal.Footer>
       </Modal>
     </>

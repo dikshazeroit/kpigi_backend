@@ -32,6 +32,7 @@ import CreateBanner from './banner/CreateBanner';
 import CreateSubscription from './subscription/CreateSubscription';
 import AddVideo from './animatedVideo/AddVideo';
 import FaqManagement from './faq/FaqManagement';
+import VerifyOtp from './examples/VerifyOtp';
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -90,6 +91,7 @@ export default () => (
     <RouteWithLoader exact path={Routes.Signin.path} component={Signin} />
     <RouteWithLoader exact path={Routes.Signup.path} component={Signup} />
     <RouteWithLoader exact path={Routes.ForgotPassword.path} component={ForgotPassword} />
+    <RouteWithLoader exact path={Routes.VerifyOtp.path} component={VerifyOtp} />
     <RouteWithLoader exact path={Routes.ResetPassword.path} component={ResetPassword} />
 
     {/* pages */}

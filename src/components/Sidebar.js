@@ -3,15 +3,15 @@ import SimpleBar from "simplebar-react";
 import { useLocation, Link } from "react-router-dom";
 import { CSSTransition } from "react-transition-group";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import logo from "../assets/img/pages/demdey1.png"; // Import your logo image here
+import logo from "../assets/img/pages/ajolinks.png"; // Import your logo image here
 import {
-  faChartPie,
+  faChartLine, //Dashboard
+  faUsers, //user-management
   faFile,
   faQuestion,
   faSignOutAlt,
   faSubscript,
   faTimes,
-  faUser,
   faVideo
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
@@ -173,12 +173,12 @@ export default (props = {}) => {
               <NavItem
                 title="Dashboard"
                 link={Routes.DashboardOverview.path}
-                icon={faChartPie}
+                icon={faChartLine}
               />
               <CollapsableNavItem
                 eventKey="tables/"
                 title="User Management"
-                icon={faUser}
+                icon={faUsers}
               >
                 <NavItem
                   title={<span className="fs-6">User List</span>}
@@ -194,6 +194,7 @@ export default (props = {}) => {
                 eventKey="banner/"
                 title="Banner"
                 icon={faFile}
+
               >
                 <NavItem
                   title={<span className="fs-6">Create Banner</span>}
