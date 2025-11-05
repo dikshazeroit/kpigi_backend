@@ -4,7 +4,7 @@ import { Breadcrumb } from '@themesberg/react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import SubscriptionPage from "../../components/Subscription";
+import WalletPage from "../../components/Subscription";
 
 
 export default () => {
@@ -16,13 +16,13 @@ export default () => {
                         <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
                             <FontAwesomeIcon icon={faHome} />
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>Subscription</Breadcrumb.Item>
-                        <Breadcrumb.Item active>Create Subscription</Breadcrumb.Item>
+                        <Breadcrumb.Item>Wallet</Breadcrumb.Item>
+                        <Breadcrumb.Item active>Create wallet</Breadcrumb.Item>
                     </Breadcrumb>
                     {/* <h4>Create Subscription</h4> */}
                 </div>
             </div>
-            <SubscriptionPage />
+            <WalletPage />
         </>
     );
 };
