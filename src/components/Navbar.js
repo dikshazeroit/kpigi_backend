@@ -71,8 +71,8 @@ export default function TopNavbar(props) {
                 🔍
               </span>
               <span>
-                Hello, <strong>Welcome Admin</strong> – this is your{" "}
-                <strong style={{ color: "#1b2cc1" }}>DEMDEY Admin Panel</strong>
+                Hello, <strong>Welcome Admin</strong> – AjoLink{" "}
+                <strong style={{ color: "#001F3F" }}> Admin Panel</strong>
               </span>
             </div>
           </div>

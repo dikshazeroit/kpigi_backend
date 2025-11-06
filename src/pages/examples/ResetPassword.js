@@ -16,7 +16,7 @@ import {
 } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/signin.svg";
+import BgImage from "../../assets/img/illustrations/forgots.svg";
 
 export default function ResetPassword() {
   const history = useHistory();
@@ -71,10 +71,15 @@ export default function ResetPassword() {
               className="img-fluid mb-3"
               style={{ maxHeight: "200px" }}
             />
-            <h2 className="fw-bold display-6">Reset Your Password</h2>
-            <p className="mt-2 fs-6">
+
+            <h2 className="fw-bold display-6" style={{ color: "#000" }}>
+              Reset Your Password
+            </h2>
+
+            <p className="mt-2 fs-6" style={{ color: "#000" }}>
               Set a new password to regain access to your account
             </p>
+
           </Col>
 
           {/* Right Side */}
