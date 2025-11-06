@@ -1,6 +1,6 @@
 {
-  "name": "@themesberg/Demdey",
-  "description": "Demdey is a free and open source admin dashboard template powered by React.js and Bootstrap 5",
+  "name": "@themesberg/AjoLink",
+  "description": "AjoLink is a free and open source admin dashboard template powered by React.js and Bootstrap 5",
   "author": "Themesberg",
   "keywords": [
     "bootstrap 5",
@@ -43,7 +43,8 @@
     "react-scripts": "^5.0.1",
     "react-transition-group": "^4.4.1",
     "sass": "^1.50.0",
-    "simplebar-react": "^2.3.0"
+    "simplebar-react": "^2.3.0",
+    "sweetalert2": "^11.26.3"
   },
   "scripts": {
     "start": "react-scripts start",
