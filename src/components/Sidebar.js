@@ -17,7 +17,7 @@ import {
   faLifeRing,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
-import logo from "../assets/img/pages/demdey1.png";
+import logo from "../assets/img/pages/ajolinks.png";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import { Routes } from "../routes";
 
@@ -122,10 +122,7 @@ export default function Sidebar() {
               </CollapsableNavItem>
               <CollapsableNavItem eventKey="analytics/" title="Analytics" icon={faChartLine}>
                 <NavItem title="My Analytics" link={Routes.AnalyticsPage.path} />
-              </CollapsableNavItem>
-              <CollapsableNavItem eventKey="notifications/" title="Notifications" icon={faBell}>
-                <NavItem title="My Notifications" link={Routes.NotificationsPage.path} />
-              </CollapsableNavItem>
+               </CollapsableNavItem>
               <CollapsableNavItem eventKey="Disputes/" title="Disputes" icon={faGavel}>
                 <NavItem title="My Disputes" link={Routes.DisputesWrapper.path} />
               </CollapsableNavItem>

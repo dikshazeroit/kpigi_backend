@@ -4,7 +4,7 @@ import { Breadcrumb } from '@themesberg/react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import WalletPage from "../../components/Subscription";
+import WalletPage from "../../components/wallet";
 
 
 export default () => {
