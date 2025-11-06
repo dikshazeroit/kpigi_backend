@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Col, Row, Card, Button, Modal, Form, Tabs, Tab, Table, Spinner } from "@themesberg/react-bootstrap";
+import {
+  Col,
+  Row,
+  Card,
+  Button,
+  Modal,
+  Form,
+  Tabs,
+  Tab,
+  Table,
+  Spinner,
+} from "@themesberg/react-bootstrap";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// Dummy data
 const dummyCircles = [
   {
     id: 1,
@@ -24,7 +34,6 @@ const dummyCircles = [
 function CirclesPage() {
   const [circles, setCircles] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [showModal, setShowModal] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [newCircle, setNewCircle] = useState({
@@ -35,7 +44,6 @@ function CirclesPage() {
     startDate: "",
   });
   const [creating, setCreating] = useState(false);
-
   const [selectedCircle, setSelectedCircle] = useState(null);
 
   useEffect(() => {
@@ -88,12 +96,9 @@ function CirclesPage() {
 
   return (
     <>
-      <Card className="mb-4 shadow-sm">
+      <Card className="mb-3 shadow-sm border-0">
         <Card.Body className="d-flex justify-content-between align-items-center">
-          <div>
-            <h5>My Circles</h5>
-            <p className="text-muted">View and manage your savings circles.</p>
-          </div>
+          <h4 className="fw-bold mb-0">My Circles</h4>
           <Button variant="primary" onClick={handleCreateCircle}>
             <FontAwesomeIcon icon={faPlus} className="me-2" /> Create Circle
           </Button>
@@ -108,22 +113,28 @@ function CirclesPage() {
         <Row>
           {circles.map((circle) => (
             <Col key={circle.id} xs={12} sm={6} md={4} lg={4} className="mb-4">
-              <Card className="h-100 shadow-sm text-center">
+              <Card className="h-100 shadow-sm text-center border-0">
                 <Card.Body>
-                  <h5>{circle.name}</h5>
-                  <p className="mb-1">Members: {circle.members.length}</p>
-                  <p className="mb-1">Total Pot: ${circle.totalPot}</p>
-                  <p className="mb-1">Contribution: ${circle.contribution}</p>
-                  <small className="text-muted">Next Payout: {circle.nextPayout}</small>
-                  <Button
-                    className="mt-2"
-                    size="sm"
-                    onClick={() => setSelectedCircle(circle)}
-                  >
-                    View Details
-                  </Button>
+                  <h5 className="fw-semibold">{circle.name}</h5>
+                  <p className="mb-1 text-muted">Members: {circle.members.length}</p>
+                  <p className="mb-1 text-muted">Total Pot: ${circle.totalPot}</p>
+                  <p className="mb-1 text-muted">
+                    Contribution: ${circle.contribution}
+                  </p>
+                  <small className="text-secondary">
+                    Next Payout: {circle.nextPayout}
+                  </small>
+                  <div className="mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => setSelectedCircle(circle)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </Card.Body>
-                <Card.Footer className="text-center">
+                <Card.Footer className="bg-light text-center">
                   <Button
                     variant="light"
                     size="sm"
@@ -139,7 +150,7 @@ function CirclesPage() {
         </Row>
       )}
 
-      {/* Modal for Circle Creation */}
+      {/* Create Circle Modal */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Create New Circle</Modal.Title>
@@ -166,7 +177,10 @@ function CirclesPage() {
                   type="number"
                   value={newCircle.contribution}
                   onChange={(e) =>
-                    setNewCircle({ ...newCircle, contribution: e.target.value })
+                    setNewCircle({
+                      ...newCircle,
+                      contribution: e.target.value,
+                    })
                   }
                 />
               </Form.Group>
@@ -230,7 +244,7 @@ function CirclesPage() {
         </Modal.Footer>
       </Modal>
 
-      {/* Circle Detail Modal */}
+      {/* Circle Details Modal */}
       <Modal
         show={!!selectedCircle}
         onHide={() => setSelectedCircle(null)}

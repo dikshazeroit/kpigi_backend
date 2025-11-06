@@ -14,6 +14,7 @@ import {
   faDollarSign,
   faBell,
   faGavel,
+  faLifeRing,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
 import logo from "../assets/img/pages/demdey1.png";
@@ -125,11 +126,16 @@ export default function Sidebar() {
               <CollapsableNavItem eventKey="notifications/" title="Notifications" icon={faBell}>
                 <NavItem title="My Notifications" link={Routes.NotificationsPage.path} />
               </CollapsableNavItem>
-                <CollapsableNavItem eventKey="Disputes/" title="Disputes" icon={faGavel}>
+              <CollapsableNavItem eventKey="Disputes/" title="Disputes" icon={faGavel}>
                 <NavItem title="My Disputes" link={Routes.DisputesWrapper.path} />
               </CollapsableNavItem>
-              
-              
+              {/* Help & FAQ Section */}
+              <CollapsableNavItem eventKey="Support/" title="Support" icon={faLifeRing}>
+                <NavItem title="Help Center" link={Routes.Help.path} />
+                <NavItem title="FAQs" link={Routes.FAQ.path} />
+              </CollapsableNavItem>
+
+
 
               <Dropdown.Divider className="my-3 border-indigo" />
             </Nav>

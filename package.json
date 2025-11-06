@@ -46,7 +46,7 @@
     "simplebar-react": "^2.3.0"
   },
   "scripts": {
-    "start": "react-scripts --openssl-legacy-provider start",
+    "start": "react-scripts start",
     "build": "react-scripts --openssl-legacy-provider build",
     "build-local": "PUBLIC_URL=./ react-scripts --openssl-legacy-provider build",
     "test": "react-scripts --openssl-legacy-provider test",
