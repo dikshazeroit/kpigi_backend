@@ -10,6 +10,7 @@ import BootstrapTables from "./tables/BootstrapTables";
 import Signin from "./examples/Signin";
 import Signup from "./examples/Signup";
 import ForgotPassword from "./examples/ForgotPassword";
+import VerifyOtp from "./examples/VerifyOtp"
 import ResetPassword from "./examples/ResetPassword";
 
 
@@ -29,11 +30,11 @@ import Navs from "./components/Navs";
 import Navbars from "./components/Navbars";
 import Tables from "./components/Tables";
 //import CirclesPage from './banner/circlespage';
-import WalletPage from './subscription/CreateSubscription';
+import WalletPage from './wallet/wallet';
 import PayoutsPage from './animatedVideo/AddVideo';
 import AnalyticsPage from './Analytics/AnalyticsManagement';
 import CirclesPage from '../components/CirclesPage ';
-import NotificationsPage from "../components/Notification";
+//import NotificationsPage from "../components/Notification";
 import DisputesWrapper from "../components/DisputesPage";
 import faqs from "../components/HelpPage";
 import HelpWrapper from "./Helps/helps";
@@ -107,7 +108,6 @@ export default () => (
     <RouteWithSidebar exact path={Routes.WalletPage.path} component={WalletPage} />
     <RouteWithSidebar exact path={Routes.PayoutsPage.path} component={PayoutsPage} />
     <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
-    <RouteWithSidebar exact path={Routes.NotificationsPage.path} component={NotificationsPage} />
     <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={DisputesWrapper} />
     <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
     <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />

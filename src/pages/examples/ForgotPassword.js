@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -11,13 +11,13 @@ import {
 } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/forgot.svg";
+import BgImage from "../../assets/img/illustrations/forgots.svg";
 
 export default function ForgotPassword() {
   const history = useHistory();
   const [email, setEmail] = useState("");
 
-  
+
 
   const handleRecover = (e) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function ForgotPassword() {
   return (
     <div
       style={{
-        height:"100vh",
+        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -56,7 +56,7 @@ export default function ForgotPassword() {
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
             style={{
-              background: "linear-gradient(to right, #6a11cb, #2575fc)",
+              background: "linear-gradient(to right, #f9fbff, #e3f2fd)",
               color: "white",
             }}
           >
@@ -66,10 +66,21 @@ export default function ForgotPassword() {
               className="img-fluid mb-3"
               style={{ maxHeight: "200px" }}
             />
-            <h2 className="fw-bold display-6">Forgot Password?</h2>
-            <p className="mt-2 fs-6">
+
+            <h2
+              className="fw-bold display-6"
+              style={{ color: "#000000" }} // 🔹 black heading
+            >
+              Forgot Password?
+            </h2>
+
+            <p
+              className="mt-2 fs-6"
+              style={{ color: "#333333" }} // 🔹 dark gray for better readability
+            >
               Enter your registered email to reset your password
             </p>
+
           </Col>
 
           {/* Right Side */}

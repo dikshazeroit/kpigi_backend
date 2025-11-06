@@ -7,7 +7,6 @@ export const Routes = {
     WalletPage: { path: "/wallet" },
     PayoutsPage: { path: "/animated-video" },
     AnalyticsPage: { path: "/faq-management" },
-    NotificationsPage: { path: "/notification" },
     DisputesWrapper: { path: "/disputes" },
     Help: { path: "/help",},
     FAQ: { path: "/faq",},
