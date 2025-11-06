@@ -4,7 +4,7 @@ import { Breadcrumb } from '@themesberg/react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
-import AddVideoPage from "../../components/AddVideo";
+import PayoutsPage from "../../components/Payouts";
 
 
 export default () => {
@@ -22,7 +22,7 @@ export default () => {
                 </div>
             </div>
 
-            <AddVideoPage />
+            <PayoutsPage />
 
         </>
     )

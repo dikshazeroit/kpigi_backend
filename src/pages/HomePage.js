@@ -28,11 +28,15 @@ import Forms from "./components/Forms";
 import Navs from "./components/Navs";
 import Navbars from "./components/Navbars";
 import Tables from "./components/Tables";
-import CreateBanner from './banner/CreateBanner';
-import CreateSubscription from './subscription/CreateSubscription';
-import AddVideo from './animatedVideo/AddVideo';
-import FaqManagement from './faq/FaqManagement';
-import VerifyOtp from './examples/VerifyOtp';
+//import CirclesPage from './banner/circlespage';
+import WalletPage from './subscription/CreateSubscription';
+import PayoutsPage from './animatedVideo/AddVideo';
+import AnalyticsPage from './Analytics/AnalyticsManagement';
+import CirclesPage from '../components/CirclesPage ';
+import NotificationsPage from "../components/Notification";
+import DisputesWrapper from "../components/DisputesPage";
+import faqs from "../components/HelpPage";
+import HelpWrapper from "./Helps/helps";
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -99,10 +103,18 @@ export default () => (
     <RouteWithSidebar exact path={Routes.Profile.path} component={Profile} />
     <RouteWithSidebar exact path={Routes.EditProfile.path} component={EditProfile} />
     <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />
-    <RouteWithSidebar exact path={Routes.CreateBanner.path} component={CreateBanner} />
-    <RouteWithSidebar exact path={Routes.CreateSubscription.path} component={CreateSubscription} />
-    <RouteWithSidebar exact path={Routes.CreateAnimatedVideo.path} component={AddVideo} />
-    <RouteWithSidebar exact path={Routes.FaqManagement.path} component={FaqManagement} />
+    <RouteWithSidebar exact path={Routes.CirclesPage.path} component={CirclesPage} />
+    <RouteWithSidebar exact path={Routes.WalletPage.path} component={WalletPage} />
+    <RouteWithSidebar exact path={Routes.PayoutsPage.path} component={PayoutsPage} />
+    <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
+    <RouteWithSidebar exact path={Routes.NotificationsPage.path} component={NotificationsPage} />
+    <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={DisputesWrapper} />
+    <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
+    <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />
+
+
+
+
 
     {/* components */}
     <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />

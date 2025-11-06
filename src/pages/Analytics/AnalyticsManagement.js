@@ -4,7 +4,7 @@ import { Breadcrumb } from '@themesberg/react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
-import FaqPage from "../../components/faq";
+import AnalyticsPage from "../../components/Analytics";
 
 
 
@@ -18,13 +18,13 @@ export default () => {
                         <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
                             <FontAwesomeIcon icon={faHome} />
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>FAQ</Breadcrumb.Item>
-                        <Breadcrumb.Item active>FAQ Management</Breadcrumb.Item>
+                        <Breadcrumb.Item>Analytics</Breadcrumb.Item>
+                        <Breadcrumb.Item active>Analytics Management</Breadcrumb.Item>
                     </Breadcrumb>
                 </div>
             </div>
 
-            <FaqPage />
+            <AnalyticsPage />
         </>
     )
 }
