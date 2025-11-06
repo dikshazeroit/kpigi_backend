@@ -1,44 +1,73 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faUnlockAlt, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { Col, Row, Form, Card, Button, FormCheck, InputGroup } from "@themesberg/react-bootstrap";
+import {
+  faEnvelope,
+  faUnlockAlt,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  Col,
+  Row,
+  Form,
+  Card,
+  Button,
+  FormCheck,
+  InputGroup,
+} from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
+import Swal from "sweetalert2";
 import BgImage from "../../assets/img/illustrations/signin.svg";
 
 export default function Signin() {
   const history = useHistory();
   const [showPassword, setShowPassword] = useState(false);
 
+
   const handleSignIn = (e) => {
     e.preventDefault();
-    history.push(Routes.DashboardOverview.path);
+
+    Swal.fire({
+      title: "Login Successful!",
+      text: "Welcome back to your dashboard!",
+      icon: "success",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+
+    setTimeout(() => {
+      history.push(Routes.DashboardOverview.path);
+    }, 1500);
   };
 
   return (
     <div
       style={{
-        minHeight: "100vh", // Full viewport height
+        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        padding: "60px 0",
         background: "linear-gradient(135deg, #e0eafc, #cfdef3)",
-        padding: "1rem",
       }}
     >
       <Card
         className="border-0 shadow-lg"
         style={{
           width: "100%",
-          maxWidth: "1000px", // Normal width
+          maxWidth: "950px",
           borderRadius: "20px",
           overflow: "hidden",
           background: "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(10px)",
         }}
       >
-        <Row className="g-0 d-flex flex-column flex-md-row" style={{ minHeight: "550px" }}>
-          {/* Left Side - Welcome */}
+        <Row
+          className="g-0 d-flex flex-column flex-md-row"
+          style={{ minHeight: "500px" }}
+        >
+          {/* Left Side */}
           <Col
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
@@ -51,20 +80,33 @@ export default function Signin() {
               src={BgImage}
               alt="Sign In"
               className="img-fluid mb-3"
-              style={{ maxHeight: "220px" }}
+              style={{ maxHeight: "200px" }}
             />
-            <h2 className="fw-bold display-5">Welcome Back!</h2>
+            <h2 className="fw-bold display-6">Welcome Back!</h2>
             <p className="mt-2 fs-6">Sign in to your admin dashboard</p>
           </Col>
 
-          {/* Right Side - Form */}
+          {/* Right Side */}
           <Col
             md={6}
             className="d-flex align-items-center justify-content-center bg-white p-4"
           >
-            <div className="w-100" style={{ maxWidth: "380px" }}>
-              <h3 className="mb-4 text-center">Demdey Login</h3>
+            <div className="w-100" style={{ maxWidth: "360px" }}>
+              <h3
+                className="mb-4 text-center d-flex align-items-center justify-content-center"
+                style={{
+                  gap: "10px",
+                  fontWeight: "600",
+                  fontSize: "1.6rem",
+                  color: "#333",
+                }}
+              >
+                <span role="img" aria-label="hand" style={{ fontSize: "1.8rem" }}>👉</span>
+                AjoLink Login
+              </h3>
+
               <Form onSubmit={handleSignIn}>
+                {/* Email */}
                 <Form.Group className="mb-3">
                   <Form.Label>Email Address</Form.Label>
                   <InputGroup>
@@ -79,6 +121,7 @@ export default function Signin() {
                   </InputGroup>
                 </Form.Group>
 
+                {/* Password */}
                 <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
                   <InputGroup>
@@ -94,11 +137,14 @@ export default function Signin() {
                       style={{ cursor: "pointer" }}
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                      <FontAwesomeIcon
+                        icon={showPassword ? faEyeSlash : faEye}
+                      />
                     </InputGroup.Text>
                   </InputGroup>
                 </Form.Group>
 
+                {/* Remember + Forgot */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <FormCheck>
                     <FormCheck.Input id="rememberMe" className="me-2" />
@@ -114,6 +160,7 @@ export default function Signin() {
                   </Link>
                 </div>
 
+                {/* Sign In Button */}
                 <Button
                   type="submit"
                   className="w-100 text-white fw-bold"

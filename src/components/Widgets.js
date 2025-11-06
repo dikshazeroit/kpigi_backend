@@ -1,4 +1,4 @@
-import React, {useRef} from "react";
+import React, { useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
 import { faAngular, faBootstrap, faReact, faVuejs } from "@fortawesome/free-brands-svg-icons";
@@ -150,9 +150,7 @@ export const ProfileCardWidget = () => {
 // };
 
 export const CounterWidget = (props) => {
-  const { icon, iconColor, category, title, period, percentage } = props;
-  const percentageIcon = percentage < 0 ? faAngleDown : faAngleUp;
-  const percentageColor = percentage < 0 ? "text-danger" : "text-success";
+  const { icon, iconColor, category, title, } = props;
 
   return (
     <Card border="light" className="shadow-sm">
@@ -171,13 +169,6 @@ export const CounterWidget = (props) => {
             <div className="d-none d-sm-block">
               <h5>{category}</h5>
               <h3 className="mb-1">{title}</h3>
-            </div>
-            <small>{period}, <FontAwesomeIcon icon={faGlobeEurope} size="xs" /> WorldWide</small>
-            <div className="small mt-2">
-              <FontAwesomeIcon icon={percentageIcon} className={`${percentageColor} me-1`} />
-              <span className={`${percentageColor} fw-bold`}>
-                {percentage}%
-              </span> Since last month
             </div>
           </Col>
         </Row>

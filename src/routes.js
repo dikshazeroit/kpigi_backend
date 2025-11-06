@@ -14,6 +14,7 @@ export const Routes = {
     Signin: { path: "/sign-in" },
     Signup: { path: "/examples/sign-up" },
     ForgotPassword: { path: "/forgot-password" },
+    VerifyOtp: { path: "/verify-otp" },
     ResetPassword: { path: "/reset-password" },
     DocsFolderStructure: { path: "/documentation/folder-structure" },
     Accordions: { path: "/components/accordions" },
