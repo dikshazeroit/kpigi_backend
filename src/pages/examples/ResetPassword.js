@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleLeft,
@@ -23,15 +23,7 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // ✅ Scroll fix — prevent leftover scroll from dashboard
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
+ 
   const handleReset = (e) => {
     e.preventDefault();
     // Only design — no API or alert
@@ -41,6 +33,7 @@ export default function ResetPassword() {
   return (
     <div
       style={{
+        height:"100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

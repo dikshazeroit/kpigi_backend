@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft, faKey } from "@fortawesome/free-solid-svg-icons";
+import {faKey } from "@fortawesome/free-solid-svg-icons";
 import {
     Col,
     Row,
@@ -17,14 +17,7 @@ export default function VerifyOtp() {
     const history = useHistory();
     const [otp, setOtp] = useState("");
 
-    // ✅ Prevent scroll when page is open
-    useEffect(() => {
-        window.scrollTo(0, 0);
-        document.body.style.overflow = "hidden";
-        return () => {
-            document.body.style.overflow = "auto";
-        };
-    }, []);
+    
 
     const handleVerify = (e) => {
         e.preventDefault();
@@ -35,6 +28,7 @@ export default function VerifyOtp() {
     return (
         <div
             style={{
+                height:"100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",

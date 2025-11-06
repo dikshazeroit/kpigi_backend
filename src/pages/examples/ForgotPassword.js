@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -17,14 +17,7 @@ export default function ForgotPassword() {
   const history = useHistory();
   const [email, setEmail] = useState("");
 
-  // ✅ Disable scroll and scroll to top (same as Signin)
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
+  
 
   const handleRecover = (e) => {
     e.preventDefault();
@@ -35,6 +28,7 @@ export default function ForgotPassword() {
   return (
     <div
       style={{
+        height:"100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

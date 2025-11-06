@@ -9,7 +9,6 @@ import {
   faUsers, //user-management
   faFile,
   faQuestion,
-  faSignOutAlt,
   faSubscript,
   faTimes,
   faVideo
@@ -19,7 +18,7 @@ import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesb
 import { Routes } from "../routes";
 // Dummy Logo Image (You can replace with your own)
 // import authlogo from "../assets/img/pages/authlogo.svg"; 
-import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
+// import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 export default (props = {}) => {
   const location = useLocation();
   const { pathname } = location;
@@ -136,32 +135,13 @@ export default (props = {}) => {
             <div className="text-center mb-4">
               <img
                 src={logo} height="100"
-                alt="demdey Logo"
+                alt="AjoLink Logo"
               />
             </div>
 
             {/* Mobile user card */}
             <div className="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
               <div className="d-flex align-items-center">
-                <div className="user-avatar lg-avatar me-4">
-                  <Image
-                    src={ProfilePicture}
-                    className="card-img-top rounded-circle border-white"
-                  />
-                </div>
-                <div className="d-block">
-                  <h6>Hi, Jane</h6>
-                  <Button
-                    as={Link}
-                    variant="secondary"
-                    size="xs"
-                    to={Routes.Signin.path}
-                    className="text-dark"
-                  >
-                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />{" "}
-                    Sign Out
-                  </Button>
-                </div>
               </div>
               <Nav.Link className="collapse-close d-md-none" onClick={onCollapse}>
                 <FontAwesomeIcon icon={faTimes} />

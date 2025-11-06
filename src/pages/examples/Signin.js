@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelope,
@@ -24,14 +24,6 @@ export default function Signin() {
   const history = useHistory();
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Scroll to top when page mounts (fixes scroll leftover from dashboard)
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden"; // disable scroll
-    return () => {
-      document.body.style.overflow = "auto"; // restore on unmount
-    };
-  }, []);
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -52,6 +44,7 @@ export default function Signin() {
   return (
     <div
       style={{
+        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
