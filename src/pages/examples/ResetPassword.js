@@ -23,7 +23,7 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
- 
+
   const handleReset = (e) => {
     e.preventDefault();
     // Only design — no API or alert
@@ -33,7 +33,7 @@ export default function ResetPassword() {
   return (
     <div
       style={{
-        height:"100vh",
+        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -61,7 +61,7 @@ export default function ResetPassword() {
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
             style={{
-              background: "linear-gradient(to right, #6a11cb, #2575fc)",
+              background: "linear-gradient(to right, #ffffff, #6a11cb, #2575fc)",
               color: "white",
             }}
           >
@@ -139,7 +139,7 @@ export default function ResetPassword() {
                   type="submit"
                   className="w-100 text-white fw-bold"
                   style={{
-                    background: "linear-gradient(to right, #6a11cb, #2575fc)",
+                    background: "linear-gradient(to right, #ffffff, #6a11cb, #2575fc)",
                     border: "none",
                     padding: "0.75rem",
                     fontSize: "1rem",

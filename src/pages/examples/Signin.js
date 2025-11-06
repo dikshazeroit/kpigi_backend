@@ -18,22 +18,25 @@ import {
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
 import Swal from "sweetalert2";
-import BgImage from "../../assets/img/illustrations/signin.svg";
+import BgImage from "../../assets/img/illustrations/forgots.svg";
 
 export default function Signin() {
   const history = useHistory();
   const [showPassword, setShowPassword] = useState(false);
 
-
   const handleSignIn = (e) => {
     e.preventDefault();
 
     Swal.fire({
-      title: "Login Successful!",
-      text: "Welcome back to your dashboard!",
+      title: "🎉 Welcome Back!",
+      text: "You’ve successfully signed in to AjoLink Dashboard.",
       icon: "success",
+      background: "#ffffff",
+      color: "#333",
+      iconColor: "#6C63FF",
       showConfirmButton: false,
-      timer: 1500,
+      timer: 1800,
+      timerProgressBar: true,
     });
 
     setTimeout(() => {
@@ -48,8 +51,8 @@ export default function Signin() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        padding: "60px 0",
-        background: "linear-gradient(135deg, #e0eafc, #cfdef3)",
+        background: "linear-gradient(to right, #ffffff, #dbeafe, #a5b4fc)", // white-blended blue gradient
+        padding: "20px",
       }}
     >
       <Card
@@ -57,17 +60,14 @@ export default function Signin() {
         style={{
           width: "100%",
           maxWidth: "950px",
-          borderRadius: "20px",
+          borderRadius: "18px",
           overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
+          background: "rgba(255, 255, 255, 0.98)",
           backdropFilter: "blur(10px)",
         }}
       >
-        <Row
-          className="g-0 d-flex flex-column flex-md-row"
-          style={{ minHeight: "500px" }}
-        >
-          {/* Left Side */}
+        <Row className="g-0 d-flex flex-column flex-md-row">
+          {/* Left Visual Section */}
           <Col
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
@@ -79,62 +79,91 @@ export default function Signin() {
             <img
               src={BgImage}
               alt="Sign In"
-              className="img-fluid mb-3"
-              style={{ maxHeight: "200px" }}
+              className="img-fluid mb-4"
+              style={{
+                maxHeight: "260px",
+                width: "auto",
+                objectFit: "contain",
+                filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))",
+              }}
             />
-            <h2 className="fw-bold display-6">Welcome Back!</h2>
-            <p className="mt-2 fs-6">Sign in to your admin dashboard</p>
+
+            <h2 className="fw-bold display-6 mb-2" style={{ color: "#fff" }}>
+              Welcome Back!
+            </h2>
+            <p className="fs-6 mb-0" style={{ color: "#f0f0f0" }}>
+              Login in to your <strong>AjoLink Admin Dashboard</strong>
+            </p>
           </Col>
 
-          {/* Right Side */}
+          {/* Right Form Section */}
           <Col
             md={6}
-            className="d-flex align-items-center justify-content-center bg-white p-4"
+            className="d-flex align-items-center justify-content-center bg-white p-5"
           >
-            <div className="w-100" style={{ maxWidth: "360px" }}>
+            <div className="w-100" style={{ maxWidth: "380px" }}>
               <h3
-                className="mb-4 text-center d-flex align-items-center justify-content-center"
                 style={{
+                  fontWeight: "700",
+                  fontSize: "1.9rem",
+                  color: "#1b2cc1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center", // 👈 centers lock icon + text
                   gap: "10px",
-                  fontWeight: "600",
-                  fontSize: "1.6rem",
-                  color: "#333",
+                  marginBottom: "1.8rem",
                 }}
               >
-                <span role="img" aria-label="hand" style={{ fontSize: "1.8rem" }}>👉</span>
-                AjoLink Login
+                <span
+                  role="img"
+                  aria-label="lock"
+                  style={{ fontSize: "1.9rem" }}
+                >
+                  
+                </span>
+                 Admin Login
               </h3>
 
               <Form onSubmit={handleSignIn}>
                 {/* Email */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Email Address</Form.Label>
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-semibold">Email Address</Form.Label>
                   <InputGroup>
-                    <InputGroup.Text>
+                    <InputGroup.Text
+                      style={{ backgroundColor: "#f1f5f9", border: "none" }}
+                    >
                       <FontAwesomeIcon icon={faEnvelope} />
                     </InputGroup.Text>
                     <Form.Control
                       type="email"
                       placeholder="admin@example.com"
                       required
+                      style={{ backgroundColor: "#f9fafb", border: "none" }}
                     />
                   </InputGroup>
                 </Form.Group>
 
                 {/* Password */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Password</Form.Label>
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-semibold">Password</Form.Label>
                   <InputGroup>
-                    <InputGroup.Text>
+                    <InputGroup.Text
+                      style={{ backgroundColor: "#f1f5f9", border: "none" }}
+                    >
                       <FontAwesomeIcon icon={faUnlockAlt} />
                     </InputGroup.Text>
                     <Form.Control
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter password"
                       required
+                      style={{ backgroundColor: "#f9fafb", border: "none" }}
                     />
                     <InputGroup.Text
-                      style={{ cursor: "pointer" }}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: "#f1f5f9",
+                        border: "none",
+                      }}
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FontAwesomeIcon
@@ -145,7 +174,7 @@ export default function Signin() {
                 </Form.Group>
 
                 {/* Remember + Forgot */}
-                <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-4">
                   <FormCheck>
                     <FormCheck.Input id="rememberMe" className="me-2" />
                     <FormCheck.Label htmlFor="rememberMe">
@@ -154,7 +183,8 @@ export default function Signin() {
                   </FormCheck>
                   <Link
                     to="/forgot-password"
-                    className="small text-decoration-none text-primary"
+                    className="small text-decoration-none fw-semibold"
+                    style={{ color: "#1b2cc1" }}
                   >
                     Forgot password?
                   </Link>
@@ -163,16 +193,38 @@ export default function Signin() {
                 {/* Sign In Button */}
                 <Button
                   type="submit"
-                  className="w-100 text-white fw-bold"
+                  className="w-100 fw-bold shadow-sm"
                   style={{
                     background: "linear-gradient(to right, #6a11cb, #2575fc)",
                     border: "none",
-                    padding: "0.75rem",
+                    padding: "0.8rem",
                     fontSize: "1rem",
+                    borderRadius: "8px",
+                    transition: "all 0.3s ease",
                   }}
+                  onMouseOver={(e) =>
+                  (e.target.style.background =
+                    "linear-gradient(to right, #2575fc, #6a11cb)")
+                  }
+                  onMouseOut={(e) =>
+                  (e.target.style.background =
+                    "linear-gradient(to right, #6a11cb, #2575fc)")
+                  }
                 >
                   Sign In
                 </Button>
+
+                {/* Signup Link */}
+                <p className="text-center mt-4 mb-0 text-muted">
+                  Don’t have an account?{" "}
+                  <Link
+                    to="/signup"
+                    className="fw-semibold text-decoration-none"
+                    style={{ color: "#1b2cc1" }}
+                  >
+                    Create one
+                  </Link>
+                </p>
               </Form>
             </div>
           </Col>
