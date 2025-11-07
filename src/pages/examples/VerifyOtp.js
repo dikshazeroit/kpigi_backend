@@ -56,7 +56,7 @@ export default function VerifyOtp() {
                         md={6}
                         className="d-flex flex-column align-items-center justify-content-center text-center p-4"
                         style={{
-                            background: "linear-gradient(to right, #6a11cb, #2575fc)",
+                            background:"linear-gradient(to right, #6a11cb, #2575fc)",
                             color: "white",
                         }}
                     >
@@ -67,11 +67,11 @@ export default function VerifyOtp() {
                             style={{ maxHeight: "200px" }}
                         />
 
-                        <h2 className="fw-bold display-6" style={{ color: "#000" }}>
+                        <h2 className="fw-bold display-6" style={{ color: "#f0f0f0" }}>
                             Verify Your OTP
                         </h2>
 
-                        <p className="mt-2 fs-6" style={{ color: "#000" }}>
+                        <p className="mt-2 fs-6" style={{ color: "##f0f0f0" }}>
                             Enter the 8-digit OTP sent to your registered email
                         </p>
 

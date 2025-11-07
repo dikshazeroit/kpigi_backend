@@ -15,6 +15,7 @@ import ResetPassword from "./examples/ResetPassword";
 
 
 
+
 // components
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -31,13 +32,14 @@ import Navbars from "./components/Navbars";
 import Tables from "./components/Tables";
 //import CirclesPage from './banner/circlespage';
 import WalletPage from './wallet/wallet';
-import PayoutsPage from './animatedVideo/AddVideo';
+import PayoutsPage from './payouts/payouts';
 import AnalyticsPage from './Analytics/AnalyticsManagement';
 import CirclesPage from '../components/CirclesPage ';
 //import NotificationsPage from "../components/Notification";
 import DisputesWrapper from "../components/DisputesPage";
 import faqs from "../components/HelpPage";
 import HelpWrapper from "./Helps/helps";
+
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -111,6 +113,8 @@ export default () => (
     <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={DisputesWrapper} />
     <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
     <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />
+    
+
 
 
 

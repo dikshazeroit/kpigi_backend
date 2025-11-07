@@ -12,9 +12,9 @@ import {
   faTimes,
   faUser,
   faDollarSign,
-  faBell,
   faGavel,
   faLifeRing,
+  
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
 import logo from "../assets/img/pages/ajolinks.png";
@@ -85,10 +85,24 @@ export default function Sidebar() {
       <CSSTransition timeout={300} in={show} classNames="sidebar-transition">
         <SimpleBar className={`collapse ${showClass} sidebar d-md-block bg-primary text-white`}>
           <div className="sidebar-inner px-4 pt-3">
+
+            {/*  Clickable Logo that redirects to Dashboard */}
             <div className="text-center mb-4">
-              <img src={logo} height="100" alt="demdey Logo" />
+              <Link
+                to={Routes.DashboardOverview.path}
+                className="d-block"
+                onClick={() => setShow(false)} // closes sidebar on mobile
+              >
+                <img
+                  src={logo}
+                  height="100"
+                  alt="Ajolinks Logo"
+                  style={{ cursor: "pointer" }}
+                />
+              </Link>
             </div>
 
+            {/* User Info (Mobile Only) */}
             <div className="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
               <div className="d-flex align-items-center">
                 <div className="user-avatar lg-avatar me-4">
@@ -106,6 +120,7 @@ export default function Sidebar() {
               </Nav.Link>
             </div>
 
+            {/* Sidebar Navigation */}
             <Nav className="flex-column pt-3 pt-md-0">
               <NavItem title="Dashboard" link={Routes.DashboardOverview.path} icon={faChartPie} />
               <CollapsableNavItem eventKey="tables/" title="User Management" icon={faUser}>
@@ -122,17 +137,15 @@ export default function Sidebar() {
               </CollapsableNavItem>
               <CollapsableNavItem eventKey="analytics/" title="Analytics" icon={faChartLine}>
                 <NavItem title="My Analytics" link={Routes.AnalyticsPage.path} />
-               </CollapsableNavItem>
+              </CollapsableNavItem>
               <CollapsableNavItem eventKey="Disputes/" title="Disputes" icon={faGavel}>
                 <NavItem title="My Disputes" link={Routes.DisputesWrapper.path} />
               </CollapsableNavItem>
-              {/* Help & FAQ Section */}
               <CollapsableNavItem eventKey="Support/" title="Support" icon={faLifeRing}>
                 <NavItem title="Help Center" link={Routes.Help.path} />
                 <NavItem title="FAQs" link={Routes.FAQ.path} />
               </CollapsableNavItem>
-
-
+              
 
               <Dropdown.Divider className="my-3 border-indigo" />
             </Nav>

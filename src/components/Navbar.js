@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBell, faSearch,
+  faBell,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import {
-  Row, Col, Nav, Form, Image, Navbar, Dropdown, Container, ListGroup, InputGroup
+  Row, Col, Nav, Image, Navbar, Dropdown, Container, ListGroup,
 } from '@themesberg/react-bootstrap';
 import { useHistory } from "react-router-dom"; // ✅ for navigation
 
@@ -70,10 +70,11 @@ export default function TopNavbar(props) {
               <span role="img" aria-label="search" className="me-2">
                 🔍
               </span>
-              <span>
+              <span style={{ color: "blue" }}>
                 Hello, <strong>Welcome Admin</strong> – AjoLink{" "}
-                <strong style={{ color: "#001F3F" }}> Admin Panel</strong>
+                <strong>Admin Panel</strong>
               </span>
+
             </div>
           </div>
 
