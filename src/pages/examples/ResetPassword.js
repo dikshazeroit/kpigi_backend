@@ -61,7 +61,7 @@ export default function ResetPassword() {
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
             style={{
-              background: "linear-gradient(to right, #ffffff, #6a11cb, #2575fc)",
+              background: "linear-gradient(to right, #6a11cb, #2575fc)",
               color: "white",
             }}
           >
@@ -72,11 +72,11 @@ export default function ResetPassword() {
               style={{ maxHeight: "200px" }}
             />
 
-            <h2 className="fw-bold display-6" style={{ color: "#000" }}>
+            <h2 className="fw-bold display-6" style={{ color:"#f0f0f0"}}>
               Reset Your Password
             </h2>
 
-            <p className="mt-2 fs-6" style={{ color: "#000" }}>
+            <p className="mt-2 fs-6" style={{ color: "#f0f0f0" }}>
               Set a new password to regain access to your account
             </p>
 
@@ -144,7 +144,7 @@ export default function ResetPassword() {
                   type="submit"
                   className="w-100 text-white fw-bold"
                   style={{
-                    background: "linear-gradient(to right, #ffffff, #6a11cb, #2575fc)",
+                    background: "linear-gradient(to right, #6a11cb, #2575fc)",
                     border: "none",
                     padding: "0.75rem",
                     fontSize: "1rem",

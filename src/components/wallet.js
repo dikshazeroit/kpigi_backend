@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
-  Row,
-  Col,
-  Card,
   Table,
   Button,
   Modal,
   Form,
-  Spinner
+  Spinner,
+  Badge,
+  Card,
 } from "@themesberg/react-bootstrap";
 
+// ====== WalletPage Component ======
 const WalletPage = () => {
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,10 +21,10 @@ const WalletPage = () => {
     user: "",
     balance: "",
     currency: "USD",
-    status: "Active"
+    status: "Active",
   });
 
-  // Simulated API Fetch
+  // ====== Simulated API Fetch ======
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
@@ -34,123 +34,161 @@ const WalletPage = () => {
           user: "John Doe",
           balance: "500.00",
           currency: "USD",
-          status: "Active"
+          status: "Active",
+          lastTransaction: "2025-11-05",
         },
         {
           id: 2,
           user: "Jane Smith",
           balance: "250.50",
           currency: "USD",
-          status: "Suspended"
-        }
+          status: "Suspended",
+          lastTransaction: "2025-11-03",
+        },
       ]);
       setLoading(false);
     }, 1200);
   }, []);
 
-  // Open Add Wallet Modal
-  const handleOpenAdd = () => {
+  // ====== Handlers ======
+  const handleClose = () => {
+    setShowModal(false);
     setEditMode(false);
-    setFormData({ user: "", balance: "", currency: "USD", status: "Active" });
-    setShowModal(true);
+    setFormData({
+      user: "",
+      balance: "",
+      currency: "USD",
+      status: "Active",
+    });
   };
 
-  // Open Edit Wallet Modal
-  const handleOpenEdit = (wallet) => {
+  const handleShow = () => setShowModal(true);
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (editMode) {
+      setWallets(
+        wallets.map((wallet) =>
+          wallet.id === currentId ? { ...wallet, ...formData } : wallet
+        )
+      );
+    } else {
+      const newWallet = {
+        id: wallets.length + 1,
+        ...formData,
+        lastTransaction: new Date().toISOString().slice(0, 10),
+      };
+      setWallets([...wallets, newWallet]);
+    }
+
+    handleClose();
+  };
+
+  const handleEdit = (wallet) => {
+    setFormData(wallet);
     setEditMode(true);
     setCurrentId(wallet.id);
-    setFormData({
-      user: wallet.user,
-      balance: wallet.balance,
-      currency: wallet.currency,
-      status: wallet.status
-    });
     setShowModal(true);
   };
 
-  // Delete Wallet
-  const handleDelete = (id) => {
-    setWallets(wallets.filter((w) => w.id !== id));
+  const handleDelete = (id) =>
+    setWallets(wallets.filter((wallet) => wallet.id !== id));
+
+  const statusVariant = {
+    Active: "success",
+    Suspended: "warning",
+    Closed: "secondary",
   };
 
+  // ====== UI ======
   return (
-    <Row>
-      <Col xs={12}>
-        <Card border="light" className="shadow-sm">
-          <Card.Header className="d-flex justify-content-between align-items-center">
-            <h5>Wallet Management</h5>
-            <Button variant="primary" onClick={handleOpenAdd}>
-              Add Wallet
-            </Button>
-          </Card.Header>
-          <Card.Body>
-            {loading ? (
-              <div className="text-center py-5">
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-2">Loading wallets...</p>
-              </div>
-            ) : (
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Sr.No</th>
-                    <th>User</th>
-                    <th>Balance</th>
-                    <th>Currency</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {wallets.map((wallet, index) => (
-                    <tr key={wallet.id}>
-                      <td>{index + 1}</td>
-                      <td>{wallet.user}</td>
-                      <td>${wallet.balance}</td>
-                      <td>{wallet.currency}</td>
-                      <td>{wallet.status}</td>
-                      <td>
-                        <Button
-                          variant="warning"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleOpenEdit(wallet)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(wallet.id)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </Card.Body>
-        </Card>
-      </Col>
+    <div className="p-4">
+      <h4 className="mb-3">Wallet Management</h4>
 
-      {/* Add/Edit Wallet Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+      <Card className="mb-4 p-3 shadow-sm">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h6 className="mb-0">All Wallets</h6>
+          <Button size="sm" variant="primary" onClick={handleShow}>
+            + Add Wallet
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="text-center my-5">
+            <Spinner animation="border" />
+            <p className="mt-2">Loading wallets...</p>
+          </div>
+        ) : (
+          <Table responsive bordered hover className="align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Balance</th>
+                <th>Currency</th>
+                <th>Status</th>
+                <th>Last Transaction</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {wallets.map((wallet, index) => (
+                <tr key={wallet.id}>
+                  <td>{index + 1}</td>
+                  <td>{wallet.user}</td>
+                  <td>${parseFloat(wallet.balance).toFixed(2)}</td>
+                  <td>{wallet.currency}</td>
+                  <td>
+                    <Badge bg={statusVariant[wallet.status]}>
+                      {wallet.status}
+                    </Badge>
+                  </td>
+                  <td>{wallet.lastTransaction}</td>
+                  <td>
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() => handleEdit(wallet)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => handleDelete(wallet.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card>
+
+      {/* ===== Modal Form ===== */}
+      <Modal show={showModal} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{editMode ? "Edit Wallet" : "Add Wallet"}</Modal.Title>
+          <Modal.Title>
+            {editMode ? "Edit Wallet" : "Add New Wallet"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>User</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Enter user name"
+                name="user"
                 value={formData.user}
-                onChange={(e) =>
-                  setFormData({ ...formData, user: e.target.value })
-                }
+                onChange={handleChange}
+                required
               />
             </Form.Group>
 
@@ -158,52 +196,52 @@ const WalletPage = () => {
               <Form.Label>Balance</Form.Label>
               <Form.Control
                 type="number"
-                placeholder="Enter wallet balance"
+                step="0.01"
+                name="balance"
                 value={formData.balance}
-                onChange={(e) =>
-                  setFormData({ ...formData, balance: e.target.value })
-                }
+                onChange={handleChange}
+                required
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Currency</Form.Label>
               <Form.Select
+                name="currency"
                 value={formData.currency}
-                onChange={(e) =>
-                  setFormData({ ...formData, currency: e.target.value })
-                }
+                onChange={handleChange}
               >
                 <option value="USD">USD</option>
                 <option value="NGN">NGN</option>
-                <option value="EUR">EUR</option>
+                <option value="USDC">USDC</option>
               </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Status</Form.Label>
               <Form.Select
+                name="status"
                 value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
+                onChange={handleChange}
               >
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
+                <option>Active</option>
+                <option>Suspended</option>
+                <option>Closed</option>
               </Form.Select>
             </Form.Group>
+
+            <div className="text-end">
+              <Button variant="secondary" className="me-2" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit">
+                {editMode ? "Save Changes" : "Add Wallet"}
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary">
-            {editMode ? "Update Wallet" : "Save Wallet"}
-          </Button>
-        </Modal.Footer>
       </Modal>
-    </Row>
+    </div>
   );
 };
 
