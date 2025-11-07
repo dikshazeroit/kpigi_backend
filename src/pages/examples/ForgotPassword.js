@@ -56,7 +56,7 @@ export default function ForgotPassword() {
             md={6}
             className="d-flex flex-column align-items-center justify-content-center text-center p-4"
             style={{
-              background: "linear-gradient(to right, #f9fbff, #e3f2fd)",
+              background: "linear-gradient(to right, #6a11cb, #2575fc)",
               color: "white",
             }}
           >
@@ -69,14 +69,14 @@ export default function ForgotPassword() {
 
             <h2
               className="fw-bold display-6"
-              style={{ color: "#000000" }} // 🔹 black heading
+              style={{ color: "#f0f0f0" }} // 🔹 black heading
             >
               Forgot Password?
             </h2>
 
             <p
               className="mt-2 fs-6"
-              style={{ color: "#333333" }} // 🔹 dark gray for better readability
+              style={{ color: "#f0f0f0" }} // 🔹 dark gray for better readability
             >
               Enter your registered email to reset your password
             </p>

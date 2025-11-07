@@ -216,13 +216,13 @@ export default function Signin() {
 
                 {/* Signup Link */}
                 <p className="text-center mt-4 mb-0 text-muted">
-                  Don’t have an account?{" "}
+                  {" "}
                   <Link
                     to="/signup"
                     className="fw-semibold text-decoration-none"
                     style={{ color: "#1b2cc1" }}
                   >
-                    Create one
+                    
                   </Link>
                 </p>
               </Form>

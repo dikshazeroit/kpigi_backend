@@ -16,8 +16,8 @@ export default () => {
                         <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
                             <FontAwesomeIcon icon={faHome} />
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>Video</Breadcrumb.Item>
-                        <Breadcrumb.Item active>Animated Video</Breadcrumb.Item>
+                        <Breadcrumb.Item>Payouts</Breadcrumb.Item>
+                        <Breadcrumb.Item active>Payouts</Breadcrumb.Item>
                     </Breadcrumb>
                 </div>
             </div>
