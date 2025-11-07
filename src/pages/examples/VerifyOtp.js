@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faKey } from "@fortawesome/free-solid-svg-icons";
+import { faKey } from "@fortawesome/free-solid-svg-icons";
 import {
     Col,
     Row,
@@ -11,13 +11,13 @@ import {
 } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/signin.svg"; // 🟢 use your OTP illustration image
+import BgImage from "../../assets/img/illustrations/forgots.svg"; // 🟢 use your OTP illustration image
 
 export default function VerifyOtp() {
     const history = useHistory();
     const [otp, setOtp] = useState("");
 
-    
+
 
     const handleVerify = (e) => {
         e.preventDefault();
@@ -28,7 +28,7 @@ export default function VerifyOtp() {
     return (
         <div
             style={{
-                height:"100vh",
+                height: "100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -56,7 +56,7 @@ export default function VerifyOtp() {
                         md={6}
                         className="d-flex flex-column align-items-center justify-content-center text-center p-4"
                         style={{
-                            background: "linear-gradient(to right, #6a11cb, #2575fc)",
+                            background:"linear-gradient(to right, #6a11cb, #2575fc)",
                             color: "white",
                         }}
                     >
@@ -66,10 +66,15 @@ export default function VerifyOtp() {
                             className="img-fluid mb-3"
                             style={{ maxHeight: "200px" }}
                         />
-                        <h2 className="fw-bold display-6">Verify Your OTP</h2>
-                        <p className="mt-2 fs-6">
+
+                        <h2 className="fw-bold display-6" style={{ color: "#f0f0f0" }}>
+                            Verify Your OTP
+                        </h2>
+
+                        <p className="mt-2 fs-6" style={{ color: "##f0f0f0" }}>
                             Enter the 8-digit OTP sent to your registered email
                         </p>
+
                     </Col>
 
                     {/* Right Side - OTP Form */}
