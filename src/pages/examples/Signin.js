@@ -27,17 +27,21 @@ export default function Signin() {
   const handleSignIn = (e) => {
     e.preventDefault();
 
-    Swal.fire({
-      title: "🎉 Welcome Back!",
-      text: "You’ve successfully signed in to AjoLink Dashboard.",
-      icon: "success",
-      background: "#ffffff",
-      color: "#333",
-      iconColor: "#6C63FF",
-      showConfirmButton: false,
-      timer: 1800,
-      timerProgressBar: true,
-    });
+Swal.fire({
+  title: " Welcome Back!",
+  text: "Login successfully",
+  icon: "success",
+  iconColor: "green",
+  background: "#ffffff",
+  color: "#333",
+  showConfirmButton: true,
+  confirmButtonText: "OK",
+  timer: 3000,
+  timerProgressBar: true, 
+});
+
+
+
 
     setTimeout(() => {
       history.push(Routes.DashboardOverview.path);
@@ -109,7 +113,7 @@ export default function Signin() {
                   color: "#1b2cc1",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center", // 👈 centers lock icon + text
+                  justifyContent: "center", 
                   gap: "10px",
                   marginBottom: "1.8rem",
                 }}
@@ -119,9 +123,9 @@ export default function Signin() {
                   aria-label="lock"
                   style={{ fontSize: "1.9rem" }}
                 >
-                  
+
                 </span>
-                 Admin Login
+                Admin Login
               </h3>
 
               <Form onSubmit={handleSignIn}>
@@ -211,7 +215,7 @@ export default function Signin() {
                     "linear-gradient(to right, #6a11cb, #2575fc)")
                   }
                 >
-                  Sign In
+                  Login In
                 </Button>
 
                 {/* Signup Link */}
@@ -222,7 +226,7 @@ export default function Signin() {
                     className="fw-semibold text-decoration-none"
                     style={{ color: "#1b2cc1" }}
                   >
-                    
+
                   </Link>
                 </p>
               </Form>

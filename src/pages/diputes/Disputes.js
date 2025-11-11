@@ -1,11 +1,11 @@
 import React from "react";
 import { Breadcrumb } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faGavel } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 // Import the main Disputes component
-import DisputesPage from "../../pages/DisputesPage";
+import DisputesPage from "../../components/DisputesPage";
 
 export default function DisputesWrapper() {
   return (
@@ -18,7 +18,8 @@ export default function DisputesWrapper() {
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-              <FontAwesomeIcon icon={faHome} />
+              <FontAwesomeIcon icon={faHome} className="me-1" /> {/* margin-end for spacing */}
+              Home
             </Breadcrumb.Item>
             <Breadcrumb.Item>Disputes</Breadcrumb.Item>
             <Breadcrumb.Item active>Disputes Management</Breadcrumb.Item>

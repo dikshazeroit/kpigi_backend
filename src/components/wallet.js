@@ -7,13 +7,16 @@ import {
   Spinner,
   Badge,
   Card,
+  Pagination,
+  InputGroup,
+  FormControl,
 } from "@themesberg/react-bootstrap";
 
-// ====== WalletPage Component ======
 const WalletPage = () => {
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
@@ -24,42 +27,36 @@ const WalletPage = () => {
     status: "Active",
   });
 
-  // ====== Simulated API Fetch ======
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterCurrency, setFilterCurrency] = useState("All");
+
+  // Simulated API fetch
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
       setWallets([
-        {
-          id: 1,
-          user: "John Doe",
-          balance: "500.00",
-          currency: "USD",
-          status: "Active",
-          lastTransaction: "2025-11-05",
-        },
-        {
-          id: 2,
-          user: "Jane Smith",
-          balance: "250.50",
-          currency: "USD",
-          status: "Suspended",
-          lastTransaction: "2025-11-03",
-        },
+        { id: 1, user: "John Doe", balance: "500.00", currency: "USD", status: "Active", lastTransaction: "2025-11-05" },
+        { id: 2, user: "Jane Smith", balance: "250.50", currency: "USD", status: "Suspended", lastTransaction: "2025-11-03" },
+        { id: 3, user: "Alice Brown", balance: "1000.00", currency: "USD", status: "Active", lastTransaction: "2025-10-31" },
+        { id: 4, user: "David Johnson", balance: "120.75", currency: "USD", status: "Closed", lastTransaction: "2025-10-25" },
+        { id: 5, user: "Michael Lee", balance: "600.00", currency: "USD", status: "Active", lastTransaction: "2025-10-28" },
+        { id: 6, user: "Emily Davis", balance: "330.45", currency: "USD", status: "Active", lastTransaction: "2025-11-06" },
       ]);
       setLoading(false);
-    }, 1200);
+    }, 1000);
   }, []);
 
-  // ====== Handlers ======
+  // Handlers
   const handleClose = () => {
     setShowModal(false);
     setEditMode(false);
-    setFormData({
-      user: "",
-      balance: "",
-      currency: "USD",
-      status: "Active",
-    });
+    setFormData({ user: "", balance: "", currency: "USD", status: "Active" });
   };
 
   const handleShow = () => setShowModal(true);
@@ -95,8 +92,12 @@ const WalletPage = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) =>
+  const handleDelete = (id) => {
     setWallets(wallets.filter((wallet) => wallet.id !== id));
+    if ((currentPage - 1) * itemsPerPage >= wallets.length - 1) {
+      setCurrentPage(Math.max(1, currentPage - 1));
+    }
+  };
 
   const statusVariant = {
     Active: "success",
@@ -104,80 +105,188 @@ const WalletPage = () => {
     Closed: "secondary",
   };
 
-  // ====== UI ======
+  // Filter wallets
+  const filteredWallets = wallets.filter((wallet) => {
+    const matchesSearch = wallet.user.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "All" || wallet.status === filterStatus;
+    const matchesCurrency = filterCurrency === "All" || wallet.currency === filterCurrency;
+    return matchesSearch && matchesStatus && matchesCurrency;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredWallets.length / itemsPerPage);
+  const paginatedWallets = filteredWallets.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="p-4">
       <h4 className="mb-3">Wallet Management</h4>
 
       <Card className="mb-4 p-3 shadow-sm">
-        <div className="d-flex justify-content-between align-items-center mb-3">
+        {/* ✅ Toolbar Row */}
+        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <h6 className="mb-0">All Wallets</h6>
-          <Button size="sm" variant="primary" onClick={handleShow}>
-            + Add Wallet
-          </Button>
+
+          <div
+            className="d-flex align-items-center justify-content-end gap-2 flex-wrap"
+            style={{ flex: 1, minWidth: 0 }}
+          >
+            <InputGroup style={{ width: "220px" }}>
+              <FormControl
+                placeholder="🔍 Search by user..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </InputGroup>
+
+            <Form.Select
+              style={{ width: "160px" }}
+              value={filterStatus}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Closed">Closed</option>
+            </Form.Select>
+
+            <Form.Select
+              style={{ width: "160px" }}
+              value={filterCurrency}
+              onChange={(e) => {
+                setFilterCurrency(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="All">All Currencies</option>
+              <option value="USD">USD</option>
+              <option value="NGN">NGN</option>
+              <option value="USDC">USDC</option>
+            </Form.Select>
+
+            <Button size="sm" variant="primary" onClick={handleShow}>
+              + Add Wallet
+            </Button>
+          </div>
         </div>
 
+        {/* ✅ Table or Loader */}
         {loading ? (
           <div className="text-center my-5">
             <Spinner animation="border" />
             <p className="mt-2">Loading wallets...</p>
           </div>
         ) : (
-          <Table responsive bordered hover className="align-middle">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Balance</th>
-                <th>Currency</th>
-                <th>Status</th>
-                <th>Last Transaction</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wallets.map((wallet, index) => (
-                <tr key={wallet.id}>
-                  <td>{index + 1}</td>
-                  <td>{wallet.user}</td>
-                  <td>${parseFloat(wallet.balance).toFixed(2)}</td>
-                  <td>{wallet.currency}</td>
-                  <td>
-                    <Badge bg={statusVariant[wallet.status]}>
-                      {wallet.status}
-                    </Badge>
-                  </td>
-                  <td>{wallet.lastTransaction}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={() => handleEdit(wallet)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => handleDelete(wallet.id)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
+          <>
+            <Table responsive bordered hover className="align-middle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Balance</th>
+                  <th>Currency</th>
+                  <th>Status</th>
+                  <th>Last Transaction</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {paginatedWallets.length > 0 ? (
+                  paginatedWallets.map((wallet, index) => (
+                    <tr key={wallet.id}>
+                      <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td>{wallet.user}</td>
+                      <td>${parseFloat(wallet.balance).toFixed(2)}</td>
+                      <td>{wallet.currency}</td>
+                      <td>
+                        <Badge bg={statusVariant[wallet.status]}>
+                          {wallet.status}
+                        </Badge>
+                      </td>
+                      <td>{wallet.lastTransaction}</td>
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="me-2"
+                          onClick={() => handleEdit(wallet)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => handleDelete(wallet.id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center">
+                      No wallets found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+
+            {/* ✅ Pagination */}
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center my-3">
+                <Pagination>
+                  <Pagination.First
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  />
+                  <Pagination.Prev
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                  />
+                  {[...Array(totalPages)].map((_, index) => (
+                    <Pagination.Item
+                      key={index}
+                      active={index + 1 === currentPage}
+                      onClick={() => setCurrentPage(index + 1)}
+                    >
+                      {index + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  />
+                  <Pagination.Last
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                  />
+                </Pagination>
+              </div>
+            )}
+
+            <div className="text-center text-muted small">
+              Showing {(currentPage - 1) * itemsPerPage + 1}–
+              {Math.min(currentPage * itemsPerPage, filteredWallets.length)} of{" "}
+              {filteredWallets.length}
+            </div>
+          </>
         )}
       </Card>
 
-      {/* ===== Modal Form ===== */}
+      {/* ✅ Modal */}
       <Modal show={showModal} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>
-            {editMode ? "Edit Wallet" : "Add New Wallet"}
-          </Modal.Title>
+          <Modal.Title>{editMode ? "Edit Wallet" : "Add New Wallet"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
