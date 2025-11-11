@@ -1,16 +1,21 @@
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsAndConditions from "./components/TermsAndConditions";
+
 
 export const Routes = {
     DashboardOverview: { path: "/dashboard" },
     Profile: { path: "/profile" },
     EditProfile: { path: "/editProfile" },
     BootstrapTables: { path: "/tables/user-tables" },
-    CirclesPage: { path: "/circles" },
-    WalletPage: { path: "/wallet" },
-    PayoutsPage: { path: "/animated-video" },
-    AnalyticsPage: { path: "/faq-management" },
-    DisputesWrapper: { path: "/disputes" },
-    Help: { path: "/help",},
-    FAQ: { path: "/faq",},
+    CirclesPage: { path: "/circle/circles" },
+    WalletPage: { path: "/wallet/wallets" },
+    PayoutsPage: { path: "/payouts/Payouts" },
+    AnalyticsPage: { path: "/analytics/Analytics" },
+    DisputesWrapper: { path: "/disputes/Disputes" },
+    FAQ: { path: "/support/faq" },
+    Help: { path: "/support/help" },
+    PrivacyPolicy: { path: "/privacy/title" },
+    TermsAndConditions: { path: "/terms/title" },
     Signin: { path: "/sign-in" },
     Signup: { path: "/examples/sign-up" },
     ForgotPassword: { path: "/forgot-password" },
