@@ -8,13 +8,13 @@ import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import {
   Row, Col, Nav, Image, Navbar, Dropdown, Container, ListGroup,
 } from '@themesberg/react-bootstrap';
-import { useHistory } from "react-router-dom"; // ✅ for navigation
+import { useHistory } from "react-router-dom"; 
 
 import NOTIFICATIONS_DATA from "../data/notifications";
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
 
 export default function TopNavbar(props) {
-  const history = useHistory(); // ✅ for navigation
+  const history = useHistory(); 
   const [notifications, setNotifications] = useState(NOTIFICATIONS_DATA);
   const areNotificationsRead = notifications.reduce((acc, notif) => acc && notif.read, true);
 
@@ -70,9 +70,11 @@ export default function TopNavbar(props) {
               <span role="img" aria-label="search" className="me-2">
                 🔍
               </span>
-              <span style={{ color: "blue" }}>
+              <span style={{ color: "black" }}>
+                <h6>
                 Hello, <strong>Welcome Admin</strong> – AjoLink{" "}
                 <strong>Admin Panel</strong>
+                </h6>
               </span>
 
             </div>
@@ -113,7 +115,7 @@ export default function TopNavbar(props) {
               <Dropdown.Menu className="user-dropdown dropdown-menu-right mt-2">
                 <Dropdown.Item
                   className="fw-bold"
-                  onClick={() => history.push("/profile")} // ✅ navigate to profile/widgets page
+                  onClick={() => history.push("/profile")} 
                 >
                   <FontAwesomeIcon icon={faUserCircle} className="me-2" /> My Profile
                 </Dropdown.Item>
