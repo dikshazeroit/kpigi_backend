@@ -34,11 +34,15 @@ import Tables from "./components/Tables";
 import WalletPage from './wallet/wallet';
 import PayoutsPage from './payouts/payouts';
 import AnalyticsPage from './Analytics/AnalyticsManagement';
-import CirclesPage from '../components/CirclesPage ';
+// import CirclesPage from '../components/CirclesPage ';
 //import NotificationsPage from "../components/Notification";
 import DisputesWrapper from "../components/DisputesPage";
 import faqs from "../components/HelpPage";
 import HelpWrapper from "./Helps/helps";
+import PrivacyPage from '../components/PrivacyPolicy';
+import TermsAndConditions from '../components/TermsAndConditions'
+import CirclesWrapper from './circles/circlespage';
+
 
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
@@ -106,19 +110,16 @@ export default () => (
     <RouteWithSidebar exact path={Routes.Profile.path} component={Profile} />
     <RouteWithSidebar exact path={Routes.EditProfile.path} component={EditProfile} />
     <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />
-    <RouteWithSidebar exact path={Routes.CirclesPage.path} component={CirclesPage} />
+    <RouteWithSidebar exact path={Routes.CirclesPage.path} component={CirclesWrapper} />
     <RouteWithSidebar exact path={Routes.WalletPage.path} component={WalletPage} />
     <RouteWithSidebar exact path={Routes.PayoutsPage.path} component={PayoutsPage} />
     <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
     <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={DisputesWrapper} />
     <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
     <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />
+    <RouteWithSidebar exact path={Routes.PrivacyPolicy.path} component={PrivacyPage} />
+    <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsAndConditions} />
     
-
-
-
-
-
 
     {/* components */}
     <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />
@@ -130,5 +131,6 @@ export default () => (
     <RouteWithSidebar exact path={Routes.Navs.path} component={Navs} />
     <RouteWithSidebar exact path={Routes.Navbars.path} component={Navbars} />
     <RouteWithSidebar exact path={Routes.Tables.path} component={Tables} />
+    
   </Switch>
 );

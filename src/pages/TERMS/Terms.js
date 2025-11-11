@@ -1,13 +1,11 @@
-// CirclesWrapper.jsx
 import React from "react";
 import { Breadcrumb } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import TermsAndConditions from "../../components/TermsAndConditions";
 
-import CirclesPage from "../../components/CirclesPage "; 
-
-export default function CirclesWrapper() {
+export default function TermsPage() {
   return (
     <>
       <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
@@ -16,17 +14,16 @@ export default function CirclesWrapper() {
             className="d-none d-md-inline-block"
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
-            <Breadcrumb.Item as={Link} to="/dashboard">
-              <FontAwesomeIcon icon={faHome} /> Home
+            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+              <FontAwesomeIcon icon={faHome} />
             </Breadcrumb.Item>
-            <Breadcrumb.Item>Circle</Breadcrumb.Item>
-            <Breadcrumb.Item active>Circle Management</Breadcrumb.Item>
+            <Breadcrumb.Item>Legal</Breadcrumb.Item>
+            <Breadcrumb.Item active>Terms & Conditions</Breadcrumb.Item>
           </Breadcrumb>
-          <h4>Circle Management</h4>
         </div>
       </div>
 
-      <CirclesPage />
+      <TermsAndConditions />
     </>
   );
 }

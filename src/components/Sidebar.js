@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SimpleBar from "simplebar-react";
 import { useLocation, Link } from "react-router-dom";
 import { CSSTransition } from "react-transition-group";
@@ -14,49 +14,40 @@ import {
   faDollarSign,
   faGavel,
   faLifeRing,
-  
+  faUserShield,
+  faFileContract,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from "@themesberg/react-bootstrap";
 import logo from "../assets/img/pages/ajolinks.png";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import { Routes } from "../routes";
 
-export default function Sidebar() {
+export default function Sidebar({ userName = "Jane" }) {
   const location = useLocation();
   const { pathname } = location;
   const [show, setShow] = useState(false);
-  const showClass = show ? "show" : "";
+  const sidebarRef = useRef();
 
-  const onCollapse = () => setShow(!show);
+  const toggleSidebar = () => setShow(!show);
 
-  const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
-    const defaultKey = pathname.indexOf(eventKey) !== -1 ? eventKey : "";
+  // Close sidebar when clicking outside (mobile)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (show && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setShow(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [show]);
 
+  // NavItem component
+  const NavItem = ({ title, link, icon, badgeText, external, target, badgeBg = "secondary", badgeColor = "primary" }) => {
+    const isActive = link === pathname;
+    const linkProps = external ? { href: link, target } : { as: Link, to: link };
     return (
-      <Accordion as={Nav.Item} defaultActiveKey={defaultKey}>
-        <Accordion.Item eventKey={eventKey}>
-          <Accordion.Button as={Nav.Link} className="d-flex justify-content-between align-items-center">
-            <span>
-              <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /></span>
-              <span className="sidebar-text">{title}</span>
-            </span>
-          </Accordion.Button>
-          <Accordion.Body className="multi-level">
-            <Nav className="flex-column">{children}</Nav>
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
-    );
-  };
-
-  const NavItem = ({ title, link, external, target, icon, badgeText, badgeBg = "secondary", badgeColor = "primary" }) => {
-    const classNames = badgeText ? "d-flex justify-content-start align-items-center justify-content-between" : "";
-    const navItemClassName = link === pathname ? "active" : "";
-    const linkProps = external ? { href: link } : { as: Link, to: link };
-
-    return (
-      <Nav.Item className={navItemClassName} onClick={() => setShow(false)}>
-        <Nav.Link {...linkProps} target={target} className={classNames}>
+      <Nav.Item className={isActive ? "active" : ""}>
+        <Nav.Link {...linkProps} className={badgeText ? "d-flex justify-content-between align-items-center" : ""}>
           <span>
             {icon && <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /></span>}
             <span className="sidebar-text">{title}</span>
@@ -71,34 +62,46 @@ export default function Sidebar() {
     );
   };
 
+  // Collapsable nav item
+  const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
+    const defaultKey = pathname.includes(eventKey) ? eventKey : "";
+    return (
+      <Accordion as={Nav.Item} defaultActiveKey={defaultKey}>
+        <Accordion.Item eventKey={eventKey}>
+          <Accordion.Button as={Nav.Link} className="d-flex justify-content-between align-items-center">
+            <span>
+              {icon && <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /></span>}
+              <span className="sidebar-text">{title}</span>
+            </span>
+          </Accordion.Button>
+          <Accordion.Body className="multi-level">
+            <Nav className="flex-column">{children}</Nav>
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
+    );
+  };
+
   return (
     <>
       {/* Mobile Navbar */}
       <Navbar expand={false} collapseOnSelect variant="dark" className="navbar-theme-primary px-4 d-md-none">
-        <Navbar.Brand className="me-lg-5 text-white fw-bold" as={Link} to={Routes.DashboardOverview.path}></Navbar.Brand>
-        <Navbar.Toggle as={Button} aria-controls="main-navbar" onClick={onCollapse}>
+        <Navbar.Brand className="me-lg-5 text-white fw-bold" as={Link} to={Routes.DashboardOverview.path}>
+          <img src={logo} height="40" alt="Logo" />
+        </Navbar.Brand>
+        <Navbar.Toggle as={Button} aria-controls="main-navbar" onClick={toggleSidebar}>
           <span className="navbar-toggler-icon" />
         </Navbar.Toggle>
       </Navbar>
 
       {/* Sidebar */}
       <CSSTransition timeout={300} in={show} classNames="sidebar-transition">
-        <SimpleBar className={`collapse ${showClass} sidebar d-md-block bg-primary text-white`}>
+        <SimpleBar ref={sidebarRef} className={`collapse ${show ? "show" : ""} sidebar d-md-block bg-primary text-white`}>
           <div className="sidebar-inner px-4 pt-3">
-
-            {/*  Clickable Logo that redirects to Dashboard */}
+            {/* Logo */}
             <div className="text-center mb-4">
-              <Link
-                to={Routes.DashboardOverview.path}
-                className="d-block"
-                onClick={() => setShow(false)} // closes sidebar on mobile
-              >
-                <img
-                  src={logo}
-                  height="100"
-                  alt="Ajolinks Logo"
-                  style={{ cursor: "pointer" }}
-                />
+              <Link to={Routes.DashboardOverview.path} className="d-block">
+                <img src={logo} height="100" alt="Ajolinks Logo" style={{ cursor: "pointer" }} />
               </Link>
             </div>
 
@@ -109,13 +112,13 @@ export default function Sidebar() {
                   <Image src={ProfilePicture} className="card-img-top rounded-circle border-white" />
                 </div>
                 <div className="d-block">
-                  <h6>Hi, Jane</h6>
+                  <h6>Hi, {userName}</h6>
                   <Button as={Link} variant="secondary" size="xs" to={Routes.Signin.path} className="text-dark">
                     <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sign Out
                   </Button>
                 </div>
               </div>
-              <Nav.Link className="collapse-close d-md-none" onClick={onCollapse}>
+              <Nav.Link className="collapse-close d-md-none" onClick={toggleSidebar}>
                 <FontAwesomeIcon icon={faTimes} />
               </Nav.Link>
             </div>
@@ -126,6 +129,7 @@ export default function Sidebar() {
               <CollapsableNavItem eventKey="tables/" title="User Management" icon={faUser}>
                 <NavItem title="User List" link={Routes.BootstrapTables.path} />
               </CollapsableNavItem>
+
               <CollapsableNavItem eventKey="circle/" title="Circle" icon={faUsers}>
                 <NavItem title="My Circle Page" link={Routes.CirclesPage.path} />
               </CollapsableNavItem>
@@ -138,14 +142,21 @@ export default function Sidebar() {
               <CollapsableNavItem eventKey="analytics/" title="Analytics" icon={faChartLine}>
                 <NavItem title="My Analytics" link={Routes.AnalyticsPage.path} />
               </CollapsableNavItem>
-              <CollapsableNavItem eventKey="Disputes/" title="Disputes" icon={faGavel}>
+              <CollapsableNavItem eventKey="disputes/" title="Disputes" icon={faGavel}>
                 <NavItem title="My Disputes" link={Routes.DisputesWrapper.path} />
               </CollapsableNavItem>
-              <CollapsableNavItem eventKey="Support/" title="Support" icon={faLifeRing}>
+              <CollapsableNavItem eventKey="support/" title="Support" icon={faLifeRing}>
                 <NavItem title="Help Center" link={Routes.Help.path} />
                 <NavItem title="FAQs" link={Routes.FAQ.path} />
               </CollapsableNavItem>
-              
+              <CollapsableNavItem eventKey="privacy" title="Privacy & Policy" icon={faUserShield}>
+                <NavItem title="Privacy Policy" link={Routes.PrivacyPolicy.path} />
+              </CollapsableNavItem>
+                <CollapsableNavItem eventKey="terms" title="Term & condition" icon={faUserShield}>
+                <NavItem title="Term & condition" link={Routes.TermsAndConditions.path} />
+              </CollapsableNavItem>
+             
+             
 
               <Dropdown.Divider className="my-3 border-indigo" />
             </Nav>

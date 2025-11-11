@@ -72,7 +72,7 @@ export default function VerifyOtp() {
                         </h2>
 
                         <p className="mt-2 fs-6" style={{ color: "##f0f0f0" }}>
-                            Enter the 8-digit OTP sent to your registered email
+                            Enter the 6-digit OTP sent to your registered email
                         </p>
 
                     </Col>
@@ -94,8 +94,8 @@ export default function VerifyOtp() {
                                         </InputGroup.Text>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Enter 8-digit OTP"
-                                            maxLength="8"
+                                            placeholder="Enter 6-digit OTP"
+                                            maxLength="6"
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
                                             required

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom"; // ✅ Add this
+import { useHistory } from "react-router-dom";
 import {
   faUsers,
   faUserTie,
-  faDollarSign,
+  faWallet,
+  faShieldAlt,
+  faHandHoldingUsd,
+  faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
-import { Col, Row } from "@themesberg/react-bootstrap";
+import { Col, Row, Card } from "@themesberg/react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   BarChartWidget,
   TeamMembersWidget,
@@ -15,119 +19,145 @@ import {
   SalesValueWidgetPhone,
 } from "../../components/Widgets";
 import { totalOrders } from "../../data/charts";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Dashboard() {
-  const history = useHistory(); // ✅ Initialize history
+  const history = useHistory();
 
-
+  //  Metrics
   const [stats] = useState({
-    totalUsers: 12,
-    totalCircles: 30,
-    totalContribution: "1000",
+    totalCircles: 18,
+    totalMembers: 342,
+    totalContributions: "₹2,45,000",
+    totalPayouts: "₹1,75,000",
+    walletBalance: "₹68,400",
+    complianceScore: "98%",
   });
 
-
-  // Reusable Stat Card component
-  const StatCard = ({ title, count, icon, gradient }) => (
-    <div
-      className="p-4 shadow-sm text-white"
+  //  Reusable Stat Card
+  const StatCard = ({ title, count, icon, gradient, onClick }) => (
+    <Card
+      className="border-0 text-white shadow-sm hover-scale"
       style={{
         background: gradient,
-        borderRadius: "10px", // slight smooth edges
-        cursor: "pointer",
+        borderRadius: "12px",
+        cursor: onClick ? "pointer" : "default",
       }}
-      onClick={() => history.push("/tables/user-tables")} // ✅ Navigate on click
+      onClick={onClick}
     >
-      <div className="d-flex justify-content-between align-items-center">
+      <Card.Body className="d-flex justify-content-between align-items-center py-4 px-3">
         <div>
           <h6 className="fw-light mb-1">{title}</h6>
           <h2 className="fw-bold mb-0">{count}</h2>
         </div>
-        {/* Smaller icon without circle */}
-        <div className="fs-3 opacity-75">
+        <div className="fs-2 opacity-75">
           <FontAwesomeIcon icon={icon} />
         </div>
-      </div>
-    </div>
+      </Card.Body>
+    </Card>
   );
 
   return (
     <>
-      {/* --- Stats Section --- */}
-      <Row className="justify-content-md-center mt-4">
-        <Col xs={12} sm={6} xl={4} className="mb-4">
-          <StatCard
-            title="Total Users"
-            count={stats.totalUsers}
-            icon={faUsers}
-            gradient="linear-gradient(135deg, #4e54c8, #8f94fb)"
-          />
-        </Col>
 
-        <Col xs={12} sm={6} xl={4} className="mb-4">
+      {/* --- Top Cards Row --- */}
+      <Row className="g-4">
+        <Col xs={12} sm={6} xl={4}>
           <StatCard
             title="Total Circles"
             count={stats.totalCircles}
             icon={faUserTie}
-            gradient="linear-gradient(135deg, #11998e, #38ef7d)"
-          />
+            gradient="linear-gradient(135deg, #36D1DC, #5B86E5)"
+            onClick={() => history.push("/circle/circles")} />
         </Col>
 
-        <Col xs={12} sm={6} xl={4} className="mb-4">
+        <Col xs={12} sm={6} xl={4}>
           <StatCard
-            title="Total Contribution"
-            count={stats.totalContribution}
-            icon={faDollarSign}
+            title="Total Members"
+            count={stats.totalMembers}
+            icon={faUsers}
+            gradient="linear-gradient(135deg, #11998e, #38ef7d)"
+            onClick={() => history.push("/tables/user-tables")} />
+        </Col>
+
+        <Col xs={12} sm={6} xl={4}>
+          <StatCard
+            title="Total Contributions"
+            count={stats.totalContributions}
+            icon={faChartLine}
             gradient="linear-gradient(135deg, #ff512f, #dd2476)"
+            onClick={() => history.push("analytics/Analytics")}
           />
         </Col>
       </Row>
 
-      {/* --- Sales Section --- */}
-      <Row>
-        <Col xs={12} className="mb-4 d-none d-sm-block">
-          <SalesValueWidget />
+      {/* --- Second Row --- */}
+      <Row className="g-4 mt-1">
+        <Col xs={12} sm={6} xl={6}>
+          <StatCard
+            title="Total Payouts"
+            count={stats.totalPayouts}
+            icon={faHandHoldingUsd}
+            gradient="linear-gradient(135deg, #f7971e, #ffd200)"
+            onClick={() => history.push("/payouts/Payouts")}
+          />
         </Col>
 
-        <Col xs={12} className="mb-4 d-sm-none">
+        <Col xs={12} sm={6} xl={6}>
+          <StatCard
+            title="Wallet Balance"
+            count={stats.walletBalance}
+            icon={faWallet}
+            gradient="linear-gradient(135deg, #4e54c8, #8f94fb)"
+            onClick={() => history.push("/wallet/wallets")}
+          />
+        </Col>
+      </Row>
+
+      {/* --- Third Row (Payout Chart) --- */}
+      <Row className="g-4 mt-1">
+        {/* Desktop / Tablet view */}
+        <Col xs={12} sm={12} xl={12} className="d-none d-sm-block">
+          <SalesValueWidget title="Payouts" />
+        </Col>
+
+        {/* Mobile view */}
+        <Col xs={12} className="d-sm-none">
           <SalesValueWidgetPhone />
         </Col>
       </Row>
 
       {/* --- Bottom Widgets --- */}
-      <Row>
-        <Col xs={12} xl={12} className="mb-4">
-          <Row>
-            <Col xs={12} xl={8} className="mb-4">
-              <Row>
-                <Col xs={12} lg={6} className="mb-4">
-                  <TeamMembersWidget />
-                </Col>
-                <Col xs={12} lg={6} className="mb-4">
-                  <ProgressTrackWidget />
-                </Col>
-              </Row>
+      <Row className="g-4 mt-4">
+        {/* Left side: Team + Payout tracking */}
+        <Col xs={12} xl={8}>
+          <Row className="g-4">
+            <Col xs={12} lg={6}>
+              <TeamMembersWidget title="Top Performing Circles" />
             </Col>
+            <Col xs={12} lg={6}>
+              <ProgressTrackWidget title="Payout Tracking" />
+            </Col>
+          </Row>
+        </Col>
 
-            <Col xs={12} xl={4}>
-              <Row>
-                <Col xs={12} className="mb-4">
-                  <BarChartWidget
-                    title="Total Orders"
-                    value={452}
-                    percentage={18.2}
-                    data={totalOrders}
-                  />
-                </Col>
-                <Col xs={12} className="px-0 mb-4">
-                  <RankingWidget />
-                </Col>
-              </Row>
+        {/* Right side: Charts */}
+        <Col xs={12} xl={4}>
+          <Row className="g-4">
+            <Col xs={12}>
+              <BarChartWidget
+                title="Circle Contribution Growth"
+                value={452}
+                percentage={18.2}
+                data={totalOrders}
+              />
+            </Col>
+            <Col xs={12}>
+              <RankingWidget title="Top Members by Contributions" />
             </Col>
           </Row>
         </Col>
       </Row>
+
     </>
   );
 }
