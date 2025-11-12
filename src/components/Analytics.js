@@ -70,14 +70,14 @@ const AnalyticsPage = () => {
                 }}
               />
               <InputGroup.Text>
-                
+
               </InputGroup.Text>
             </InputGroup>
 
             {/* Export Button */}
-            <Button variant="primary">
+            <Button variant="primary" className="d-flex align-items-center">
               <FontAwesomeIcon icon={faDownload} className="me-2" />
-              Export Report
+              Export
             </Button>
           </div>
         </Card.Body>

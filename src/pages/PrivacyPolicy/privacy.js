@@ -15,7 +15,7 @@ export default function PrivacyPage() {
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-              <FontAwesomeIcon icon={faHome} />Home
+              <FontAwesomeIcon icon={faHome} /> Home
             </Breadcrumb.Item>
             <Breadcrumb.Item>PrivacyPolicy</Breadcrumb.Item>
             <Breadcrumb.Item active>PrivacyPolicy</Breadcrumb.Item>

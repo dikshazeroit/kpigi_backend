@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Form, Pagination, Spinner, Breadcrumb } from "@themesberg/react-bootstrap";
+import {
+  Card,
+  Table,
+  Form,
+  Pagination,
+  Spinner,
+  Breadcrumb,
+  InputGroup,
+} from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom"; // for internal routing
+import { Link } from "react-router-dom";
 
 const DisputesPage = () => {
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All"); // All, Open, Resolved, Pending
+  const [filterStatus, setFilterStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -44,19 +52,9 @@ const DisputesPage = () => {
 
   return (
     <div className="p-3">
-      {/* Breadcrumb with clickable Home */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <Breadcrumb className="mb-0">
-          <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-            <FontAwesomeIcon icon={faHome} className="me-1" /> Home
-          </Breadcrumb.Item>
-          <Breadcrumb.Item active style={{ color: "#66799e" }}>
-            Disputes Management
-          </Breadcrumb.Item>
-        </Breadcrumb>
-      </div>
-
-      <Card className="p-3 shadow-sm">
+      
+      {/* ✅ Main Card */}
+      <Card className="p-3 shadow-sm border-0">
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
@@ -64,21 +62,24 @@ const DisputesPage = () => {
           </div>
         ) : (
           <>
-            {/* Header row: title left, search/filter right in one row */}
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-              <h5 className="mb-2 mb-md-0">Disputes & Support</h5>
-              <div className="d-flex align-items-center gap-2">
-                <Form.Control
-                  type="text"
-                  placeholder="🔍Search by user or issue..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ width: "250px" }}
-                />
+            {/* ✅ Header: Title, Search, Filter - Single Row */}
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 className="fw-bold mb-0">Disputes & Support</h5>
+
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <InputGroup style={{ width: "250px" }}>
+                  <Form.Control
+                    type="text"
+                    placeholder="🔍 Search user or issue..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </InputGroup>
+
                 <Form.Select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  style={{ width: "150px" }}
+                  style={{ width: "160px" }}
                 >
                   <option value="All">All Status</option>
                   <option value="Open">Open</option>
@@ -88,7 +89,7 @@ const DisputesPage = () => {
               </div>
             </div>
 
-            {/* Table */}
+            {/* ✅ Table Section */}
             <Table striped bordered hover responsive>
               <thead>
                 <tr>
@@ -130,7 +131,7 @@ const DisputesPage = () => {
               </tbody>
             </Table>
 
-            {/* Pagination */}
+            {/* ✅ Pagination */}
             {totalPages > 1 && (
               <div className="d-flex justify-content-center my-3">
                 <Pagination>
@@ -139,7 +140,9 @@ const DisputesPage = () => {
                     disabled={currentPage === 1}
                   />
                   <Pagination.Prev
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                   />
                   {[...Array(totalPages)].map((_, i) => (
