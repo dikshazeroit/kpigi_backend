@@ -36,8 +36,8 @@ import PayoutsPage from './payouts/payouts';
 import AnalyticsPage from './Analytics/AnalyticsManagement';
 // import CirclesPage from '../components/CirclesPage ';
 //import NotificationsPage from "../components/Notification";
-import DisputesWrapper from "../components/DisputesPage";
-import faqs from "../components/HelpPage";
+import Disputes from "../pages/diputes/Disputes";
+import FAQ from "../pages/Helps/helps";
 import HelpWrapper from "./Helps/helps";
 import PrivacyPage from '../pages/PrivacyPolicy/privacy';
 import TermsPage from '../pages/TERMS/Terms'
@@ -114,9 +114,9 @@ export default () => (
     <RouteWithSidebar exact path={Routes.WalletPage.path} component={WalletPage} />
     <RouteWithSidebar exact path={Routes.PayoutsPage.path} component={PayoutsPage} />
     <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
-    <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={DisputesWrapper} />
+    <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={Disputes} />
     <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
-    <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />
+    <RouteWithSidebar exact path={Routes.FAQ.path} component={FAQ} />
     <RouteWithSidebar exact path={Routes.PrivacyPolicy.path} component={PrivacyPage} />
     <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsPage} />
     

@@ -15,7 +15,7 @@ export default function TermsPage() {
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-              <FontAwesomeIcon icon={faHome} />Home
+              <FontAwesomeIcon icon={faHome} /> Home
             </Breadcrumb.Item>
             <Breadcrumb.Item>Legal</Breadcrumb.Item>
             <Breadcrumb.Item active>Terms & Conditions</Breadcrumb.Item>
