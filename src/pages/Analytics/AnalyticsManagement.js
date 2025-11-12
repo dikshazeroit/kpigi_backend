@@ -16,7 +16,7 @@ export default () => {
                 <div className="d-block mb-4 mb-xl-0">
                     <Breadcrumb className="d-none d-md-inline-block" listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}>
                         <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-                            <FontAwesomeIcon icon={faHome} />
+                            <FontAwesomeIcon icon={faHome} /> Home
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Analytics</Breadcrumb.Item>
                         <Breadcrumb.Item active>Analytics Management</Breadcrumb.Item>

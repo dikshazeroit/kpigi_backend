@@ -39,8 +39,8 @@ import AnalyticsPage from './Analytics/AnalyticsManagement';
 import DisputesWrapper from "../components/DisputesPage";
 import faqs from "../components/HelpPage";
 import HelpWrapper from "./Helps/helps";
-import PrivacyPage from '../components/PrivacyPolicy';
-import TermsAndConditions from '../components/TermsAndConditions'
+import PrivacyPage from '../pages/PrivacyPolicy/privacy';
+import TermsPage from '../pages/TERMS/Terms'
 import CirclesWrapper from './circles/circlespage';
 
 
@@ -118,7 +118,7 @@ export default () => (
     <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
     <RouteWithSidebar exact path={Routes.FAQ.path} component={faqs} />
     <RouteWithSidebar exact path={Routes.PrivacyPolicy.path} component={PrivacyPage} />
-    <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsAndConditions} />
+    <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsPage} />
     
 
     {/* components */}

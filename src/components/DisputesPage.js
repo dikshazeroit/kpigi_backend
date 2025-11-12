@@ -70,7 +70,7 @@ const DisputesPage = () => {
               <div className="d-flex align-items-center gap-2">
                 <Form.Control
                   type="text"
-                  placeholder="Search by user or issue..."
+                  placeholder="🔍Search by user or issue..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{ width: "250px" }}
