@@ -62,7 +62,7 @@ const AnalyticsPage = () => {
             {/* Search Bar */}
             <InputGroup className="me-2">
               <FormControl
-                placeholder="Search metrics..."
+                placeholder="🔍Search metrics..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);

@@ -272,7 +272,7 @@ export default function CirclesPage() {
           <div className="d-flex align-items-center gap-2">
             <InputGroup style={{ width: "250px" }}>
               <FormControl
-                placeholder="Search circles..."
+                placeholder="🔍Search circles..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

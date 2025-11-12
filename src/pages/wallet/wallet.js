@@ -1,28 +1,29 @@
 import React from "react";
-
-import { Breadcrumb } from '@themesberg/react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Breadcrumb } from "@themesberg/react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import WalletPage from "../../components/wallet";
 
+export default function TermsPage() {
+  return (
+    <>
+      <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+        <div className="d-block mb-4 mb-xl-0">
+          <Breadcrumb
+            className="d-none d-md-inline-block"
+            listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
+          >
+            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+              <FontAwesomeIcon icon={faHome} /> Home
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>wallet</Breadcrumb.Item>
+            <Breadcrumb.Item active>create wallet</Breadcrumb.Item>
+          </Breadcrumb>
+        </div>
+      </div>
 
-export default () => {
-    return (
-        <>
-            <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-                <div className="d-block mb-4 mb-xl-0">
-                    <Breadcrumb className="d-none d-md-inline-block" listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}>
-                        <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-                            <FontAwesomeIcon icon={faHome} />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Wallet</Breadcrumb.Item>
-                        <Breadcrumb.Item active>Create wallet</Breadcrumb.Item>
-                    </Breadcrumb>
-                    {/* <h4>Create Subscription</h4> */}
-                </div>
-            </div>
-            <WalletPage />
-        </>
-    );
-};
+      <WalletPage />
+    </>
+  );
+}
