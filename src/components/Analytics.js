@@ -70,7 +70,7 @@ const AnalyticsPage = () => {
                 }}
               />
               <InputGroup.Text>
-                <FontAwesomeIcon icon={faSearch} />
+                
               </InputGroup.Text>
             </InputGroup>
 
