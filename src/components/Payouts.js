@@ -100,7 +100,7 @@ const PayoutsPage = () => {
           {/* Search Bar */}
           <InputGroup className="me-2">
             <FormControl
-              placeholder="Search by user"
+              placeholder="🔍Search by user..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
