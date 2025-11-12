@@ -90,39 +90,54 @@ const PayoutsPage = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+return (
+  <div className="p-3">
+    {/* Header Section */}
+    <Card className="mb-4 p-3 shadow-sm">
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        {/* Title */}
+        <h5 className="mb-0 fw-bold">Manage Payouts</h5>
 
-  return (
-    <div className="p-3">
-      {/* Header with Search Bar on Right */}
-      <Card className="mb-4 p-3 d-flex flex-row justify-content-between align-items-center shadow-sm">
-        <h5 className="mb-0">Manage Payouts</h5>
-        <div className="d-flex align-items-center">
+        {/* Search + Add Button Row */}
+        <div className="d-flex align-items-center gap-2">
           {/* Search Bar */}
-          <InputGroup className="me-2">
+          <InputGroup style={{ width: "250px" }}>
             <FormControl
-              placeholder="🔍Search by user..."
+              placeholder="🔍 Search by user..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page when searching
+                setCurrentPage(1);
               }}
             />
           </InputGroup>
+
           {/* Add Button */}
-          <Button variant="primary" onClick={handleOpenAdd}>
+          <Button
+            variant="primary"
+            onClick={handleOpenAdd}
+            style={{
+              height: "38px", // same as input height
+              display: "flex",
+              alignItems: "center",
+              whiteSpace: "nowrap",
+            }}
+          >
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Add Payout
           </Button>
         </div>
-      </Card>
+      </div>
+    </Card>
 
-      <Card className="p-3 shadow-sm">
-        {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-2">Loading payouts...</p>
-          </div>
-        ) : (
+    {/* Table Section */}
+    <Card className="p-3 shadow-sm">
+      {loading ? (
+        <div className="text-center py-5">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2">Loading payouts...</p>
+        </div>
+      ) : (
           <>
             <Table striped bordered hover responsive>
               <thead>

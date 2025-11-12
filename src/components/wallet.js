@@ -122,20 +122,18 @@ const WalletPage = () => {
 
   return (
     <div className="p-4">
-      <h4 className="mb-3">Wallet Management</h4>
+      {/* Page Title */}
+      <h4 className="fw-bold mb-3">Wallet Management</h4>
 
-      <Card className="mb-4 p-3 shadow-sm">
-        {/* ✅ Toolbar Row */}
-        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <h6 className="mb-0">All Wallets</h6>
+      {/* Header Card */}
+      <Card className="shadow-sm border-0 mb-3">
+        <Card.Body className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h6 className="fw-bold mb-0">All Wallets</h6>
 
-          <div
-            className="d-flex align-items-center justify-content-end gap-2 flex-wrap"
-            style={{ flex: 1, minWidth: 0 }}
-          >
-            <InputGroup style={{ width: "220px" }}>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <InputGroup style={{ width: "250px" }}>
               <FormControl
-                placeholder="🔍 Search by user..."
+                placeholder="🔍 Search wallets..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -172,118 +170,122 @@ const WalletPage = () => {
               <option value="USDC">USDC</option>
             </Form.Select>
 
-            <Button size="sm" variant="primary" onClick={handleShow}>
+            <Button variant="primary" onClick={handleShow}>
               + Add Wallet
             </Button>
           </div>
-        </div>
-
-        {/* ✅ Table or Loader */}
-        {loading ? (
-          <div className="text-center my-5">
-            <Spinner animation="border" />
-            <p className="mt-2">Loading wallets...</p>
-          </div>
-        ) : (
-          <>
-            <Table responsive bordered hover className="align-middle">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>User</th>
-                  <th>Balance</th>
-                  <th>Currency</th>
-                  <th>Status</th>
-                  <th>Last Transaction</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedWallets.length > 0 ? (
-                  paginatedWallets.map((wallet, index) => (
-                    <tr key={wallet.id}>
-                      <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td>{wallet.user}</td>
-                      <td>${parseFloat(wallet.balance).toFixed(2)}</td>
-                      <td>{wallet.currency}</td>
-                      <td>
-                        <Badge bg={statusVariant[wallet.status]}>
-                          {wallet.status}
-                        </Badge>
-                      </td>
-                      <td>{wallet.lastTransaction}</td>
-                      <td>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="me-2"
-                          onClick={() => handleEdit(wallet)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-danger"
-                          onClick={() => handleDelete(wallet.id)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center">
-                      No wallets found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-
-            {/* ✅ Pagination */}
-            {totalPages > 1 && (
-              <div className="d-flex justify-content-center my-3">
-                <Pagination>
-                  <Pagination.First
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                  />
-                  <Pagination.Prev
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                  />
-                  {[...Array(totalPages)].map((_, index) => (
-                    <Pagination.Item
-                      key={index}
-                      active={index + 1 === currentPage}
-                      onClick={() => setCurrentPage(index + 1)}
-                    >
-                      {index + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  />
-                  <Pagination.Last
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination>
-              </div>
-            )}
-
-            <div className="text-center text-muted small">
-              Showing {(currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, filteredWallets.length)} of{" "}
-              {filteredWallets.length}
-            </div>
-          </>
-        )}
+        </Card.Body>
       </Card>
 
-      {/* ✅ Modal */}
+      {/* Wallet Table */}
+      <Card className="shadow-sm border-0">
+        <Card.Body>
+          {loading ? (
+            <div className="text-center my-5">
+              <Spinner animation="border" />
+              <p className="mt-2">Loading wallets...</p>
+            </div>
+          ) : (
+            <>
+              <Table responsive hover bordered className="align-middle">
+                <thead className="bg-light">
+                  <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Balance</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Last Transaction</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedWallets.length > 0 ? (
+                    paginatedWallets.map((wallet, index) => (
+                      <tr key={wallet.id}>
+                        <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                        <td>{wallet.user}</td>
+                        <td>${parseFloat(wallet.balance).toFixed(2)}</td>
+                        <td>{wallet.currency}</td>
+                        <td>
+                          <Badge bg={statusVariant[wallet.status]}>
+                            {wallet.status}
+                          </Badge>
+                        </td>
+                        <td>{wallet.lastTransaction}</td>
+                        <td>
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="me-2"
+                            onClick={() => handleEdit(wallet)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline-danger"
+                            onClick={() => handleDelete(wallet.id)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No wallets found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="d-flex justify-content-center my-3">
+                  <Pagination>
+                    <Pagination.First
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    />
+                    <Pagination.Prev
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                    />
+                    {[...Array(totalPages)].map((_, index) => (
+                      <Pagination.Item
+                        key={index}
+                        active={index + 1 === currentPage}
+                        onClick={() => setCurrentPage(index + 1)}
+                      >
+                        {index + 1}
+                      </Pagination.Item>
+                    ))}
+                    <Pagination.Next
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    />
+                    <Pagination.Last
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+                </div>
+              )}
+
+              <div className="text-center text-muted small">
+                Showing {(currentPage - 1) * itemsPerPage + 1}–
+                {Math.min(currentPage * itemsPerPage, filteredWallets.length)} of{" "}
+                {filteredWallets.length}
+              </div>
+            </>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Modal */}
       <Modal show={showModal} onHide={handleClose} centered>
         <Modal.Header closeButton>
           <Modal.Title>{editMode ? "Edit Wallet" : "Add New Wallet"}</Modal.Title>
