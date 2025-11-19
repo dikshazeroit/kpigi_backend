@@ -5,7 +5,7 @@ import { faHome, faBell } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 // Import the main notifications component
-import NotificationsPage from "../../components/Notification";
+import Notification from "../../components/Navbar";
 
 export default function NotificationsWrapper() {
     return (
@@ -28,7 +28,7 @@ export default function NotificationsWrapper() {
             </div>
 
             {/* Main Notifications content */}
-            <NotificationsPage />
+            <Notification />
 
         </>
     );
