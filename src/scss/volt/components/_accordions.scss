@@ -2,10 +2,11 @@
  * = Accordions
  */
 
- .accordion-button {
+.accordion-button {
     text-align: left;
 
-    .btn-check:focus + .btn, .btn:focus {
+    .btn-check:focus + .btn, 
+    .btn:focus {
         outline: 0;
         box-shadow: none;
     }
@@ -22,17 +23,29 @@
 .accordion-flush {
     .accordion-button {
         background-color: transparent;
+
         &:not(.collapsed) {
             color: $secondary;
         }
+
         &:focus {
             border-color: $gray-300;
             box-shadow: none;
         }
     }
+
     .accordion-collapse {
         border: 0;
     }
 }
 
+/* FIXED — Added missing dot */
+.accordion-item {
+    background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+    border: none;
+}
 
+/* FIXED */
+.accordion-body {
+    background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+}

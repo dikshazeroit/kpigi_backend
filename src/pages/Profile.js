@@ -1,16 +1,11 @@
 import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faBoxOpen, faCartArrowDown, faChartPie, faChevronDown, faClipboard, faCommentDots, faFileAlt, faPlus, faRocket, faStore } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Breadcrumb } from '@themesberg/react-bootstrap';
 import { ProfileCardWidget } from "../components/Widgets";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
-// import { GeneralInfoForm } from "../components/Forms";
 
-// import Profile3 from "../assets/img/team/profile-picture-3.jpg";
-
-
-export default () => {
+const Profile = () => {
   return (
     <>
       {/* 🔹 Breadcrumb Header Section */}
@@ -20,12 +15,14 @@ export default () => {
             className="d-none d-md-inline-block"
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
-            <Breadcrumb.Item>
-            </Breadcrumb.Item> <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+            <Breadcrumb.Item></Breadcrumb.Item>
+
+            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
               <FontAwesomeIcon icon={faHome} />
             </Breadcrumb.Item>
+
             <Breadcrumb.Item>Profile</Breadcrumb.Item>
-            <Breadcrumb.Item active> User Profile</Breadcrumb.Item>
+            <Breadcrumb.Item active>User Profile</Breadcrumb.Item>
           </Breadcrumb>
         </div>
       </div>
@@ -39,11 +36,9 @@ export default () => {
             </Col>
           </Row>
         </Col>
-        {/* <Col xs={12} xl={20}>
-          <GeneralInfoForm />
-        </Col> */}
-
       </Row>
     </>
   );
 };
+
+export default Profile;

@@ -1,163 +1,170 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import React from "react";
+import { Row, Col } from "@themesberg/react-bootstrap";
+
 import {
-  faUsers,
-  faUserTie,
-  faWallet,
-  faShieldAlt,
-  faHandHoldingUsd,
-  faChartLine,
-} from "@fortawesome/free-solid-svg-icons";
-import { Col, Row, Card } from "@themesberg/react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
+  CounterWidget,
+  CircleChartWidget,
   BarChartWidget,
-  TeamMembersWidget,
   ProgressTrackWidget,
   RankingWidget,
   SalesValueWidget,
   SalesValueWidgetPhone,
 } from "../../components/Widgets";
-import { totalOrders } from "../../data/charts";
 
-export default function Dashboard() {
-  const history = useHistory();
+import {
+  faUsers,
+  faHandHoldingHeart,
+  faDollarSign,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
 
-  //  Metrics
-  const [stats] = useState({
-    totalCircles: 18,
-    totalMembers: 342,
-    totalContributions: "₹2,45,000",
-    totalPayouts: "₹1,75,000",
-    walletBalance: "₹68,400",
-    complianceScore: "98%",
-  });
+const DashboardOverview = () => {
+  // Pie Chart – Campaign Categories Breakdown
+  const categoryData = [
+    { id: 1, label: "Medical", value: 45, color: "primary" },
+    { id: 2, label: "Education", value: 25, color: "success" },
+    { id: 3, label: "Business", value: 15, color: "warning" },
+    { id: 4, label: "Emergency", value: 15, color: "danger" },
+  ];
 
-  //  Reusable Stat Card
-  const StatCard = ({ title, count, icon, gradient, onClick }) => (
-    <Card
-      className="border-0 text-white shadow-sm hover-scale"
-      style={{
-        background: gradient,
-        borderRadius: "12px",
-        cursor: onClick ? "pointer" : "default",
-      }}
-      onClick={onClick}
-    >
-      <Card.Body className="d-flex justify-content-between align-items-center py-4 px-3">
-        <div>
-          <h6 className="fw-light mb-1">{title}</h6>
-          <h2 className="fw-bold mb-0">{count}</h2>
-        </div>
-        <div className="fs-2 opacity-75">
-          <FontAwesomeIcon icon={icon} />
-        </div>
-      </Card.Body>
-    </Card>
-  );
+  // Bar Chart – Daily Donations
+  const donationChartData = [
+    { id: 1, label: "Mon", value: 420, color: "#0d6efd" },
+    { id: 2, label: "Tue", value: 380, color: "#28a745" },
+    { id: 3, label: "Wed", value: 510, color: "#ffc107" },
+    { id: 4, label: "Thu", value: 620, color: "#17a2b8" },
+    { id: 5, label: "Fri", value: 480, color: "#dc3545" },
+    { id: 6, label: "Sat", value: 540, color: "#6f42c1" },
+    { id: 7, label: "Sun", value: 300, color: "#6610f2" },
+  ];
 
   return (
-    <>
+    <div
+      className="dashboard-wrapper"
+      style={{ background: "#f5f7fa", minHeight: "100vh", padding: "20px" }}
+    >
+      {/* ========================== */}
+      {/*       SUMMARY CARDS        */}
+      {/* ========================== */}
 
-      {/* --- Top Cards Row --- */}
-      <Row className="g-4">
-        <Col xs={12} sm={6} xl={4}>
-          <StatCard
-            title="Total Circles"
-            count={stats.totalCircles}
-            icon={faUserTie}
-            gradient="linear-gradient(135deg, #36D1DC, #5B86E5)"
-            onClick={() => history.push("/circle/circles")} />
+      <Row className="mb-4">
+        <Col sm={6} xl={3} className="mb-4">
+          <CounterWidget
+            icon={faHandHoldingHeart}
+            iconColor="primary"
+            category="Total Campaigns"
+            title="3,280"
+            style={{
+              backgroundColor: "blue",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
+            }}
+          />
         </Col>
 
-        <Col xs={12} sm={6} xl={4}>
-          <StatCard
-            title="Total Members"
-            count={stats.totalMembers}
-            icon={faUsers}
-            gradient="linear-gradient(135deg, #11998e, #38ef7d)"
-            onClick={() => history.push("/tables/user-tables")} />
-        </Col>
-
-        <Col xs={12} sm={6} xl={4}>
-          <StatCard
-            title="Total Contributions"
-            count={stats.totalContributions}
+        <Col sm={6} xl={3} className="mb-4">
+          <CounterWidget
             icon={faChartLine}
-            gradient="linear-gradient(135deg, #ff512f, #dd2476)"
-            onClick={() => history.push("analytics/Analytics")}
+            iconColor="success"
+            category="Active Campaigns"
+            title="1,870"
+            style={{
+              backgroundColor: "#28a745",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
+            }}
+          />
+        </Col>
+
+        <Col sm={6} xl={3} className="mb-4">
+          <CounterWidget
+            icon={faDollarSign}
+            iconColor="warning"
+            category="Pending Payouts"
+            title="$42,900"
+            style={{
+              backgroundColor: "#ffffff",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
+            }}
+          />
+        </Col>
+
+        <Col sm={6} xl={3} className="mb-4">
+          <CounterWidget
+            icon={faUsers}
+            iconColor="info"
+            category="Total Users"
+            title="12,540"
+            style={{
+              backgroundColor: "#ffffff",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
+            }}
           />
         </Col>
       </Row>
 
-      {/* --- Second Row --- */}
-      <Row className="g-4 mt-1">
-        <Col xs={12} sm={6} xl={6}>
-          <StatCard
-            title="Total Payouts"
-            count={stats.totalPayouts}
-            icon={faHandHoldingUsd}
-            gradient="linear-gradient(135deg, #f7971e, #ffd200)"
-            onClick={() => history.push("/payouts/Payouts")}
+      {/* ========================== */}
+      {/*   CATEGORY + DONATIONS     */}
+      {/* ========================== */}
+
+      <Row className="mb-4">
+        <Col xs={12} xl={6} className="mb-4">
+          <CircleChartWidget
+            title="Campaign Categories Breakdown"
+            data={categoryData}
           />
         </Col>
 
-        <Col xs={12} sm={6} xl={6}>
-          <StatCard
-            title="Wallet Balance"
-            count={stats.walletBalance}
-            icon={faWallet}
-            gradient="linear-gradient(135deg, #4e54c8, #8f94fb)"
-            onClick={() => history.push("/wallet/wallets")}
+        <Col xs={12} xl={6} className="mb-4">
+          <BarChartWidget
+            title="Daily Donations"
+            value="$58,430"
+            percentage={18}
+            data={donationChartData}
           />
         </Col>
       </Row>
 
-      {/* --- Third Row (Payout Chart) --- */}
-      <Row className="g-4 mt-1">
-        {/* Desktop / Tablet view */}
-        <Col xs={12} sm={12} xl={12} className="d-none d-sm-block">
-          <SalesValueWidget title="Payouts" />
+      {/* ========================== */}
+      {/*      SALES WIDGETS         */}
+      {/* ========================== */}
+
+      <Row className="mb-4">
+        <Col xs={12} xl={6} className="mb-4">
+          <SalesValueWidget title="Platform Revenue (Web)" value="$12,740" percentage={10} />
         </Col>
 
-        {/* Mobile view */}
-        <Col xs={12} className="d-sm-none">
-          <SalesValueWidgetPhone />
-        </Col>
-      </Row>
-
-      {/* --- Bottom Widgets --- */}
-      <Row className="g-4 mt-4">
-        {/* Left side: Team + Payout tracking */}
-        <Col xs={12} xl={8}>
-          <Row className="g-4">
-            <Col xs={12} lg={6}>
-              <TeamMembersWidget title="Top Performing Circles" />
-            </Col>
-            <Col xs={12} lg={6}>
-              <ProgressTrackWidget title="Payout Tracking" />
-            </Col>
-          </Row>
-        </Col>
-
-        {/* Right side: Charts */}
-        <Col xs={12} xl={4}>
-          <Row className="g-4">
-            <Col xs={12}>
-              <BarChartWidget
-                title="Circle Contribution Growth"
-                value={452}
-                percentage={18.2}
-                data={totalOrders}
-              />
-            </Col>
-            <Col xs={12}>
-              <RankingWidget title="Top Members by Contributions" />
-            </Col>
-          </Row>
+        <Col xs={12} xl={6} className="mb-4">
+          <SalesValueWidgetPhone
+            title="Platform Revenue (Mobile)"
+            value="$8,950"
+            percentage={6}
+          />
         </Col>
       </Row>
 
-    </>
+      {/* ========================== */}
+      {/*   PROGRESS + RANKING       */}
+      {/* ========================== */}
+
+      <Row className="mb-4">
+        <Col xs={12} xl={6} className="mb-4">
+          <ProgressTrackWidget title="Approval Queue Progress" />
+        </Col>
+
+        <Col xs={12} xl={6} className="mb-4">
+          <RankingWidget title="Top Performing Campaigns" />
+        </Col>
+      </Row>
+
+    </div>
   );
-}
+};
+
+export default DashboardOverview;

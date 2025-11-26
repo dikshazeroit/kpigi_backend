@@ -1,8 +1,10 @@
 import React from "react";
 import { Breadcrumb } from "@themesberg/react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faBell } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+
+// Import image
+import notificationImg from "../../assets/img/notification-alert-1.png";
 
 // Import the main notifications component
 import Notification from "../../components/Navbar";
@@ -23,13 +25,19 @@ export default function NotificationsWrapper() {
                         <Breadcrumb.Item>Notifications</Breadcrumb.Item>
                         <Breadcrumb.Item active>Notifications Management</Breadcrumb.Item>
                     </Breadcrumb>
-                    <h4>Notifications Management</h4>
+                    <h4>
+                        Notifications Management{" "}
+                        <img 
+                          src={notificationImg} 
+                          alt="Notification" 
+                          style={{ width: "24px", height: "24px", objectFit: "contain", marginLeft: "8px" }} 
+                        />
+                    </h4>
                 </div>
             </div>
 
             {/* Main Notifications content */}
             <Notification />
-
         </>
     );
 }

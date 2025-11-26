@@ -1,6 +1,7 @@
 
 import { faDesktop, faMobileAlt, faTabletAlt } from '@fortawesome/free-solid-svg-icons';
 
+
 const trafficShares = [
     { id: 1, label: "Desktop", value: 60, color: "secondary", icon: faDesktop },
     { id: 2, label: "Mobile Web", value: 30, color: "primary", icon: faMobileAlt },

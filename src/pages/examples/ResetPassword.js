@@ -16,7 +16,7 @@ import {
 } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/forgots.svg";
+import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 
 export default function ResetPassword() {
   const history = useHistory();
@@ -38,7 +38,7 @@ export default function ResetPassword() {
         justifyContent: "center",
         alignItems: "center",
         padding: "60px 0",
-        background: "linear-gradient(135deg, #e0eafc, #cfdef3)",
+        background: "linear-gradient(white, white)",
       }}
     >
       <Card

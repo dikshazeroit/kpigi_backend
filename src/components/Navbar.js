@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBell,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import {
   Row, Col, Nav, Image, Navbar, Dropdown, Container, ListGroup,
 } from '@themesberg/react-bootstrap';
-import { useHistory } from "react-router-dom"; 
+import { useHistory } from "react-router-dom";
 
 import NOTIFICATIONS_DATA from "../data/notifications";
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
 
+// Import your notification image
+import notificationImg from "../assets/img/team/notification-alert 1.png";
+
 export default function TopNavbar(props) {
-  const history = useHistory(); 
+  const history = useHistory();
   const [notifications, setNotifications] = useState(NOTIFICATIONS_DATA);
   const areNotificationsRead = notifications.reduce((acc, notif) => acc && notif.read, true);
 
@@ -24,7 +26,7 @@ export default function TopNavbar(props) {
     }, 300);
   };
 
-  const Notification = (props) => {
+  const NotificationItem = (props) => {
     const { link, sender, image, time, message, read = false } = props;
     const readClassName = read ? "" : "text-danger";
 
@@ -54,12 +56,12 @@ export default function TopNavbar(props) {
     <Navbar variant="dark" expanded className="ps-0 pe-2 pb-0">
       <Container fluid className="px-0">
         <div className="d-flex justify-content-between w-100">
-          {/* Search bar */}
+          {/* Welcome / Search Bar */}
           <div className="d-flex align-items-center">
             <div
               className="d-flex align-items-center px-3 py-2 rounded shadow-sm"
               style={{
-                backgroundColor: "#fff",
+                backgroundColor: "#e8f0fe",
                 borderRadius: "8px",
                 border: "1px solid #ddd",
                 minWidth: "320px",
@@ -72,11 +74,10 @@ export default function TopNavbar(props) {
               </span>
               <span style={{ color: "black" }}>
                 <h6>
-                Hello, <strong>Welcome Admin</strong> – AjoLink{" "}
-                <strong>Admin Panel</strong>
+                  Hello, <strong>Welcome Kpigi</strong> –{" "}
+                  <strong>Admin Panel</strong>
                 </h6>
               </span>
-
             </div>
           </div>
 
@@ -85,16 +86,26 @@ export default function TopNavbar(props) {
             <Dropdown as={Nav.Item} onToggle={markNotificationsAsRead}>
               <Dropdown.Toggle as={Nav.Link} className="text-dark icon-notifications me-lg-3">
                 <span className="icon icon-sm">
-                  <FontAwesomeIcon icon={faBell} className="bell-shake" />
-                  {areNotificationsRead ? null : <span className="icon-badge rounded-circle unread-notifications" />}
+                  <img 
+                    src={notificationImg} 
+                    alt="Notification" 
+                    className="bell-shake"
+                    style={{ width: "24px", height: "24px", objectFit: "contain" }}
+                  />
+                  {!areNotificationsRead && (
+                    <span className="icon-badge rounded-circle unread-notifications" />
+                  )}
                 </span>
               </Dropdown.Toggle>
+
               <Dropdown.Menu className="dashboard-dropdown notifications-dropdown dropdown-menu-lg dropdown-menu-center mt-2 py-0">
                 <ListGroup className="list-group-flush">
                   <Nav.Link href="#" className="text-center text-primary fw-bold border-bottom border-light py-3">
                     Notifications
                   </Nav.Link>
-                  {notifications.map(n => <Notification key={`notification-${n.id}`} {...n} />)}
+                  {notifications.map(n => (
+                    <NotificationItem key={`notification-${n.id}`} {...n} />
+                  ))}
                   <Dropdown.Item className="text-center text-primary fw-bold py-3">
                     View all
                   </Dropdown.Item>
@@ -115,7 +126,7 @@ export default function TopNavbar(props) {
               <Dropdown.Menu className="user-dropdown dropdown-menu-right mt-2">
                 <Dropdown.Item
                   className="fw-bold"
-                  onClick={() => history.push("/profile")} 
+                  onClick={() => history.push("/profile")}
                 >
                   <FontAwesomeIcon icon={faUserCircle} className="me-2" /> My Profile
                 </Dropdown.Item>

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
@@ -13,8 +12,7 @@ import FranceFlag from "../../assets/img/flags/france.svg";
 import JapanFlag from "../../assets/img/flags/japan.svg";
 import GermanyFlag from "../../assets/img/flags/germany.svg";
 
-
-export default () => {
+const TablesPage = () => {
   return (
     <article>
       <Container className="px-0">
@@ -31,8 +29,8 @@ export default () => {
           title="Example"
           description={
             <>
-              <p>The <code>&#x3C;Table&#x3E;</code> component can be used to show more complex amounts of data. We recommend you to use the local <code>&#x3C;TableRow&#x3E;</code> method and component to build rows for the table and set the columns and props from there.</p>
-              <p>In this example, the props from <code>&#x3C;TableRow&#x3E;</code>, such as the <code>country</code>, <code>countryIcon</code>, <code>value</code>, and <code>percentage</code> are being set as props. After that, the <code>&#x3C;TableRow&#x3E;</code> components are being added in the final <code>&#x3C;Table&#x3E;</code> rendering.</p>
+              <p>The <code>&lt;Table&gt;</code> component can be used to show more complex amounts of data.</p>
+              <p>The <code>&lt;TableRow&gt;</code> child components define the table rows.</p>
             </>
           }
           scope={{ Image, Table, FontAwesomeIcon, faAngleDown, faAngleUp, USAFlag, CanadaFlag, UKFlag, FranceFlag, JapanFlag, GermanyFlag }}
@@ -57,9 +55,9 @@ import GermanyFlag from "src/assets/img/flags/germany.svg";`}
   <tbody>
     <tr>
       <td className="border-0">
-        <a href="#Unites States" className="d-flex align-items-center">
-          <Image roundedCircle src={USAFlag} className="me-2 image image-small" alt="Unites States" />
-          <div><span className="h6">Unites States</span></div>
+        <a href="#USA" className="d-flex align-items-center">
+          <Image roundedCircle src={USAFlag} className="me-2 image image-small" />
+          <span className="h6">United States</span>
         </a>
       </td>
       <td className="border-0 fw-bold">106</td>
@@ -68,71 +66,7 @@ import GermanyFlag from "src/assets/img/flags/germany.svg";`}
         <span className="fw-bold">5</span>
       </td>
     </tr>
-    <tr>
-      <td className="border-0">
-        <a href="#Canada" className="d-flex align-items-center">
-          <Image roundedCircle src={CanadaFlag} className="me-2 image image-small" alt="Canada" />
-          <div><span className="h6">Canada</span></div>
-        </a>
-      </td>
-      <td className="border-0 fw-bold">76</td>
-      <td className="border-0 text-success">
-        <FontAwesomeIcon icon={faAngleUp} className="me-1" />
-        <span className="fw-bold">17</span>
-      </td>
-    </tr>
-    <tr>
-      <td className="border-0">
-        <a href="#United Kingdom" className="d-flex align-items-center">
-          <Image roundedCircle src={UKFlag} className="me-2 image image-small" alt="United Kingdom" />
-          <div><span className="h6">United Kingdom</span></div>
-        </a>
-      </td>
-      <td className="border-0 fw-bold">147</td>
-      <td className="border-0 text-success">
-        <FontAwesomeIcon icon={faAngleUp} className="me-1" />
-        <span className="fw-bold">10</span>
-      </td>
-    </tr>
-    <tr>
-      <td className="border-0">
-        <a href="#France" className="d-flex align-items-center">
-          <Image roundedCircle src={FranceFlag} className="me-2 image image-small" alt="France" />
-          <div><span className="h6">France</span></div>
-        </a>
-      </td>
-      <td className="border-0 fw-bold">112</td>
-      <td className="border-0 text-success">
-        <FontAwesomeIcon icon={faAngleUp} className="me-1" />
-        <span className="fw-bold">3</span>
-      </td>
-    </tr>
-    <tr>
-      <td className="border-0">
-        <a href="#Japan" className="d-flex align-items-center">
-          <Image roundedCircle src={JapanFlag} className="me-2 image image-small" alt="Japan" />
-          <div><span className="h6">Japan</span></div>
-        </a>
-      </td>
-      <td className="border-0 fw-bold">115</td>
-      <td className="border-0 text-danger">
-        <FontAwesomeIcon icon={faAngleDown} className="me-1" />
-        <span className="fw-bold">12</span>
-      </td>
-    </tr>
-    <tr>
-      <td className="border-0">
-        <a href="#Germany" className="d-flex align-items-center">
-          <Image roundedCircle src={GermanyFlag} className="me-2 image image-small" alt="Germany" />
-          <div><span className="h6">Germany</span></div>
-        </a>
-      </td>
-      <td className="border-0 fw-bold">220</td>
-      <td className="border-0 text-danger">
-        <FontAwesomeIcon icon={faAngleDown} className="me-1" />
-        <span className="fw-bold">56</span>
-      </td>
-    </tr>
+    ...
   </tbody>
 </Table>`}
         />
@@ -140,3 +74,5 @@ import GermanyFlag from "src/assets/img/flags/germany.svg";`}
     </article>
   );
 };
+
+export default TablesPage;

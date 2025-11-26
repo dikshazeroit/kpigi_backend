@@ -11,7 +11,7 @@ import {
 } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/forgots.svg"; // 🟢 use your OTP illustration image
+import BgImage from "../../assets/img/illustrations/Data_security_01.jpg"; // 🟢 use your OTP illustration image
 
 export default function VerifyOtp() {
     const history = useHistory();
@@ -33,7 +33,7 @@ export default function VerifyOtp() {
                 justifyContent: "center",
                 alignItems: "center",
                 padding: "60px 0",
-                background: "linear-gradient(135deg, #e0eafc, #cfdef3)",
+                background: "White",
             }}
         >
             <Card
@@ -43,7 +43,7 @@ export default function VerifyOtp() {
                     maxWidth: "950px",
                     borderRadius: "20px",
                     overflow: "hidden",
-                    background: "rgba(255, 255, 255, 0.95)",
+                    background: "linear-gradient(to bottom, #2575fc, #6a11cb)",
                     backdropFilter: "blur(10px)",
                 }}
             >
@@ -56,7 +56,7 @@ export default function VerifyOtp() {
                         md={6}
                         className="d-flex flex-column align-items-center justify-content-center text-center p-4"
                         style={{
-                            background:"linear-gradient(to right, #6a11cb, #2575fc)",
+                              background: "linear-gradient(to bottom, #2575fc, #6a11cb)",
                             color: "white",
                         }}
                     >
@@ -67,11 +67,11 @@ export default function VerifyOtp() {
                             style={{ maxHeight: "200px" }}
                         />
 
-                        <h2 className="fw-bold display-6" style={{ color: "#f0f0f0" }}>
+                        <h2 className="fw-bold display-6" style={{ color: "#ffff" }}>
                             Verify Your OTP
                         </h2>
 
-                        <p className="mt-2 fs-6" style={{ color: "##f0f0f0" }}>
+                        <p className="mt-2 fs-6" style={{ color: "#ffff" }}>
                             Enter the 6-digit OTP sent to your registered email
                         </p>
 

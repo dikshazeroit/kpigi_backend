@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Col, Row, Card, Button, Tooltip, OverlayTrigger } from '@themesberg/react-bootstrap';
@@ -9,7 +8,8 @@ import Code from "./Code";
 
 import themeStyle from "../assets/syntax-themes/ghcolors.json";
 
-export default (props) => {
+
+const CodeEditor = (props) => {
   const { language = "jsx", scope = {}, imports = null, maxHeight = 'none' } = props;
   const [code, setCode] = useState(props.code);
   const [copied, setCopied] = useState(false);
@@ -34,27 +34,35 @@ export default (props) => {
             </Card.Body>
           </Card>
         </Col>
+
         {imports ? (
           <Col xs={12} className="mb-4">
             <Code code={imports} />
           </Col>
         ) : null}
+
         <Col xs={12} className="mb-4">
           <LiveError className="alert alert-danger" />
 
           <span className="fs-7 mb-2 d-block text-gray-600">
-            <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={<Tooltip>You can edit the code below and the changes will be seen in the example above.</Tooltip>}>
+            <OverlayTrigger
+              trigger={['hover', 'focus']}
+              placement="top"
+              overlay={<Tooltip>You can edit the code below and the changes will be seen in the example above.</Tooltip>}
+            >
               <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
             </OverlayTrigger>
+
             Live React Code Editor
           </span>
 
           <Card>
             <Card.Body className="position-relative">
-
               <LiveEditor onChange={handleCodeChange} className="live-editor" />
 
-              {copied ? <span className="text-success copy-code-text">Copied</span> : null}
+              {copied ? (
+                <span className="text-success copy-code-text">Copied</span>
+              ) : null}
 
               <OverlayTrigger
                 trigger={['hover', 'focus']}
@@ -62,7 +70,9 @@ export default (props) => {
                 overlay={<Tooltip>Copy to clipboard</Tooltip>}
               >
                 <CopyToClipboard text={code} onCopy={handleCopy}>
-                  <Button size="sm" variant="primary" className="copy-code-button">Copy</Button>
+                  <Button size="sm" variant="primary" className="copy-code-button">
+                    Copy
+                  </Button>
                 </CopyToClipboard>
               </OverlayTrigger>
             </Card.Body>
@@ -73,3 +83,5 @@ export default (props) => {
   );
 };
 
+
+export default CodeEditor;
