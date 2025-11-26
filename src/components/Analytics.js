@@ -7,12 +7,11 @@ import {
   Col,
   ProgressBar,
   Pagination,
-  Form,
   InputGroup,
   FormControl,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartLine, faDownload, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faChartLine, faDownload } from "@fortawesome/free-solid-svg-icons";
 
 const AnalyticsPage = () => {
   // Example analytics data
@@ -62,16 +61,13 @@ const AnalyticsPage = () => {
             {/* Search Bar */}
             <InputGroup className="me-2">
               <FormControl
-                placeholder="🔍Search metrics..."
+                placeholder="🔍 Search metrics..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setCurrentPage(1); // reset to first page on search
+                  setCurrentPage(1); // Reset to first page on search
                 }}
               />
-              <InputGroup.Text>
-
-              </InputGroup.Text>
             </InputGroup>
 
             {/* Export Button */}

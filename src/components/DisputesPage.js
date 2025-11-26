@@ -5,12 +5,8 @@ import {
   Form,
   Pagination,
   Spinner,
-  Breadcrumb,
   InputGroup,
 } from "@themesberg/react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
 
 const DisputesPage = () => {
   const [disputes, setDisputes] = useState([]);
@@ -52,8 +48,6 @@ const DisputesPage = () => {
 
   return (
     <div className="p-3">
-      
-      {/* ✅ Main Card */}
       <Card className="p-3 shadow-sm border-0">
         {loading ? (
           <div className="text-center py-5">
@@ -62,7 +56,7 @@ const DisputesPage = () => {
           </div>
         ) : (
           <>
-            {/* ✅ Header: Title, Search, Filter - Single Row */}
+            {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0">Disputes & Support</h5>
 
@@ -89,7 +83,7 @@ const DisputesPage = () => {
               </div>
             </div>
 
-            {/* ✅ Table Section */}
+            {/* Table */}
             <Table striped bordered hover responsive>
               <thead>
                 <tr>
@@ -131,7 +125,7 @@ const DisputesPage = () => {
               </tbody>
             </Table>
 
-            {/* ✅ Pagination */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="d-flex justify-content-center my-3">
                 <Pagination>

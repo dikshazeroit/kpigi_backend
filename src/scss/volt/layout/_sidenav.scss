@@ -1,6 +1,6 @@
-/*
- * Sidebar
-*/
+/* ============================
+   SIDEBAR MAIN WRAPPER
+============================ */
 .sidebar {
 	display: block;
 	position: fixed;
@@ -10,227 +10,107 @@
 	z-index: 100;
 	max-height: 100%;
 	overflow-y: auto;
-
-	.sidebar-bg {
-		background: linear-gradient(135deg,
-				#001F3F 0%,
-				#0A1E3D 25%,
-				#6a11cb 65%,
-				#2575fc 100%);
-		color: #fff;
-		min-height: 100vh;
-		box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
-		backdrop-filter: blur(8px);
-	}
-
 	width: 100%;
 	@include transition(max-width .3s);
 
 	@include media-breakpoint-up(md) {
-		width: 100%;
 		max-width: 260px;
+	}
+
+	/* ============================
+	   SIDEBAR BACKGROUND (UPDATED)
+	============================ */
+	.sidebar-bg {
+		background: linear-gradient(135deg, #2575fc, #6a11cb) !important;
+		color: #2575fc 0%, #6a11cb 100%;
+		min-height: 100vh;
+		box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+		backdrop-filter: blur(8px);
 	}
 
 	.nav {
 		white-space: nowrap;
 	}
 
+	/* ============================
+	   NAV ITEM
+	============================ */
 	.nav-item {
 		border: $border-width solid transparent;
+		margin-bottom: .2rem;
 
-		&.active {
-			&>.nav-link {
-				color: $light;
-				background: linear-gradient(to right, #6a11cb, #2575fc);
-
-				// border: $border-width solid lighten($dark, 20%);
-			}
+		&.active > .nav-link {
+			color: #fff !important;
+			background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
 		}
 
 		.nav-link {
-			color: $light;
-			border: $border-width solid $dark;
+			color: #fff !important;
+			border: none !important;
+			background: transparent;
 
 			&:hover {
-				color: $light;
-				background: linear-gradient(to right, ( #E1B868));
-
+				background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+				color: #fff !important;
 			}
 
-			&.active {
-				color: $white;
-			}
+			 &.active {
+			 	background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+			 	color: #fff !important;
+			 }
 		}
-
-		margin-bottom: .2rem;
 	}
 
-	.nav-link+.multi-level {
+	.nav-link + .multi-level {
 		margin-top: .2rem;
 	}
 
+	/* ICONS */
 	.nav-link {
 		font-size: $font-size-base;
-		vertical-align: middle;
 		padding: 0.55rem 0.75rem;
 		@include border-radius($border-radius);
 
-		.sidebar-icon {
-			margin-right: .5rem;
-			color: $white;
-
-			span {
-				min-width: 22px;
-			}
-
-			svg {
-				min-width: 22px;
-			}
-
-			&.svg-icon {
-				margin-right: 14px;
-			}
-		}
-
-		.link-arrow {
-			font-size: $font-size-sm;
-		}
-
-		&:focus {
-			outline: none;
-			box-shadow:
-				0 0 8px rgba(37, 117, 252, 0.6),
-				0 0 15px rgba(106, 17, 203, 0.5);
-		}
-
+		 .sidebar-icon {
+		 	margin-right: .5rem;
+		 	color: #fff !important;
+		 }
 	}
 
-	.nav-link.active {
-		color: $primary;
-	}
-
-	.multi-level {
-		.nav-link {
-			padding-left: 45px;
-		}
-	}
-
-	.sidebar-text,
-	.link-arrow,
-	.badge,
-	.notification-count {
-		opacity: 1;
-		@include transition(opacity .3s);
-	}
-
-	@include media-breakpoint-up(md) {
-		.sidebar-text-contracted {
-			display: none;
-			@include transition(opacity .3s);
-		}
-
-		&.contracted {
-
-			.sidebar-text,
-			.link-arrow,
-			.badge {
-				opacity: 0;
-			}
-
-			.notification-count {
-				opacity: 1;
-				position: absolute;
-				top: 0;
-				left: 35px;
-				width: 18px;
-				height: 18px;
-				border-radius: 50%;
-				font-size: .7rem;
-				padding: .2rem;
-			}
-
-			.nav-item {
-				position: relative;
-				width: 47px;
-
-				&.active {
-					&>.nav-link {
-						background-color: $primary;
-					}
-				}
-
-				.nav-link {
-					&:hover {
-						background-color: $primary;
-					}
-				}
-			}
-
-			.sidebar-text-contracted {
-				display: inline;
-			}
-
-			.multi-level .nav-link {
-				padding-left: 17px;
-			}
-
-			.nav-item {
-				white-space: nowrap;
-			}
-
-			.sidebar-icon {
-				text-align: center;
-			}
-
-
-			@include media-breakpoint-up(md) {
-				&+.content {
-					margin-left: 95px;
-
-				}
-			}
-
-			max-width: 95px;
-		}
+	.multi-level .nav-link {
+		padding-left: 45px;
 	}
 }
 
-.sidebar-inner {
-	position: relative;
-	overflow-y: hidden;
+/* ============================
+   ACCORDION BUTTON (UPDATED)
+============================ */
+.sidebar-inner .accordion-button {
+	background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+	color: #fff !important;
+	border-radius: 8px;
 
-	.accordion-button {
-		&::after {
-			background-image: none;
-			content: '\f054';
-			font-family: $font-awesome-5;
-			font-size: $font-size-sm;
-			font-weight: 900;
-			height: 1.25rem;
-			width: .5rem;
-		}
-
-		&:not(.collapsed) {
-			background: linear-gradient(to right, #6a11cb, #2575fc);
-
-			&::after {
-				transform: rotate(90deg);
-				transition: all .2s ease;
-			}
-		}
+	&::after {
+		background-image: none;
+		content: '\f054';
+		font-family: $font-awesome-5;
 	}
+}
 
-	.accordion {
-		padding-top: .25rem;
-	}
+/* OPEN STATE */
+ .sidebar-inner .accordion-button:not(.collapsed) {
+ 	background: linear-gradient(to bottom, #2575fc, #6a11cb) !important;
+ 	color: #fff !important;
 
-	.accordion-body {
-		padding: .5rem 0 0 0;
-	}
+ 	&::after {
+ 		transform: rotate(90deg);
+ 		transition: all .2s ease;
+ 	}
+ }
 
-	.accordion-collapse {
-		border: 0;
-	}
+/* BODY */
+.sidebar-inner .accordion-body {
+	padding: .5rem 0 0 0;
 }
 
 .sidebar-heading {
@@ -239,7 +119,7 @@
 }
 
 .user-card {
-	border-bottom: 0.0625rem solid #2e3650;
+	border-bottom: 1px solid #2e3650;
 }
 
 @include media-breakpoint-down(sm) {
@@ -248,8 +128,8 @@
 	}
 }
 
+/* CONTENT */
 .content {
-
 	overflow: visible;
 	padding: 0 $spacer 0 $spacer;
 	@include transition(all .3s);
@@ -257,34 +137,4 @@
 	@include media-breakpoint-up(md) {
 		margin-left: 260px;
 	}
-}
-
-.sidebar-toggle {
-	font-size: 1.3rem;
-
-	&:hover,
-	&:focus {
-		outline: none;
-		box-shadow: none;
-		background: $gray-400;
-	}
-
-}
-
-.sidebar-transition-enter {
-	opacity: 0;
-}
-
-.sidebar-transition-enter-active {
-	opacity: 1;
-	transition: opacity 200ms;
-}
-
-.sidebar-transition-exit {
-	opacity: 1;
-}
-
-.sidebar-transition-exit-active {
-	opacity: 0;
-	transition: opacity 200ms;
 }

@@ -1,173 +1,131 @@
+// src/components/Charts.js
 import React from "react";
-import Chartist from "react-chartist";
-import ChartistTooltip from "chartist-plugin-tooltips-updated";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line, Bar, Doughnut } from "react-chartjs-2";
 
-// ===== Line Chart - Sales Value =====
-export const SalesValueChart = () => {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
+
+// ===== Sales Value Line Chart =====
+export const SalesValueChart = ({ lineColor = "#0d6efd" }) => {
   const data = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    series: [[1, 2, 2, 3, 3, 4, 3]]
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [
+      {
+        label: "Sales",
+        data: [1, 2, 2, 3, 3, 4, 3],
+        fill: true,
+        tension: 0.3,
+        borderColor: lineColor,
+        backgroundColor: `${lineColor}33`,
+        pointRadius: 2,
+      },
+    ],
   };
 
   const options = {
-    low: 0,
-    showArea: true,
-    fullWidth: true,
-    axisX: {
-      position: 'end',
-      showGrid: true
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { display: false }, ticks: { callback: v => `$${v}k` }, beginAtZero: true },
     },
-    axisY: {
-      showGrid: false,
-      showLabel: false,
-      labelInterpolationFnc: value => `$${value}k`
-    }
   };
 
-  const plugins = [ChartistTooltip()];
-
-  return (
-    <Chartist
-      data={data}
-      options={{ ...options, plugins }}
-      type="Line"
-      className="ct-series-g ct-double-octave"
-    />
-  );
+  return <Line data={data} options={options} />;
 };
 
-// ===== Line Chart =====
-export const SalesValueChartphone = () => {
-  const data = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    series: [[1, 2, 2, 3, 3, 4, 3]]
-  };
-
-  const options = {
-    low: 0,
-    showArea: true,
-    fullWidth: false,
-    axisX: {
-      position: 'end',
-      showGrid: true
-    },
-    axisY: {
-      showGrid: false,
-      showLabel: false,
-      labelInterpolationFnc: value => `$${value}k`
-    }
-  };
-
-  const plugins = [ChartistTooltip()];
-
-  return (
-    <Chartist
-      data={data}
-      options={{ ...options, plugins }}
-      type="Line"
-      className="ct-series-g ct-major-tenth"
-    />
-  );
-};
+// ===== Sales Value for Phone (smaller) =====
+export const SalesValueChartPhone = (props) => <SalesValueChart lineColor={props.lineColor} />;
 
 // ===== Circle / Donut Chart =====
-export const CircleChart = (props) => {
-  const { series = [], donutWidth = 20 } = props;
-  const sum = (a, b) => a + b;
-
-  const options = {
-    low: 0,
-    high: 8,
-    donutWidth,
-    donut: true,
-    donutSolid: true,
-    fullWidth: false,
-    showLabel: false,
-    labelInterpolationFnc: value => `${Math.round((value / series.reduce(sum)) * 100)}%`
+export const CircleChart = ({ series = [], colors = ["#0d6efd", "#28a745", "#ffc107", "#dc3545"], donutWidth = 30 }) => {
+  const total = series.reduce((a, b) => a + b, 0) || 1;
+  const data = {
+    labels: series.map((s, idx) => `${Math.round((s / total) * 100)}%`),
+    datasets: [
+      {
+        data: series,
+        backgroundColor: colors,
+        hoverOffset: 6,
+      },
+    ],
   };
 
-  const plugins = [ChartistTooltip()];
+  const options = {
+    cutout: `${donutWidth}%`,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } } },
+    maintainAspectRatio: false,
+  };
 
-  return (
-    <Chartist
-      data={{ series }}
-      options={{ ...options, plugins }}
-      type="Pie"
-      className="ct-golden-section"
-    />
-  );
+  return <Doughnut data={data} options={options} />;
 };
 
 // ===== Bar Chart =====
-export const BarChart = (props) => {
-  const { labels = [], series = [], chartClassName = "ct-golden-section" } = props;
-  const data = { labels, series };
-
-  const options = {
-    low: 0,
-    showArea: true,
-    axisX: { position: 'end' },
-    axisY: { showGrid: false, showLabel: false, offset: 0 }
+export const BarChart = ({ labels = [], series = [], colors = [] }) => {
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Series",
+        data: series,
+        backgroundColor: colors.length ? colors : "#0d6efd",
+      },
+    ],
   };
 
-  const plugins = [ChartistTooltip()];
+  const options = {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } },
+    scales: { x: { grid: { display: false } }, y: { grid: { display: false }, beginAtZero: true } },
+    maintainAspectRatio: false,
+  };
 
-  return (
-    <Chartist
-      data={data}
-      options={{ ...options, plugins }}
-      type="Bar"
-      className={chartClassName}
-    />
-  );
+  return <Bar data={data} options={options} />;
 };
 
-// ===== Donut Chart with Labels =====
-export const DonutChartWithLabels = ({ series = [], labels = [] }) => {
-  const total = series.reduce((acc, val) => acc + val, 0);
-
-  const options = {
-    donut: true,
-    donutWidth: 25,
-    showLabel: true,
-    labelDirection: 'explode',
-    labelOffset: 30,
-    chartPadding: 20,
-    plugins: [ChartistTooltip()],
-    labelInterpolationFnc: (value, idx) => {
-      const percent = Math.round((series[idx] / total) * 100);
-      return `${labels[idx]} (${percent}%)`;
-    }
+// ===== Sales vs Target Bar Chart (two-series) =====
+export const SalesVsTargetChart = ({ labels = [], sales = [], target = [], salesColor = "#0d6efd", targetColor = "#ffc107" }) => {
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Sales",
+        data: sales,
+        backgroundColor: salesColor,
+      },
+      {
+        label: "Target",
+        data: target,
+        backgroundColor: targetColor,
+      },
+    ],
   };
 
-  return (
-    <Chartist
-      data={{ series, labels }}
-      options={options}
-      type="Pie"
-      className="ct-golden-section"
-    />
-  );
-};
-
-// ===== New: Stacked Bar Chart =====
-export const StackedBarChart = ({ labels = [], series = [], chartClassName = "ct-golden-section" }) => {
-  const data = { labels, series };
-
   const options = {
-    stackBars: true,
-    axisY: {
-      offset: 20
-    },
-    plugins: [ChartistTooltip()]
+    responsive: true,
+    plugins: { legend: { position: "top" }, tooltip: { mode: "index", intersect: false } },
+    scales: { x: { stacked: false }, y: { beginAtZero: true } },
+    maintainAspectRatio: false,
   };
 
-  return (
-    <Chartist
-      data={data}
-      options={options}
-      type="Bar"
-      className={chartClassName}
-    />
-  );
+  return <Bar data={data} options={options} />;
 };

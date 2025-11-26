@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Nav, Row, Col, Card, Image, Navbar, Container } from '@themesberg/react-bootstrap';
 
@@ -6,8 +5,7 @@ import Documentation from "../../components/Documentation";
 import ReactLogoPrimary from "../../assets/img/technologies/react-logo-primary.svg";
 import ReactLogoTransparent from "../../assets/img/technologies/react-logo-transparent.svg";
 
-
-export default () => {
+const NavbarsPage = () => {
   return (
     <article>
       <Container className="px-0">
@@ -16,7 +14,7 @@ export default () => {
             <h1 className="h2">Navbars</h1>
             <p className="mb-0">
               Use the responsive navigation bar from Volt to add nav items and multi-level nested dropdowns for a seamless navigation.
-          </p>
+            </p>
           </Col>
         </Row>
 
@@ -100,3 +98,5 @@ render( <NavbarChangingColors /> );`}
     </article>
   );
 };
+
+export default NavbarsPage;

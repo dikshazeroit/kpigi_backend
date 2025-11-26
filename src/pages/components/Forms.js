@@ -7,7 +7,7 @@ import { Col, Row, Card, Form, Container, InputGroup } from '@themesberg/react-b
 
 import Documentation from "../../components/Documentation";
 
-export default () => {
+const FormsPage = () => {
   return (
     <article>
       <Container className="px-0">
@@ -259,3 +259,5 @@ render( <Datepicker /> )`}
     </article>
   );
 };
+
+export default FormsPage;

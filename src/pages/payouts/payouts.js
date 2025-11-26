@@ -6,8 +6,7 @@ import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
 import PayoutsPage from "../../components/Payouts";
 
-
-export default () => {
+const Payouts = () => {
     return (
         <>
             <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
@@ -23,7 +22,8 @@ export default () => {
             </div>
 
             <PayoutsPage />
-
         </>
-    )
-}
+    );
+};
+
+export default Payouts;
