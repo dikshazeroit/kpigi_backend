@@ -4,9 +4,11 @@
 
  .navbar-main {
     position: absolute;
-    top: 0;
+    top: 27px;
     width: 100%;
     z-index: 100;
+    padding-top: 16px;
+    padding-bottom: 16px;
 
     .navbar-toggler-icon {
         background-image: $navbar-dark-toggler-icon-bg;

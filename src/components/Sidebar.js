@@ -16,19 +16,9 @@ import {
   faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 
-import {
-  Nav,
-  Badge,
-  Image,
-  Button,
-  Dropdown,
-  Accordion,
-  Navbar,
-} from "@themesberg/react-bootstrap";
+import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstrap";
 
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
-
-// Your dashboard icon
 import DashboardIcon from "../assets/img/team/dashboard-svgrepo-com 1.png";
 
 import { Routes } from "../routes";
@@ -37,6 +27,7 @@ export default function Sidebar({ userName = "Jane" }) {
   const location = useLocation();
   const { pathname } = location;
   const [show, setShow] = useState(false);
+  const [collapseShow, setCollapseShow] = useState("");
   const sidebarRef = useRef();
 
   const toggleSidebar = () => setShow(!show);
@@ -51,36 +42,31 @@ export default function Sidebar({ userName = "Jane" }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [show]);
 
-  // -------------------------------
-  // NavItem with PNG/SVG image support
-  // -------------------------------
-  const NavItem = ({
-    title,
-    link,
-    icon,
-    imageIcon,
-    badgeText,
-    external,
-    target,
-    badgeBg = "secondary",
-    badgeColor = "primary",
-  }) => {
+  const NavItem = ({ title, link, icon, imageIcon, textColor = "#000", iconColor = "#000" }) => {
     const isActive = link === pathname;
-    const linkProps = external ? { href: link, target } : { as: Link, to: link };
 
     return (
-      <Nav.Item className={isActive ? "active" : ""}>
+      <Nav.Item>
         <Nav.Link
-          {...linkProps}
-          className={badgeText ? "d-flex justify-content-between align-items-center" : ""}
+          as={Link}
+          to={link}
+          className={`sidebar-btn mb-2 ${isActive ? "active-btn" : ""}`}
+          style={{
+            color: isActive ? "#fff" : textColor,
+            backgroundColor: isActive ? "#0d6efd" : "transparent",
+            borderRadius: "5px",
+            padding: "8px 12px",
+          }}
         >
           <span className="d-flex align-items-center">
             {icon && (
-              <span className="sidebar-icon">
+              <span
+                className="sidebar-icon"
+                style={{ color: isActive ? "#fff" : iconColor, minWidth: "20px" }}
+              >
                 <FontAwesomeIcon icon={icon} />
               </span>
             )}
-
             {imageIcon && (
               <span className="sidebar-icon">
                 <img
@@ -88,67 +74,36 @@ export default function Sidebar({ userName = "Jane" }) {
                   alt={title}
                   width="20"
                   height="20"
-                  style={{ objectFit: "contain", filter: "brightness(0) invert(1)" }}
+                  style={{
+                    filter: isActive ? "brightness(0) invert(1)" : "invert(50%)",
+                  }}
                 />
               </span>
             )}
-
             <span className="sidebar-text ms-2">{title}</span>
           </span>
-
-          {badgeText && (
-            <Badge pill bg={badgeBg} text={badgeColor} className="ms-2">
-              {badgeText}
-            </Badge>
-          )}
         </Nav.Link>
       </Nav.Item>
     );
   };
 
-  const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
-    const defaultKey = pathname.includes(eventKey) ? eventKey : "";
-    return (
-      <Accordion as={Nav.Item} defaultActiveKey={defaultKey}>
-        <Accordion.Item eventKey={eventKey}>
-          <Accordion.Button
-            as={Nav.Link}
-            className="d-flex justify-content-between align-items-center"
-          >
-            <span className="d-flex align-items-center">
-              <span className="sidebar-icon">
-                <FontAwesomeIcon icon={icon} />
-              </span>
-              <span className="sidebar-text ms-2">{title}</span>
-            </span>
-          </Accordion.Button>
-
-          <Accordion.Body className="multi-level">
-            <Nav className="flex-column">{children}</Nav>
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
-    );
-  };
-
   return (
     <>
-      {/* Mobile Navbar */}
-      <Navbar
-        expand={false}
-        variant="dark"
-        className="navbar-theme-primary px-4 d-md-none"
-      >
-        <Navbar.Brand
-          className="text-white fw-bold"
-          as={Link}
-          to={Routes.DashboardOverview.path}
-        ></Navbar.Brand>
-        <Navbar.Toggle
-          as={Button}
-          aria-controls="sidebar-navbar"
-          onClick={toggleSidebar}
+      {/* Mobile Hamburger Button */}
+      <div className="md:hidden p-2">
+        <button
+          className="cursor-pointer text-black opacity-50 px-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
+          type="button"
+          onClick={() => setCollapseShow("bg-white m-2 py-3 px-6")}
         >
+          <i className="fas fa-bars"></i>
+        </button>
+      </div>
+
+      {/* Mobile Navbar */}
+      <Navbar expand={false} variant="dark" className="navbar-theme-primary px-4 d-md-none">
+        <Navbar.Brand className="text-white fw-bold" as={Link} to={Routes.DashboardOverview.path} />
+        <Navbar.Toggle as={Button} onClick={toggleSidebar}>
           <span className="navbar-toggler-icon" />
         </Navbar.Toggle>
       </Navbar>
@@ -157,26 +112,32 @@ export default function Sidebar({ userName = "Jane" }) {
       <CSSTransition timeout={300} in={show} classNames="sidebar-transition">
         <SimpleBar
           ref={sidebarRef}
-          className={`collapse sidebar d-md-block ${show ? "show" : ""}`}
+          className={`collapse sidebar d-md-block ${show ? "show" : ""} ${collapseShow}`}
         >
           <div className="sidebar-inner sidebar-bg px-4 pt-3">
-            {/* Logo at the top */}
             <div className="text-center mb-4">
-              <Link
-                to={Routes.DashboardOverview.path}
-                onClick={() => setShow(false)} // close sidebar on mobile when clicking logo
-              >
-                <img
-                  src={`${process.env.PUBLIC_URL}/Kpigi.png`}
-                  alt="Kpigi Logo"
-                  width="140"
-                  style={{ cursor: "pointer" }}
-                />
+              <Link to={Routes.DashboardOverview.path} onClick={() => setShow(false)}>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    padding: '15px 30px',
+                    margin: '10px 0',
+                    fontSize: '50px',
+                    fontWeight: 'bold',
+                    border: '2px solid #000', 
+                    borderRadius: '8px', 
+                    backgroundColor: '#fff', 
+                    color: '#000', 
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', 
+                  }}
+                >
+                  Kpigi
+                </span>
               </Link>
             </div>
 
 
-            {/* Mobile user card */}
+            {/* Mobile User Card */}
             <div className="user-card d-flex d-md-none align-items-center justify-content-between pb-4">
               <div className="d-flex align-items-center">
                 <div className="user-avatar lg-avatar me-4">
@@ -185,7 +146,7 @@ export default function Sidebar({ userName = "Jane" }) {
                     className="card-img-top rounded-circle border-white"
                   />
                 </div>
-                <div className="d-block">
+                <div>
                   <h6>Hi, {userName}</h6>
                   <Button
                     variant="secondary"
@@ -210,49 +171,89 @@ export default function Sidebar({ userName = "Jane" }) {
                 title="Dashboard"
                 link={Routes.DashboardOverview.path}
                 imageIcon={DashboardIcon}
+                textColor="#ff6347"
+                iconColor="#ff6347"
               />
-
-              <CollapsableNavItem eventKey="tables/" title="User Management" icon={faUser}>
-                <NavItem title="User List" link={Routes.BootstrapTables.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="/" title="Campaigns" icon={faUsers}>
-                <NavItem title="Campaign Management" link={Routes.CampaignManagementPage.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="wallet/" title="Wallet" icon={faWallet}>
-                <NavItem title="My Wallet" link={Routes.WalletPage.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="payouts/" title="Payouts" icon={faDollarSign}>
-                <NavItem title="My Payouts" link={Routes.PayoutsPage.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="analytics/" title="Analytics" icon={faChartLine}>
-                <NavItem title="My Analytics" link={Routes.AnalyticsPage.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="disputes/" title="Disputes" icon={faGavel}>
-                <NavItem title="My Disputes" link={Routes.DisputesWrapper.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="support/" title="Support" icon={faLifeRing}>
-                <NavItem title="Help Center" link={Routes.Help.path} />
-                <NavItem title="FAQs" link={Routes.FAQ.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="privacy/" title="Privacy & Policy" icon={faUserShield}>
-                <NavItem title="Privacy Policy" link={Routes.PrivacyPolicy.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="terms/" title="Terms & Conditions" icon={faUserShield}>
-                <NavItem title="Terms & Conditions" link={Routes.TermsAndConditions.path} />
-              </CollapsableNavItem>
+              <NavItem
+                title="User Management"
+                link={Routes.BootstrapTables.path}
+                icon={faUser}
+                textColor="#32cd32"
+                iconColor="#32cd32"
+              />
+              <NavItem
+                title="Campaign Management"
+                link={Routes.CampaignManagementPage.path}
+                icon={faUsers}
+                textColor="#1e90ff"
+                iconColor="#1e90ff"
+              />
+              <NavItem
+                title="Wallet"
+                link={Routes.WalletPage.path}
+                icon={faWallet}
+                textColor="#ff69b4"
+                iconColor="#ff69b4"
+              />
+              <NavItem
+                title="Payouts"
+                link={Routes.PayoutsPage.path}
+                icon={faDollarSign}
+                textColor="#ffa500"
+                iconColor="#ffa500"
+              />
+              <NavItem
+                title="Analytics"
+                link={Routes.AnalyticsPage.path}
+                icon={faChartLine}
+                textColor="#20b2aa"
+                iconColor="#20b2aa"
+              />
+              <NavItem
+                title="Disputes"
+                link={Routes.DisputesWrapper.path}
+                icon={faGavel}
+                textColor="#8a2be2"
+                iconColor="#8a2be2"
+              />
+              <NavItem
+                title="Help Center"
+                link={Routes.Help.path}
+                icon={faLifeRing}
+                textColor="#00ced1"
+                iconColor="#00ced1"
+              />
+              <NavItem
+                title="FAQs"
+                link={Routes.FAQ.path}
+                icon={faLifeRing}
+                textColor="#00ced1"
+                iconColor="#00ced1"
+              />
+              <NavItem
+                title="Privacy Policy"
+                link={Routes.PrivacyPolicy.path}
+                icon={faUserShield}
+                textColor="#dc143c"
+                iconColor="#dc143c"
+              />
+              <NavItem
+                title="Terms & Conditions"
+                link={Routes.TermsAndConditions.path}
+                icon={faUserShield}
+                textColor="#dc143c"
+                iconColor="#dc143c"
+              />
 
               <Dropdown.Divider className="my-3" />
 
-              {/* Logout */}
-              <NavItem title="Logout" link={Routes.Signin.path} icon={faSignOutAlt} />
+              <NavItem
+                title="Logout"
+                link={Routes.Signin.path}
+                icon={faSignOutAlt}
+                textColor="#ffffff"
+                iconColor="#ffffff"
+              />
             </Nav>
           </div>
         </SimpleBar>
