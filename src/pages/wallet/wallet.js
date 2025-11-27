@@ -5,11 +5,15 @@ import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import WalletPage from "../../components/wallet";
 
-export default function TermsPage() {
+export default function WalletCreatePage() {
   return (
-    <>
-      <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-        <div className="d-block mb-4 mb-xl-0">
+    <div className="page-wrapper">
+
+      {/* PAGE HEADER */}
+      <div className="d-flex justify-content-between align-items-center page-header mb-4">
+        <div>
+        
+
           <Breadcrumb
             className="d-none d-md-inline-block"
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
@@ -17,13 +21,40 @@ export default function TermsPage() {
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
               <FontAwesomeIcon icon={faHome} /> Home
             </Breadcrumb.Item>
-            <Breadcrumb.Item>wallet</Breadcrumb.Item>
-            <Breadcrumb.Item active>create wallet</Breadcrumb.Item>
+
+            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/wallet" }}>
+              Wallet
+            </Breadcrumb.Item>
+
+            <Breadcrumb.Item active>Create Wallet</Breadcrumb.Item>
           </Breadcrumb>
         </div>
       </div>
 
-      <WalletPage />
-    </>
+      {/* WALLET CONTENT */}
+      <div className="content-section">
+        <WalletPage />
+      </div>
+
+      {/* PAGE SPACING / EXTRA CSS */}
+      <style>{`
+        .page-wrapper {
+          padding: 10px 0;
+        }
+        .page-header {
+          padding-bottom: 18px;
+          border-bottom: 1px solid #e5e5e5;
+          margin-bottom: 28px !important;
+        }
+        .page-title {
+          font-size: 22px;
+          margin-bottom: 6px !important;
+        }
+        .content-section {
+          padding-top: 10px;
+        }
+      `}</style>
+
+    </div>
   );
 }

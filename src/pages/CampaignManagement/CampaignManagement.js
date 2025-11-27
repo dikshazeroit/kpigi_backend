@@ -1,9 +1,23 @@
 import React, { useState } from "react";
-import { Table, Row, Col, Form, Button, Badge, Card, Modal, Pagination } from "@themesberg/react-bootstrap";
-import { faPause, faPlay, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  Table,
+  Row,
+  Col,
+  Form,
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Pagination,
+  Breadcrumb
+} from "@themesberg/react-bootstrap";
 
-// Sample campaigns data
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome, faPause, faPlay, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
+
+
+// Sample Data
 const sampleCampaigns = [
   { id: 1, title: "Emergency Surgery for My Son", requester: "John Doe", status: "Active", goal: 5000, raised: 1200, date: "2025-11-20", bankCard: "**** 1234", verification: "Verified", flagged: false, fraudReports: 0 },
   { id: 2, title: "School Supplies for Kids", requester: "Jane Smith", status: "Paused", goal: 2000, raised: 800, date: "2025-11-15", bankCard: "**** 5678", verification: "Pending", flagged: true, fraudReports: 2 },
@@ -13,6 +27,7 @@ const sampleCampaigns = [
   { id: 6, title: "Clean Water Project", requester: "Lucy Brown", status: "Active", goal: 7000, raised: 4500, date: "2025-11-02", bankCard: "**** 6543", verification: "Verified", flagged: false, fraudReports: 0 }
 ];
 
+
 export default function CampaignManagement() {
   const [campaigns, setCampaigns] = useState(sampleCampaigns);
   const [filter, setFilter] = useState("All");
@@ -21,15 +36,17 @@ export default function CampaignManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const campaignsPerPage = 3;
 
-  // Filter and search campaigns
+  // Filtering
   const filteredCampaigns = campaigns.filter(c => {
     const matchesFilter = filter === "All" || c.status === filter;
-    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
-                          c.requester.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      c.title.toLowerCase().includes(search.toLowerCase()) ||
+      c.requester.toLowerCase().includes(search.toLowerCase());
+
     return matchesFilter && matchesSearch;
   });
 
-  // Pagination calculations
+  // Pagination
   const indexOfLast = currentPage * campaignsPerPage;
   const indexOfFirst = indexOfLast - campaignsPerPage;
   const currentCampaigns = filteredCampaigns.slice(indexOfFirst, indexOfLast);
@@ -47,9 +64,30 @@ export default function CampaignManagement() {
     setCampaigns(updated);
   };
 
+
   return (
-    <div>
-      {/* Filter & Search */}
+    <div className="page-wrapper">
+
+      {/* PAGE HEADER */}
+      <div className="d-flex justify-content-between align-items-center page-header mb-4">
+        <div>
+          
+
+          <Breadcrumb
+            className="d-none d-md-inline-block"
+            listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
+          >
+            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+              <FontAwesomeIcon icon={faHome} /> Home
+            </Breadcrumb.Item>
+
+            <Breadcrumb.Item active>Campaign Management</Breadcrumb.Item>
+          </Breadcrumb>
+        </div>
+      </div>
+
+
+      {/* FILTER + SEARCH */}
       <Row className="mb-3">
         <Col md={4}>
           <Form.Select value={filter} onChange={(e) => setFilter(e.target.value)}>
@@ -60,6 +98,7 @@ export default function CampaignManagement() {
             <option value="Closed">Closed</option>
           </Form.Select>
         </Col>
+
         <Col md={8}>
           <Form.Control
             type="text"
@@ -70,7 +109,8 @@ export default function CampaignManagement() {
         </Col>
       </Row>
 
-      {/* Campaigns Table */}
+
+      {/* TABLE */}
       <Table bordered hover responsive className="align-middle">
         <thead className="table-light">
           <tr>
@@ -83,6 +123,7 @@ export default function CampaignManagement() {
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {currentCampaigns.map(c => (
             <tr key={c.id}>
@@ -97,20 +138,24 @@ export default function CampaignManagement() {
               <td>${c.raised} / ${c.goal}</td>
               <td>{c.date}</td>
               <td>{c.verification}</td>
+
               <td>
                 <Button size="sm" variant="primary" className="me-1" onClick={() => setSelectedCampaign(c)}>
                   <FontAwesomeIcon icon={faInfoCircle} /> Detail
                 </Button>
+
                 {c.status === "Active" && (
                   <Button size="sm" variant="warning" className="me-1" onClick={() => handleAction(c, "Pause")}>
                     <FontAwesomeIcon icon={faPause} />
                   </Button>
                 )}
+
                 {c.status === "Paused" && (
                   <Button size="sm" variant="success" className="me-1" onClick={() => handleAction(c, "Resume")}>
                     <FontAwesomeIcon icon={faPlay} />
                   </Button>
                 )}
+
                 {c.status !== "Closed" && (
                   <Button size="sm" variant="danger" onClick={() => handleAction(c, "Close")}>
                     <FontAwesomeIcon icon={faTimes} />
@@ -122,26 +167,31 @@ export default function CampaignManagement() {
         </tbody>
       </Table>
 
-      {/* Pagination */}
+
+      {/* PAGINATION */}
       {totalPages > 1 && (
         <Pagination>
           <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
-          <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
+          <Pagination.Prev onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1} />
+
           {[...Array(totalPages)].map((_, i) => (
-            <Pagination.Item key={i + 1} active={currentPage === i + 1} onClick={() => setCurrentPage(i + 1)}>
+            <Pagination.Item key={i} active={currentPage === i + 1} onClick={() => setCurrentPage(i + 1)}>
               {i + 1}
             </Pagination.Item>
           ))}
-          <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
+
+          <Pagination.Next onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} />
           <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
         </Pagination>
       )}
 
-      {/* Campaign Detail Modal */}
+
+      {/* DETAILS MODAL */}
       <Modal show={!!selectedCampaign} onHide={() => setSelectedCampaign(null)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Campaign Details</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           {selectedCampaign && (
             <>
@@ -151,13 +201,13 @@ export default function CampaignManagement() {
                     <Card.Body>
                       <Card.Title>Campaign Info</Card.Title>
                       <p><strong>Title:</strong> {selectedCampaign.title}</p>
-                      <p><strong>Category:</strong> {selectedCampaign.category || "N/A"}</p>
                       <p><strong>Goal:</strong> ${selectedCampaign.goal}</p>
                       <p><strong>Raised:</strong> ${selectedCampaign.raised}</p>
                       <p><strong>Status:</strong> {selectedCampaign.status}</p>
                     </Card.Body>
                   </Card>
                 </Col>
+
                 <Col md={6}>
                   <Card>
                     <Card.Body>
@@ -171,12 +221,12 @@ export default function CampaignManagement() {
                 </Col>
               </Row>
 
-              {/* Donation Progress */}
               <Card>
                 <Card.Body>
                   <Card.Title>Donation Progress</Card.Title>
                   <p>${selectedCampaign.raised} raised of ${selectedCampaign.goal}</p>
-                  <Form.Group className="mb-2">
+
+                  <Form.Group>
                     <Form.Label>Progress</Form.Label>
                     <Form.Range value={(selectedCampaign.raised / selectedCampaign.goal) * 100} readOnly />
                   </Form.Group>
@@ -185,10 +235,31 @@ export default function CampaignManagement() {
             </>
           )}
         </Modal.Body>
+
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>Close</Button>
+          <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
+
+
+      {/* PAGE SPACING / EXTRA CSS */}
+      <style>{`
+        .page-wrapper {
+          padding: 10px 0;
+        }
+        .page-header {
+          padding-bottom: 18px;
+          border-bottom: 1px solid #e5e5e5;
+          margin-bottom: 28px !important;
+        }
+        .page-title {
+          font-size: 22px;
+          margin-bottom: 6px !important;
+        }
+      `}</style>
+
     </div>
   );
 }

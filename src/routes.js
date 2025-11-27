@@ -6,7 +6,7 @@ export const Routes = {
   EditProfile: { path: "/edit-profile" },
 
   // Tables
-  BootstrapTables: { path: "/tables/user-tables" },
+  BootstrapTables: { path: "/tables/user-list" },
 
   // Menu pages
   CampaignManagementPage: { path: "/campaigns/list" },

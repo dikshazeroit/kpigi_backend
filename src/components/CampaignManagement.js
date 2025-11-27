@@ -5,45 +5,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Sample campaigns data
 const sampleCampaigns = [
-  {
-    id: 1,
-    title: "Emergency Surgery for My Son",
-    requester: "John Doe",
-    status: "Active",
-    goal: 5000,
-    raised: 1200,
-    date: "2025-11-20",
-    bankCard: "**** 1234",
-    verification: "Verified",
-    flagged: false,
-    fraudReports: 0
-  },
-  {
-    id: 2,
-    title: "School Supplies for Kids",
-    requester: "Jane Smith",
-    status: "Paused",
-    goal: 2000,
-    raised: 800,
-    date: "2025-11-15",
-    bankCard: "**** 5678",
-    verification: "Pending",
-    flagged: true,
-    fraudReports: 2
-  },
-  {
-    id: 3,
-    title: "Business Startup Fund",
-    requester: "Ali Khan",
-    status: "Closed",
-    goal: 10000,
-    raised: 10000,
-    date: "2025-10-30",
-    bankCard: "**** 9876",
-    verification: "Verified",
-    flagged: false,
-    fraudReports: 0
-  }
+  { id: 1, title: "Emergency Surgery for My Son", requester: "John Doe", status: "Active", goal: 5000, raised: 1200, date: "2025-11-20", bankCard: "**** 1234", verification: "Verified", flagged: false, fraudReports: 0 },
+  { id: 2, title: "School Supplies for Kids", requester: "Jane Smith", status: "Paused", goal: 2000, raised: 800, date: "2025-11-15", bankCard: "**** 5678", verification: "Pending", flagged: true, fraudReports: 2 },
+  { id: 3, title: "Business Startup Fund", requester: "Ali Khan", status: "Closed", goal: 10000, raised: 10000, date: "2025-10-30", bankCard: "**** 9876", verification: "Verified", flagged: false, fraudReports: 0 }
 ];
 
 export default function CampaignManagement() {
@@ -75,21 +39,61 @@ export default function CampaignManagement() {
   return (
     <div className="p-3">
 
+      {/* Extra CSS */}
+<style>{`
+  .table td, .table th {
+    padding: 30px 25px !important;
+  }
+  .search-input {
+    padding: 12px 18px !important;
+    border-radius: 10px !important;
+  }
+  .filter-card, .table-card {
+    padding: 30px !important;
+    border-radius: 12px !important;
+  }
+
+  /* PAGE TITLE SPACING */
+  .page-header-section {
+    margin-bottom: 45px !important;
+    margin-top: 10px !important;
+    padding-bottom: 25px !important;  /* Added */
+  }
+
+  .page-title {
+    margin-bottom: 30px !important;
+  }
+
+  .page-subtitle {
+    margin-bottom: 35px !important;
+    margin-top: 4px !important;
+  }
+`}</style>
+
+
+
       {/* PAGE TITLE */}
-      <div className="mb-4">
-        <h4 className="fw-bold">Hello, Welcome Kpigi – Admin Panel</h4>
-        <p className="text-muted">Manage all fundraising campaigns here</p>
+      <div className="page-header-section">
+        <h4 className="fw-bold page-title">Hello, Welcome Kpigi – Admin Panel</h4>
+        <p className="text-muted page-subtitle">
+          Manage all fundraising campaigns here
+        </p>
       </div>
 
       {/* FILTER & SEARCH SECTION */}
-      <Card className="mb-4 shadow-sm">
+      <Card className="mb-4 shadow-sm filter-card">
         <Card.Body>
-          <Row className="g-3 align-items-end">
+          <Row className="g-4">
 
+            {/* STATUS FILTER */}
             <Col md={4}>
               <Form.Group>
-                <Form.Label>Status Filter</Form.Label>
-                <Form.Select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                <Form.Label className="fw-semibold">Status Filter</Form.Label>
+                <Form.Select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="py-2"
+                >
                   <option value="All">All Campaigns</option>
                   <option value="Active">Active</option>
                   <option value="Paused">Paused</option>
@@ -99,15 +103,16 @@ export default function CampaignManagement() {
               </Form.Group>
             </Col>
 
-            {/* SEARCH RIGHT SIDE */}
+            {/* SEARCH BAR */}
             <Col md={8}>
               <Form.Group>
-                <Form.Label>Search</Form.Label>
+                <Form.Label className="fw-semibold">Search</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Search by title or requester"
+                  placeholder="🔍 Search by title or requester"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  className="search-input"
                 />
               </Form.Group>
             </Col>
@@ -117,9 +122,9 @@ export default function CampaignManagement() {
       </Card>
 
       {/* CAMPAIGNS TABLE */}
-      <Card className="shadow-sm">
+      <Card className="shadow-sm table-card">
         <Card.Body>
-          <h5 className="mb-3">Campaign List</h5>
+          <h5 className="fw-bold mb-3">Campaign List</h5>
 
           <Table bordered hover responsive className="align-middle">
             <thead className="table-light">
@@ -138,7 +143,7 @@ export default function CampaignManagement() {
               {filteredCampaigns.length > 0 ? (
                 filteredCampaigns.map(c => (
                   <tr key={c.id}>
-                    <td>{c.title}</td>
+                    <td className="fw-semibold">{c.title}</td>
                     <td>{c.requester}</td>
 
                     <td>
@@ -150,17 +155,23 @@ export default function CampaignManagement() {
                             ? "warning"
                             : "secondary"
                         }
+                        className="px-3 py-2"
                       >
                         {c.status}
                       </Badge>
-                      {c.flagged && <Badge bg="danger" className="ms-2">Flagged</Badge>}
+
+                      {c.flagged && (
+                        <Badge bg="danger" className="ms-2 px-3 py-2">
+                          Flagged
+                        </Badge>
+                      )}
                     </td>
 
                     <td>${c.raised} / ${c.goal}</td>
                     <td>{c.date}</td>
 
                     <td>
-                      <Badge bg={c.verification === "Verified" ? "success" : "warning"}>
+                      <Badge bg={c.verification === "Verified" ? "success" : "warning"} className="px-3 py-2">
                         {c.verification}
                       </Badge>
                     </td>
@@ -169,7 +180,7 @@ export default function CampaignManagement() {
                       <Button
                         size="sm"
                         variant="primary"
-                        className="me-2"
+                        className="me-2 mb-1"
                         onClick={() => setSelectedCampaign(c)}
                       >
                         <FontAwesomeIcon icon={faInfoCircle} /> Detail
@@ -179,7 +190,7 @@ export default function CampaignManagement() {
                         <Button
                           size="sm"
                           variant="warning"
-                          className="me-2"
+                          className="me-2 mb-1"
                           onClick={() => handleAction(c, "Pause")}
                         >
                           <FontAwesomeIcon icon={faPause} />
@@ -190,7 +201,7 @@ export default function CampaignManagement() {
                         <Button
                           size="sm"
                           variant="success"
-                          className="me-2"
+                          className="me-2 mb-1"
                           onClick={() => handleAction(c, "Resume")}
                         >
                           <FontAwesomeIcon icon={faPlay} />
@@ -201,6 +212,7 @@ export default function CampaignManagement() {
                         <Button
                           size="sm"
                           variant="danger"
+                          className="mb-1"
                           onClick={() => handleAction(c, "Close")}
                         >
                           <FontAwesomeIcon icon={faTimes} />
@@ -221,17 +233,15 @@ export default function CampaignManagement() {
         </Card.Body>
       </Card>
 
-      {/* CAMPAIGN DETAILS MODAL */}
+      {/* DETAILS MODAL */}
       <Modal show={!!selectedCampaign} onHide={() => setSelectedCampaign(null)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Campaign Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
           {selectedCampaign && (
             <>
               <Row className="mb-4">
-                {/* Campaign Info */}
                 <Col md={6}>
                   <Card>
                     <Card.Body>
@@ -243,8 +253,6 @@ export default function CampaignManagement() {
                     </Card.Body>
                   </Card>
                 </Col>
-
-                {/* Requester Info */}
                 <Col md={6}>
                   <Card>
                     <Card.Body>
@@ -258,7 +266,6 @@ export default function CampaignManagement() {
                 </Col>
               </Row>
 
-              {/* Progress */}
               <Card>
                 <Card.Body>
                   <Card.Title>Donation Progress</Card.Title>
@@ -271,12 +278,13 @@ export default function CampaignManagement() {
               </Card>
             </>
           )}
-
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>Close</Button>
         </Modal.Footer>
       </Modal>
+
     </div>
   );
 }

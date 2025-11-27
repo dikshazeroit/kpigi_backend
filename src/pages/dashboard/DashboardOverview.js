@@ -1,8 +1,7 @@
 import React from "react";
-import { Row, Col } from "@themesberg/react-bootstrap";
+import { Row, Col, Card } from "@themesberg/react-bootstrap";
 
 import {
-  CounterWidget,
   CircleChartWidget,
   BarChartWidget,
   ProgressTrackWidget,
@@ -19,7 +18,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const DashboardOverview = () => {
-  // Pie Chart – Campaign Categories Breakdown
   const categoryData = [
     { id: 1, label: "Medical", value: 45, color: "primary" },
     { id: 2, label: "Education", value: 25, color: "success" },
@@ -27,7 +25,6 @@ const DashboardOverview = () => {
     { id: 4, label: "Emergency", value: 15, color: "danger" },
   ];
 
-  // Bar Chart – Daily Donations
   const donationChartData = [
     { id: 1, label: "Mon", value: 420, color: "#0d6efd" },
     { id: 2, label: "Tue", value: 380, color: "#28a745" },
@@ -38,131 +35,95 @@ const DashboardOverview = () => {
     { id: 7, label: "Sun", value: 300, color: "#6610f2" },
   ];
 
+  // Summary cards with inline color
+  const summaryCards = [
+    { icon: faHandHoldingHeart, category: "Total Campaigns", title: "3,280", bgColor: "#4e73df", textColor: "#fff" },
+    { icon: faChartLine, category: "Active Campaigns", title: "1,870", bgColor: "#1cc88a", textColor: "#fff" },
+    { icon: faDollarSign, category: "Pending Payouts", title: "$42,900", bgColor: "#36b9cc", textColor: "#fff" },
+    { icon: faUsers, category: "Total Users", title: "12,540", bgColor: "#f6c23e", textColor: "#343a40" }, 
+  ];
+
   return (
     <div
       className="dashboard-wrapper"
-      style={{ background: "#f5f7fa", minHeight: "100vh", padding: "20px" }}
+      style={{
+        background: "#f5f7fa",
+        minHeight: "100vh",
+        padding: "30px 30px 20px 30px",
+        maxWidth: "1300px",
+        margin: "0 auto",
+      }}
     >
-      {/* ========================== */}
-      {/*       SUMMARY CARDS        */}
-      {/* ========================== */}
+      {/* SUMMARY CARDS */}
+      <Row className="mb-4 g-3">
+        {summaryCards.map(({ icon, category, title, bgColor, textColor }, idx) => (
+          <Col key={idx} xs={12} sm={6} md={3}>
+            <Card
+              className="shadow-sm"
+              style={{
+                padding: "20px",
+                borderRadius: "12px",
+                minHeight: "130px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+                transition: "all 0.3s ease",
+                backgroundColor: bgColor,
+                color: textColor,
+              }}
+            >
+              <div style={{ fontSize: "1.8rem", marginBottom: "12px" }}>
+                <i className={`fas ${icon.iconName}`} />
+              </div>
+              <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "4px" }}>
+                {category}
+              </div>
+              <div style={{ fontWeight: 700, fontSize: "1.4rem" }}>{title}</div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-      <Row className="mb-4">
-        <Col sm={6} xl={3} className="mb-4">
-          <CounterWidget
-            icon={faHandHoldingHeart}
-            iconColor="primary"
-            category="Total Campaigns"
-            title="3,280"
-            style={{
-              backgroundColor: "blue",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
-            }}
-          />
+      {/* CHARTS ROW */}
+      <Row className="mb-4 g-3">
+        <Col xs={12} lg={6}>
+          <Card className="shadow-sm p-3" style={{ borderRadius: "12px" }}>
+            <CircleChartWidget title="Campaign Categories Breakdown" data={categoryData} />
+          </Card>
         </Col>
-
-        <Col sm={6} xl={3} className="mb-4">
-          <CounterWidget
-            icon={faChartLine}
-            iconColor="success"
-            category="Active Campaigns"
-            title="1,870"
-            style={{
-              backgroundColor: "#28a745",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
-            }}
-          />
-        </Col>
-
-        <Col sm={6} xl={3} className="mb-4">
-          <CounterWidget
-            icon={faDollarSign}
-            iconColor="warning"
-            category="Pending Payouts"
-            title="$42,900"
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
-            }}
-          />
-        </Col>
-
-        <Col sm={6} xl={3} className="mb-4">
-          <CounterWidget
-            icon={faUsers}
-            iconColor="info"
-            category="Total Users"
-            title="12,540"
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.05)"
-            }}
-          />
+        <Col xs={12} lg={6}>
+          <Card className="shadow-sm p-3" style={{ borderRadius: "12px" }}>
+            <BarChartWidget
+              title="Daily Donations"
+              value="$58,430"
+              percentage={18}
+              data={donationChartData}
+            />
+          </Card>
         </Col>
       </Row>
 
-      {/* ========================== */}
-      {/*   CATEGORY + DONATIONS     */}
-      {/* ========================== */}
-
-      <Row className="mb-4">
-        <Col xs={12} xl={6} className="mb-4">
-          <CircleChartWidget
-            title="Campaign Categories Breakdown"
-            data={categoryData}
-          />
-        </Col>
-
-        <Col xs={12} xl={6} className="mb-4">
-          <BarChartWidget
-            title="Daily Donations"
-            value="$58,430"
-            percentage={18}
-            data={donationChartData}
-          />
-        </Col>
-      </Row>
-
-      {/* ========================== */}
-      {/*      SALES WIDGETS         */}
-      {/* ========================== */}
-
-      <Row className="mb-4">
-        <Col xs={12} xl={6} className="mb-4">
+      {/* REVENUE ROW */}
+      <Row className="mb-4 g-3">
+        <Col xs={12} lg={6}>
           <SalesValueWidget title="Platform Revenue (Web)" value="$12,740" percentage={10} />
         </Col>
-
-        <Col xs={12} xl={6} className="mb-4">
-          <SalesValueWidgetPhone
-            title="Platform Revenue (Mobile)"
-            value="$8,950"
-            percentage={6}
-          />
+        <Col xs={12} lg={6}>
+          <SalesValueWidgetPhone title="Platform Revenue (Mobile)" value="$8,950" percentage={6} />
         </Col>
       </Row>
 
-      {/* ========================== */}
-      {/*   PROGRESS + RANKING       */}
-      {/* ========================== */}
-
-      <Row className="mb-4">
-        <Col xs={12} xl={6} className="mb-4">
+      {/* PROGRESS + RANKING ROW */}
+      <Row className="g-3">
+        <Col xs={12} lg={6}>
           <ProgressTrackWidget title="Approval Queue Progress" />
         </Col>
-
-        <Col xs={12} xl={6} className="mb-4">
+        <Col xs={12} lg={6}>
           <RankingWidget title="Top Performing Campaigns" />
         </Col>
       </Row>
-
     </div>
   );
 };
