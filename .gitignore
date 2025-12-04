@@ -1,3 +1,9 @@
-node_modules/
-build/
-.DS_Store
+.gitignore
+/admin/.env
+build
+/node_modules
+package-lock.json
+build
+.eslintcache
+/admin/node_modules
+/admin/package-lock.json
