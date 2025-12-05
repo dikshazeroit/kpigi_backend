@@ -168,7 +168,7 @@ authObj.registerWithEmail = async function (req, res) {
       uc_phone: normalizedPhone,
       uc_country_code: country_code,
       uc_password: hashedPassword,   // <-- Hashed password stored
-      uc_name: full_name,
+      uc_full_name: full_name,
       uc_active: "0",
     });
 

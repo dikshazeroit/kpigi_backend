@@ -1,7 +1,4 @@
 import UserModel from "../../application/model/UserModel.js";
-import SubscriptionModel from "../models/Subscription.js";
-import BlockedModel from "../../application/model/BlockedUserModel.js";
-import swipeModel from "../../application/model/SwipeModel.js"
 
 
 export const getDashboardStats = async (req, res, next) => {

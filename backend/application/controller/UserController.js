@@ -455,4 +455,97 @@ userObj.deleteAccount = async function (req, res) {
   }
 };
 
+
+userObj.updatePayoutCard = async function (req, res) {
+  try {
+    // 1️⃣ Get user ID from token
+    const userId = await appHelper.getUUIDByToken(req);
+    console.log(userId, "User ID from token");
+
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "CARD-E1001",
+          message: "Unauthorized access.",
+        },
+        200
+      );
+    }
+
+    const {
+      card_token,
+      card_last4,
+      card_brand,
+      card_exp_month,
+      card_exp_year,
+    } = req.body;
+
+    // 2️⃣ Validate required fields
+    if (!card_token || !card_last4 || !card_brand) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "CARD-E1002",
+          message: "Missing required card details.",
+        },
+        200
+      );
+    }
+
+    // 3️⃣ Fetch user from DB
+    const user = await userModel.findOne({ uc_uuid: userId });
+    if (!user) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "CARD-E1003",
+          message: "User not found.",
+        },
+        200
+      );
+    }
+
+    // 4️⃣ Update card info
+    user.uc_payout_card_token = card_token;
+    user.uc_card_last4 = card_last4;
+    user.uc_card_brand = card_brand;
+    user.uc_card_exp_month = card_exp_month !== undefined ? card_exp_month : null;
+    user.uc_card_exp_year = card_exp_year !== undefined ? card_exp_year : null;
+
+    await user.save();
+
+    // 5️⃣ Mask the token for response
+    const maskedToken = "**** **** **** " + card_last4;
+
+    // 6️⃣ Send success response
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Payout card updated successfully.",
+      payload: {
+        card_last4,
+        card_brand,
+        card_exp_month: user.uc_card_exp_month,
+        card_exp_year: user.uc_card_exp_year,
+        card_token: maskedToken, // safe masked token
+      },
+    });
+  } catch (error) {
+    console.error("❌ updatePayoutCard Error:", error);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "CARD-E9999",
+        message: "Internal server error",
+      },
+      200
+    );
+  }
+};
+
+
 export default userObj;

@@ -26,7 +26,7 @@ const usersCredentialsSchema = new Schema(
     uc_password: {
       type: String,
       required: false,
-    },   
+    },
     uc_full_name: {
       type: String,
       required: false,
@@ -43,7 +43,6 @@ const usersCredentialsSchema = new Schema(
       enum: ["apple", "google", "phone"],
       default: "google",
     },
-  
     uc_profile_photo: {
       type: String,
       default: "",
@@ -59,6 +58,13 @@ const usersCredentialsSchema = new Schema(
       exp_month: Number,
       exp_year: Number,
     },
+
+    // ✅ New payout card fields
+    uc_payout_card_token: { type: String, default: "" },
+    uc_card_last4: { type: String, default: "" },
+    uc_card_brand: { type: String, default: "" },
+    uc_card_exp_month: { type: Number, default: null },
+    uc_card_exp_year: { type: Number, default: null },
 
     uc_lat: {
       type: Number,
@@ -80,12 +86,10 @@ const usersCredentialsSchema = new Schema(
       type: String,
       default: "0",
     },
-    
     uc_activation_token: {
       type: String,
       default: "",
     },
-
   },
   {
     versionKey: false,

@@ -57,5 +57,7 @@ router.put("/private/change-password", userObj.changePassword);
 router.post("/private/get-user-profile", userObj.getUserProfile);
 router.post("/private/update-user-location", userObj.updateUserLocation);
 router.post("/private/delete-account", userObj.deleteAccount);
+router.post("/private/update-payout-card", userObj.updatePayoutCard);
+
 
 export default router;

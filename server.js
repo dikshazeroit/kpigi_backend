@@ -35,7 +35,7 @@ import connectDB from "./backend/config/MongoDatabase.js";
 import { allowHeaders } from "./backend/middleware/Cors.js";
 import { errorHandler } from "./backend/middleware/ErrorHandler.js";
 import appRoutes from "./backend/application/routes/AppRoutes.js";
-
+import adminRoute from "./backend/admin/routes/AdminRoute.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 const server = http.createServer(app);
@@ -53,7 +53,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 app.use("/", appRoutes);
-
+app.use("/admin", adminRoute);
 
 // ✅ Error handler
 app.use(errorHandler);
