@@ -21,6 +21,7 @@ import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 import { v4 } from "uuid";
+import bcrypt from "bcryptjs";
 import userModel from "../model/UserModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
@@ -252,7 +253,7 @@ userObj.uploadProfilePhoto = async function (req, res) {
         message: "Unauthorized access.",
       }, 200);
     }
-
+ const conObj = await constants();
     // Ensure file is uploaded
     if (!req.files?.profileImage?.[0]) {
       return commonHelper.errorHandler(res, {
@@ -455,7 +456,12 @@ userObj.deleteAccount = async function (req, res) {
   }
 };
 
-
+/**
+ * Update Payout Card
+ *
+ * @param {object}
+ * @param {object} 
+ */
 userObj.updatePayoutCard = async function (req, res) {
   try {
     // 1️⃣ Get user ID from token

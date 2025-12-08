@@ -78,7 +78,7 @@ const combinedUpload = multer({
   { name: "companyLogo", maxCount: 1 },
 
   // Newly added for media upload
-  { name: "profilePhotos", maxCount: 6 },
+  { name: "media", maxCount: 5 },
   { name: "shortVideo", maxCount: 1 },
   { name: "voiceRecording", maxCount: 1 },
 ]);

@@ -20,9 +20,13 @@
 import express from "express";
 import authObj from "../controller/AuthController.js";
 import userObj from "../controller/UserController.js";
+import fundObj from "../controller/FundController.js";
+import donationObj from "../controller/DonationController.js";
+import payoutObj from "../controller/PayoutController.js";
 import { allowHeaders } from "../../middleware/Cors.js";
 import { authenticate } from "../../middleware/JsonWebToken.js";
 import combinedUpload from "../../middleware/CombinedUploadMiddleware.js";
+import fundUpload from "../../middleware/FundUpload.js";
 
 const router = express.Router();
 
@@ -50,14 +54,29 @@ router.post("/auth/apple-signin", authObj.signinWithAppleId);
 
 //****************************** 🔐 Private Routes *******************************************//
 
-router.put("/private/update-user-profile", userObj.updateUserProfile);
+router.post("/private/update-user-profile", userObj.updateUserProfile);
 router.post("/private/upload-photo", combinedUpload, userObj.uploadProfilePhoto);
-router.put("/private/settings", userObj.updateSettings);
-router.put("/private/change-password", userObj.changePassword);
+router.post("/private/settings", userObj.updateSettings);
+router.post("/private/change-password", userObj.changePassword);
 router.post("/private/get-user-profile", userObj.getUserProfile);
 router.post("/private/update-user-location", userObj.updateUserLocation);
 router.post("/private/delete-account", userObj.deleteAccount);
 router.post("/private/update-payout-card", userObj.updatePayoutCard);
+
+//****************************** 🔐 Found Routes *******************************************//
+router.post("/private/create-fund",fundUpload,fundObj.createFundRequest);
+router.post("/private/fund-list", fundObj.getFundList);
+router.post("/private/fund-details", fundObj.getFundDetails);
+router.post("/private/update-fund", fundUpload,fundObj.updateFund);
+router.post("/private/delete-fund", fundObj.deleteFund);
+
+//****************************** 💰 Donation Routes *******************************************//
+router.post("/private/donation-start", donationObj.createDonation);
+router.post("/private/donation-list", donationObj.getMyDonations);
+router.post("/private/donation-fund-donors", donationObj.getFundDonors);
+//****************************** 💰 Payout Routes *******************************************//
+router.post("/private/payout-process", payoutObj.processPayout);
+router.post("/private/payout-history", payoutObj.getPayoutHistory);
 
 
 export default router;

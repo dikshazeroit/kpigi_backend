@@ -31,6 +31,17 @@ const usersCredentialsSchema = new Schema(
       type: String,
       required: false,
     },
+     uc_bio: {
+      type: String,
+      required: false,
+       default: "",
+    },
+    uc_notifications_enabled: {
+      type: Boolean,
+      required: false,
+       default: false,
+    },
+    
     uc_registeration_type: {
       type: String,
       required: true,
