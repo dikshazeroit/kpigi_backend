@@ -27,6 +27,8 @@ import { allowHeaders } from "../../middleware/Cors.js";
 import { authenticate } from "../../middleware/JsonWebToken.js";
 import combinedUpload from "../../middleware/CombinedUploadMiddleware.js";
 import fundUpload from "../../middleware/FundUpload.js";
+import notificationObj from "../controller/NotificationController.js";
+import securityObj from "../controller/SecurityController.js";
 
 const router = express.Router();
 
@@ -77,6 +79,18 @@ router.post("/private/donation-fund-donors", donationObj.getFundDonors);
 //****************************** 💰 Payout Routes *******************************************//
 router.post("/private/payout-process", payoutObj.processPayout);
 router.post("/private/payout-history", payoutObj.getPayoutHistory);
+
+//************************************* 🔔 Notifications ****************************************//
+router.post("/private/notifications-send", notificationObj.sendNotification);
+router.post("/private/notifications-list", notificationObj.getInbox);
+router.post("/private/notifications-read", notificationObj.markAsRead);
+router.post("/private/notifications-update-settings", notificationObj.updateSettings);
+router.post("/private/notifications-get-settings", notificationObj.getSettings);
+
+//******************************************* 🛡️ Security ************************************************//
+router.post("/public/security-report", securityObj.reportSuspicious);
+router.post("/private/security-pause-fund", securityObj.pauseFund);
+router.post("/private/security-reports", securityObj.getReports);
 
 
 export default router;
