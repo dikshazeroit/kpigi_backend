@@ -86,6 +86,9 @@ router.post("/private/notifications-list", notificationObj.getInbox);
 router.post("/private/notifications-read", notificationObj.markAsRead);
 router.post("/private/notifications-update-settings", notificationObj.updateSettings);
 router.post("/private/notifications-get-settings", notificationObj.getSettings);
+router.post("/private/notification-clear", notificationObj.clear);
+router.post("/private/notification-mark-all-read", notificationObj.markAllAsRead); 
+router.post("/private/notification-single-delete", notificationObj.singleDelete);
 
 //******************************************* 🛡️ Security ************************************************//
 router.post("/public/security-report", securityObj.reportSuspicious);

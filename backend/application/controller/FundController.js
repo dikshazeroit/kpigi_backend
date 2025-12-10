@@ -25,6 +25,10 @@ import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
 import constants from "../../config/Constants.js";
 import FundModel from "../model/FundModel.js";
+import UsersCredentialsModel from "../model/UserModel.js";
+import UserDevice from "../model/UserDeviceModel.js";
+import NotificationModel from "../model/NotificationModel.js";
+import newModelObj from "../model/CommonModel.js";
 
 let fundObj = {};
 
@@ -41,14 +45,22 @@ fundObj.createFundRequest = async function (req, res) {
     // 1️⃣ Get user ID
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-E1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-E1001", message: "Unauthorized access." },
+        200
+      );
     }
 
     const { title, purpose, category, amount, deadline, story } = req.body;
 
     // 2️⃣ Validate required fields
     if (!title || !purpose || !category || !amount || !deadline || !story) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-E1002", message: "Missing required fields." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-E1002", message: "Missing required fields." },
+        200
+      );
     }
 
     // 3️⃣ Handle media files (up to 5)
@@ -60,7 +72,6 @@ fundObj.createFundRequest = async function (req, res) {
           const ext = path.extname(file.originalname).toLowerCase();
           const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
 
-          // Upload to S3
           await commonHelper.uploadFile({
             fileName,
             chunks: [file.buffer],
@@ -71,11 +82,10 @@ fundObj.createFundRequest = async function (req, res) {
 
           uploadedMedia.push(fileName);
         } else {
-          uploadedMedia.push(null); // fill missing media as null
+          uploadedMedia.push(null);
         }
       }
     } else {
-      // if no media uploaded
       uploadedMedia.push(null, null, null, null, null);
     }
 
@@ -99,7 +109,53 @@ fundObj.createFundRequest = async function (req, res) {
 
     await newFund.save();
 
-    // 5️⃣ Success response
+    // 6️⃣ Send Notification (NEW CODE)
+    try {
+      // Get user details
+      const user = await UsersCredentialsModel
+        .findOne({ uc_uuid: userId })
+        .select("uc_full_name uc_profile_photo");
+
+      // Get device tokens
+      const deviceRecords = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" },
+      }).select("ud_device_fcmToken");
+
+      const tokens = deviceRecords
+        .map((d) => d.ud_device_fcmToken)
+        .filter(Boolean);
+
+      const notiTitle = "Your fundraiser is live!";
+      const notiBody = `Your fundraiser "${title}" has been successfully created. Start sharing to receive donations.`;
+
+      // Save notification in DB
+      await NotificationModel.create({
+        n_uuid: v4(),
+        n_fk_uc_uuid: userId,
+        n_title: notiTitle,
+        n_body: notiBody,
+        n_payload: {
+          fund_uuid: uuid,
+          type: "fund_created",
+        },
+      });
+
+      // Send FCM push
+      if (tokens.length > 0) {
+        await newModelObj.sendNotificationToUser({
+          userId,
+          title: notiTitle,
+          body: notiBody,
+          data: { fund_uuid: uuid, type: "fund_created" },
+          tokens,
+        });
+      }
+    } catch (sendErr) {
+      console.error("⚠️ Notification send failed:", sendErr);
+    }
+
+    // 7️⃣ Success response
     return commonHelper.successHandler(res, {
       status: true,
       message: "Fund request created successfully.",
@@ -114,7 +170,11 @@ fundObj.createFundRequest = async function (req, res) {
 
   } catch (error) {
     console.error("❌ createFundRequest Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-E9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "FUND-E9999", message: "Internal server error." },
+      200
+    );
   }
 };
 

@@ -84,6 +84,7 @@ notificationObj.getInbox = async function (req, res) {
 // ----------------------------------------
 // 👉 MARK NOTIFICATION READ
 // ----------------------------------------
+
 notificationObj.markAsRead = async function (req, res) {
   try {
     const { n_uuid } = req.body;
@@ -109,10 +110,13 @@ notificationObj.markAsRead = async function (req, res) {
     });
   }
 };
+/**
+ * UPDATE NOTIFICATION SETTINGS
+ *
+ * @param {object}
+ * @param {object} 
+ */
 
-// ----------------------------------------
-// 👉 UPDATE NOTIFICATION SETTINGS
-// ----------------------------------------
 notificationObj.updateSettings = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -145,9 +149,13 @@ notificationObj.updateSettings = async function (req, res) {
   }
 };
 
-// ----------------------------------------
-// 👉 GET SETTINGS
-// ----------------------------------------
+
+/**
+ * GET SETTINGS user
+ *
+ * @param {object}
+ * @param {object} 
+ */
 notificationObj.getSettings = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -169,5 +177,150 @@ notificationObj.getSettings = async function (req, res) {
     });
   }
 };
+
+/**
+ * Clear all notification
+ *
+ * @param {object}
+ * @param {object} 
+ */
+notificationObj.clear = async (req, res) => {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "NOTIFY-E401", message: "Unauthorized access." },
+        200
+      );
+    }
+
+    // Delete all notifications for the user
+    const result = await NotificationModel.deleteMany({
+      n_fk_uc_uuid: userId,
+    });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "All notifications cleared.",
+      payload: { deleted: result.deletedCount },
+    });
+  } catch (err) {
+    console.error("❌ clear Error:", err);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "NOTIFY-E500", message: "Internal server error." },
+      200
+    );
+  }
+};
+
+/**
+ *Mark all as read notification
+ *
+ * @param {object}
+ * @param {object} 
+ */
+notificationObj.markAllAsRead = async (req, res) => {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "NOTIFY-E401", message: "Unauthorized access." },
+        200
+      );
+    }
+
+    // Mark all notifications as read
+    await NotificationModel.updateMany(
+      { n_fk_uc_uuid: userId, n_read: false },
+      { $set: { n_read: true } }
+    );
+
+    // Updated unread count
+    const unreadCount = await NotificationModel.countDocuments({
+      n_fk_uc_uuid: userId,
+      n_read: false,
+    });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "All notifications marked as read.",
+      payload: { unreadCount },
+    });
+  } catch (err) {
+    console.error("❌ markAllAsRead Error:", err);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "NOTIFY-E500", message: "Internal server error." },
+      200
+    );
+  }
+};
+
+/**
+ * Single delete notification
+ *
+ * @param {object}
+ * @param {object} 
+ */
+notificationObj.singleDelete = async (req, res) => {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "NOTIFY-E401", message: "Unauthorized access." },
+        200
+      );
+    }
+
+    const { notificationId } = req.body;
+
+    if (!notificationId) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "NOTIFY-E400", message: "Notification ID is required." },
+        200
+      );
+    }
+
+    // Delete only if notification belongs to the user
+    const result = await NotificationModel.deleteOne({
+      n_uuid: notificationId,
+      n_fk_uc_uuid: userId,
+    });
+
+    if (result.deletedCount === 0) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "NOTIFY-E404",
+          message: "Notification not found or unauthorized.",
+        },
+        200
+      );
+    }
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Notification deleted successfully.",
+      payload: { deleted: result.deletedCount },
+    });
+  } catch (err) {
+    console.error("❌ singleDelete Error:", err);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "NOTIFY-E500", message: "Internal server error." },
+      200
+    );
+  }
+};
+
 
 export default notificationObj;

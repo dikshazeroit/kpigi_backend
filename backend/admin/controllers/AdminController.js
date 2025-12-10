@@ -345,77 +345,75 @@ export const setNewPassword = async (req, res, next) => {
  * This function is using to update Admin
  * @param     :
  * @returns   :
- * @developer :vishalverma
+ * @developer :Sangeeta
  * @updatedBy :
  */
 
-  export const updateAdmin = async (req, res, next) => {
-    try {
-      const { id } = req.user;
-      const { name, surname, phone, address, password } = req.body;
+export const updateAdmin = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { name, surname, phone, address, password } = req.body;
 
-      const admin = await findAdminById(id);
-      if (!admin) {
-        return res
-          .status(404)
-          .json({ status: false, message: "Admin not found" });
-      }
-
-      if (name) admin.au_name = name;
-      if (surname) admin.au_surname = surname;
-      if (phone) admin.au_phone = phone;
-      if (address) admin.au_address = address;
-
-      if (req.file && req.file.buffer) {
-        const constants = await getConstant();
-        const ext = path.extname(req.file.originalname).toLowerCase();
-        const imageName = `${Date.now()}${ext}`.replace(/ /g, "_");
-
-        const uploadResult = await helper.uploadFile({
-          fileName: imageName,
-          chunks: [req.file.buffer],
-          contentType: req.file.mimetype,
-          uploadFolder: process.env.AWS_USER_FILE_FOLDER,
-        });
-
-        if (uploadResult && uploadResult.Location) {
-          admin.au_image = imageName;
-        }
-      }
-
-      if (password) {
-        if (password.length < 6) {
-          return res
-            .status(400)
-            .json({
-              status: false,
-              message: "Password must be at least 6 characters long",
-            });
-        }
-        admin.au_password = await bcrypt.hash(password, 10);
-      }
-
-      await admin.save();
-
-      const constants = await getConstant();
-      const imageUrl = admin.au_image
-        ? `${constants.AWS_FILE_URL}${constants.UPLOAD_PROFILE_PATH}${admin.au_image}`
-        : null;
-
-      return successHandler(res, {
-        message: "Admin updated successfully",
-        payload: {
-          name: `${admin.au_name} ${admin.au_surname}`,
-          email: admin.au_email,
-          phone: admin.au_phone,
-          image: admin.au_image,
-          address: admin.au_address,
-        },
+    const admin = await findAdminById(id);
+    if (!admin) {
+      return res.status(404).json({
+        status: false,
+        message: "Admin not found",
       });
-    } catch (error) {
-      next(error);
     }
-  };
+
+    if (name) admin.au_name = name;
+    if (surname) admin.au_surname = surname;
+    if (phone) admin.au_phone = phone;
+    if (address) admin.au_address = address;
+
+    // ⭐ IMAGE UPLOAD
+    if (req.file && req.file.buffer) {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const imageName = `${Date.now()}${ext}`.replace(/ /g, "_");
+
+      const uploadResult = await helper.uploadFile({
+        fileName: imageName,
+        chunks: [req.file.buffer],
+        contentType: req.file.mimetype,
+        uploadFolder: process.env.AWS_USER_FILE_FOLDER,
+      });
+
+      if (uploadResult?.Location) {
+        admin.au_image = imageName;
+      }
+    }
+
+    // ⭐ PASSWORD UPDATE
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({
+          status: false,
+          message: "Password must be at least 6 characters long",
+        });
+      }
+      admin.au_password = await bcrypt.hash(password, 10);
+    }
+
+    await admin.save();
+
+    const constants = await getConstant();
+
+    return successHandler(res, {
+      message: "Admin updated successfully",
+      payload: {
+        name: `${admin.au_name} ${admin.au_surname}`,
+        email: admin.au_email,
+        phone: admin.au_phone,
+        image: admin.au_image,
+        address: admin.au_address,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 

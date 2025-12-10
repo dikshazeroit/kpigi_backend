@@ -4,6 +4,10 @@ import DonationModel from "../model/DonationModel.js";
 import UserModel from "../model/UserModel.js";
 import appHelper from "../helpers/Index.js";
 import commonHelper from "../../utils/Helper.js";
+import UsersCredentialsModel from "../model/UserModel.js";
+import UserDevice from "../model/UserDeviceModel.js";
+import NotificationModel from "../model/NotificationModel.js";
+import newModelObj from "../model/CommonModel.js";
 
 let payoutObj = {};
 
@@ -54,7 +58,7 @@ payoutObj.processPayout = async function (req, res) {
     }
 
     // Find user payout card token
-    const user = await UserModel.findOne({ uc_uuid: userId });
+    const user = await UsersCredentialsModel.findOne({ uc_uuid: userId });
 
     if (!user || !user.uc_payout_card_token) {
       return commonHelper.errorHandler(
@@ -64,7 +68,7 @@ payoutObj.processPayout = async function (req, res) {
       );
     }
 
-    // No real payment → simulation
+    // Payout simulation
     const payoutUuid = v4();
 
     const payoutRecord = new PayoutModel({
@@ -82,14 +86,58 @@ payoutObj.processPayout = async function (req, res) {
 
     await payoutRecord.save();
 
-    // Send notification
-    if (appHelper.sendNotification) {
-      await appHelper.sendNotification({
-        userUuid: userId,
-        title: "Payout sent",
-        body: `₹${donation.d_amount_to_owner} payout successfully sent to your debit card.`,
+    // ---------------------------------------
+    // 6️⃣ SEND NOTIFICATION (UPDATED)
+    // ---------------------------------------
+    try {
+      // Find device FCM tokens for the requester
+      const deviceRecords = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" },
+      }).select("ud_device_fcmToken");
+
+      const tokens = deviceRecords
+        .map((d) => d.ud_device_fcmToken)
+        .filter(Boolean);
+
+      const amount = donation.d_amount_to_owner;
+
+      const notiTitle = "Payout Sent!";
+      const notiBody = `₹${amount} successfully transferred to your linked debit card.`;
+
+      // Save notification in DB
+      await NotificationModel.create({
+        n_uuid: v4(),
+        n_fk_uc_uuid: userId,
+        n_title: notiTitle,
+        n_body: notiBody,
+        n_payload: {
+          payout_uuid: payoutUuid,
+          donation_uuid,
+          amount,
+          type: "payout_sent",
+        },
       });
+
+      // Send Push Notification
+      if (tokens.length > 0) {
+        await newModelObj.sendNotificationToUser({
+          userId,
+          title: notiTitle,
+          body: notiBody,
+          data: {
+            payout_uuid: payoutUuid,
+            donation_uuid,
+            type: "payout_sent",
+          },
+          tokens,
+        });
+      }
+    } catch (sendErr) {
+      console.error("⚠️ Payout Notification Error:", sendErr);
     }
+
+    // ---------------------------------------
 
     return commonHelper.successHandler(res, {
       status: true,
@@ -99,6 +147,7 @@ payoutObj.processPayout = async function (req, res) {
         amount: donation.d_amount_to_owner,
       },
     });
+
   } catch (err) {
     console.error("❌ processPayout Error:", err);
 
@@ -109,6 +158,7 @@ payoutObj.processPayout = async function (req, res) {
     );
   }
 };
+
 
 // ----- PAYOUT HISTORY -----
 payoutObj.getPayoutHistory = async function (req, res) {
