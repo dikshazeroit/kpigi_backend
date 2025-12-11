@@ -21,6 +21,7 @@ import {
   resumeFundraiser,
   editFundraiser,
 } from "../controllers/FundraisersController.js";
+
 const router = express.Router();
 
 // 🌍 Global middleware
@@ -69,4 +70,16 @@ router.post("/private/fundraiser-reject", adminAuth, rejectFundraiser);
 router.post("/private/fundraiser-pause", adminAuth, pauseFundraiser);
 router.post("/private/fundraiser-resume", adminAuth, resumeFundraiser);
 router.post("/private/fundraiser-edit", adminAuth, editFundraiser);
+
+//****************************** 🔐 Donation Routes *******************************************//
+router.get("/private/donations-list", adminAuth, getAllDonations);
+router.post("/private/donation-mark-safe", adminAuth, markDonationSafe);
+router.post("/private/donation-mark-fraud", adminAuth, markDonationFraud);
+
+//****************************** 🔐 Payout Routes *******************************************//
+router.get("/private/payouts-list", adminAuth, getAllPayouts);
+router.post("/private/payout-approve", adminAuth, approvePayout);
+router.post("/private/payout-reject", adminAuth, rejectPayout);
+router.post("/private/payout-update-status", adminAuth, updatePayoutStatus);
+
 export default router;
