@@ -3,19 +3,24 @@ import { allowHeaders } from "../../middleware/Cors.js";
 import { authenticate } from "../../middleware/JsonWebToken.js";
 import { hasPermission } from "../../middleware/Authrise.js";
 import { uploadImage } from "../../middleware/Uploads.js";
+import {adminAuth} from "../../middleware/adminAuth.js";
 
 import { 
   CreateAdmin,  deleteAdmin,  forgetPassword, getAdminDetails, getAdminDetailsById, getAdminWithRole, 
   getAllAdmins, 
   loginAdmin, setNewPassword, updateAdmin, updateAdminById, verifyOtp 
 } from "../controllers/AdminController.js";
-
-import { getPrivacyPolicy, savePrivacyPolicy } from "../controllers/AboutController.js";
-
+import { deleteUserById, getAllUsers,getUserById } from "../controllers/UserController.js";
 import { createRole, deleteRole, getAllRoles, getRoleById, updateRole } from "../controllers/RolesController.js";
 import { getAllPermissions } from "../controllers/PermisionController.js";
-import { getActiveUsersGrowth, getDashboardStats, getNewMatches, getRecentUserActivity, getUserReligionDistribution } from "../controllers/DashboardController.js";
-
+import {
+  getAllFundraisers,
+  approveFundraiser,
+  rejectFundraiser,
+  pauseFundraiser,
+  resumeFundraiser,
+  editFundraiser,
+} from "../controllers/FundraisersController.js";
 const router = express.Router();
 
 // 🌍 Global middleware
@@ -52,6 +57,16 @@ router.get("/private/adminDetail/:id", hasPermission("admin:view"), getAdminDeta
 router.put("/private/updateAdmindetail/:id", hasPermission("admin:edit"), uploadImage.single("image"), updateAdminById);
 router.delete("/private/adminDelete/:id", hasPermission("admin:delete"), deleteAdmin)
 
+//****************************** 🔐 User Routes *******************************************//
+router.get("/private/getAllUsers", adminAuth, getAllUsers);
+router.get("/private/getUserBy/:id", hasPermission("user:view"), getUserById);
+router.delete("/private/deleteUser/:id", hasPermission("user:delete"), deleteUserById);
 
-
+//****************************** 🔐 Fundraisers Routes *******************************************//
+router.get("/private/fundraisers-list", adminAuth, getAllFundraisers);
+router.post("/private/fundraiser-approve", adminAuth, approveFundraiser);
+router.post("/private/fundraiser-reject", adminAuth, rejectFundraiser);
+router.post("/private/fundraiser-pause", adminAuth, pauseFundraiser);
+router.post("/private/fundraiser-resume", adminAuth, resumeFundraiser);
+router.post("/private/fundraiser-edit", adminAuth, editFundraiser);
 export default router;

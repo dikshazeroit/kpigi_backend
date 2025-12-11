@@ -1,10 +1,27 @@
+/**
+ * ================================================================================
+ * ⛔ COPYRIGHT NOTICE
+ * --------------------------------------------------------------------------------
+ * © Zero IT Solutions – All Rights Reserved
+ * 
+ * ⚠️ Unauthorized copying, distribution, or reproduction of this file, 
+ *     via any medium, is strictly prohibited.
+ * 
+ * 🔒 This file contains proprietary and confidential information. Dissemination 
+ *     or use of this material is forbidden unless prior written permission is 
+ *     obtained from Zero IT Solutions.
+ * --------------------------------------------------------------------------------
+ * 🧑‍💻 Author       : Sangeeta Kumari <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : Donation module with create, list, and donor management.
+ * ================================================================================
+ */
 
 import { v4 } from "uuid";
 import DonationModel from "../model/DonationModel.js";
 import PayoutModel from "../model/PayoutModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
-import constants from "../../config/Constants.js";
 import FundModel from "../model/FundModel.js";
 import UsersCredentialsModel from "../model/UserModel.js";
 import UserDevice from "../model/UserDeviceModel.js";
@@ -13,16 +30,30 @@ import NotificationModel from "../model/NotificationModel.js";
 
 let donationObj = {};
 
-// 2.8% fee calculator
+/**
+ * Calculate platform fee (2.8%) and net donation amount.
+ *
+ * @param {number} amount - Donation amount
+ * @returns {object} - { fee, net }
+ */
 function calculateFee(amount) {
   const fee = Number(((amount * 2.8) / 100).toFixed(2));
   const net = Number((amount - fee).toFixed(2));
   return { fee, net };
 }
 
+/**
+ * Create a new donation for a specific fund.
+ *
+ * Handles anonymous donations, validates fund and requester payout,
+ * calculates fees, creates donation and payout records, and sends notifications.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void}
+ */
 donationObj.createDonation = async function (req, res) {
   try {
-    // donor might be null (guest)
     let donorUuid = null;
 
     try {
@@ -45,7 +76,6 @@ donationObj.createDonation = async function (req, res) {
       );
     }
 
-    // find fund
     const fund = await FundModel.findOne({ f_uuid: fund_uuid });
 
     if (!fund) {
@@ -61,9 +91,6 @@ donationObj.createDonation = async function (req, res) {
     }
 
     const requesterUuid = fund.f_fk_uc_uuid;
-
-    // find requester payout card token
-  
     const requester = await UsersCredentialsModel.findOne({ uc_uuid: requesterUuid });
 
     if (!requester || !requester.uc_payout_card_token) {
@@ -80,7 +107,6 @@ donationObj.createDonation = async function (req, res) {
 
     const { fee, net } = calculateFee(Number(amount));
 
-    // create donation record
     const donationUuid = v4();
     const donationRecord = new DonationModel({
       d_uuid: donationUuid,
@@ -95,7 +121,6 @@ donationObj.createDonation = async function (req, res) {
 
     await donationRecord.save();
 
-    // create payout record
     const payoutUuid = v4();
     const payoutRecord = new PayoutModel({
       p_uuid: payoutUuid,
@@ -109,22 +134,18 @@ donationObj.createDonation = async function (req, res) {
 
     await payoutRecord.save();
 
-    // 6️⃣ SEND NOTIFICATION (Updated)
+    // Send notification
     try {
-      // Get device tokens of requester
       const deviceRecords = await UserDevice.find({
         ud_fk_uc_uuid: requesterUuid,
         ud_device_fcmToken: { $exists: true, $ne: "" },
       }).select("ud_device_fcmToken");
 
-      const tokens = deviceRecords
-        .map((d) => d.ud_device_fcmToken)
-        .filter(Boolean);
+      const tokens = deviceRecords.map((d) => d.ud_device_fcmToken).filter(Boolean);
 
       const notiTitle = "New donation received!";
       const notiBody = `You received $${net} from a supporter.`;
 
-      // Save notification in DB
       await NotificationModel.create({
         n_uuid: v4(),
         n_fk_uc_uuid: requesterUuid,
@@ -138,7 +159,6 @@ donationObj.createDonation = async function (req, res) {
         },
       });
 
-      // Send push notification if tokens exist
       if (tokens.length > 0) {
         await newModelObj.sendNotificationToUser({
           userId: requesterUuid,
@@ -156,30 +176,28 @@ donationObj.createDonation = async function (req, res) {
       console.error("⚠️ Donation Notification Error:", sendErr);
     }
 
-    // success response
     return commonHelper.successHandler(res, {
       status: true,
       message: "Donation successful. Amount sent to requester.",
-      payload: {
-        donation_uuid: donationUuid,
-        payout_uuid: payoutUuid,
-      },
+      payload: { donation_uuid: donationUuid, payout_uuid: payoutUuid },
     });
   } catch (err) {
     console.error("❌ createDonation:", err);
     return commonHelper.errorHandler(
       res,
-      {
-        status: false,
-        code: "DON-E9999",
-        message: "Internal server error.",
-      },
+      { status: false, code: "DON-E9999", message: "Internal server error." },
       200
     );
   }
 };
 
-
+/**
+ * Fetch donations made by the current user.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void}
+ */
 donationObj.getMyDonations = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -191,16 +209,22 @@ donationObj.getMyDonations = async function (req, res) {
       message: "Donation list fetched.",
       payload: list,
     });
-
   } catch (e) {
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "DON-L9999",
-      message: "Internal error.",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "DON-L9999", message: "Internal error." },
+      200
+    );
   }
 };
 
+/**
+ * Fetch all donors for a specific fund.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void}
+ */
 donationObj.getFundDonors = async function (req, res) {
   try {
     const { fund_uuid } = req.body;
@@ -220,13 +244,12 @@ donationObj.getFundDonors = async function (req, res) {
       message: "Donors fetched.",
       payload: list,
     });
-
   } catch (err) {
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "DON-F9999",
-      message: "Internal error.",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "DON-F9999", message: "Internal error." },
+      200
+    );
   }
 };
 

@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal Kumar <vishal@zeroitsolutions.com>
- *  @date       Aug 2025
+ *  @author     Sangeeta <sangeeta.zeroit@gmail.com>
+ *  @date       Dec 2025
  *  @version    1.0.0
  *  @module     Subscription Services
  *  @description Contains all database service functions for Subscription Plans including

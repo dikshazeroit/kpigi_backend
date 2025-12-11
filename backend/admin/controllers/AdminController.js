@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Sangeeta <vishalverma@zeroitsolutions.com>
- *  @date       June 2025
+ *  @author     Sangeeta Kumari <sangeeta.zeroit@gmail.com>
+ *  @date       Dec 2025
  *  @version    1.0.0
  *  @module     Admin Controller
  *  @description Handles all Admin-related API endpoints including creation,
@@ -28,7 +28,6 @@ import { findAdminById } from "../../services/AdminServices.js";
 import { saveAdmin } from "../../services/AdminServices.js";
 import AdminModel from "../models/Admin.js";
 import helper from "../../utils/Helper.js";
-import getConstant from "../../config/Constants.js";
 import RoleModel from "../models/Role.js";
 import PermissionModel from "../models/Permission.js";
 
@@ -38,7 +37,7 @@ import PermissionModel from "../models/Permission.js";
  * This function is using to create Admin
  * @param     :
  * @returns   :
- * @developer :vishalverma
+ * @developer :sangeeta
  * @updatedBy :
  */
 
@@ -397,7 +396,6 @@ export const updateAdmin = async (req, res, next) => {
 
     await admin.save();
 
-    const constants = await getConstant();
 
     return successHandler(res, {
       message: "Admin updated successfully",
@@ -596,9 +594,9 @@ export const updateAdminById = async (req, res, next) => {
 
     await admin.save();
 
-    const constants = await getConstant();
+  
     const imageUrl = admin.au_image
-      ? `${constants.AWS_FILE_URL}${constants.UPLOAD_PROFILE_PATH}${admin.au_image}`
+      ? `${process.env.AWS_FILE_URL}${process.env.UPLOAD_PROFILE_PATH}${admin.au_image}`
       : null;
 
     return successHandler(res, {

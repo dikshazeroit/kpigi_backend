@@ -9,7 +9,7 @@
  * ============================================================================
  *
  *  @author     Sangeeta <sangeeta.zeroit@gmail.com>
- *  @date       June 2025
+ *  @date       Dec 2025
  *  @version    1.0.0
  *  @module     Admin Model
  *  @description Defines the Mongoose schema for Admin, including validation rules

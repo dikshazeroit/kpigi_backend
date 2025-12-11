@@ -1,3 +1,23 @@
+/**
+ * ================================================================================
+ * ⛔ COPYRIGHT NOTICE
+ * --------------------------------------------------------------------------------
+ * © Zero IT Solutions – All Rights Reserved
+ *
+ * ⚠️ Unauthorized copying, distribution, or reproduction of this file,
+ *     via any medium, is strictly prohibited.
+ *
+ * 🔒 This file contains proprietary and confidential information. Dissemination
+ *     or use of this material is forbidden unless prior written permission is
+ *     obtained from Zero IT Solutions.
+ * --------------------------------------------------------------------------------
+ * 🧑‍💻 Written By  : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : Payout management (process payout & fetch payout history)
+ * ✏️ Modified By   :
+ * ================================================================================
+ */
+
 import { v4 } from "uuid";
 import PayoutModel from "../model/PayoutModel.js";
 import DonationModel from "../model/DonationModel.js";
@@ -11,7 +31,17 @@ import newModelObj from "../model/CommonModel.js";
 
 let payoutObj = {};
 
-// ----- SEND PAYOUT TO USER -----
+/**
+ * Process a payout to a user for a donation.
+ *
+ * Validates user authorization, donation existence, payout card availability,
+ * and sends notification to the user upon successful payout.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
 payoutObj.processPayout = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -90,22 +120,17 @@ payoutObj.processPayout = async function (req, res) {
     // 6️⃣ SEND NOTIFICATION (UPDATED)
     // ---------------------------------------
     try {
-      // Find device FCM tokens for the requester
       const deviceRecords = await UserDevice.find({
         ud_fk_uc_uuid: userId,
         ud_device_fcmToken: { $exists: true, $ne: "" },
       }).select("ud_device_fcmToken");
 
-      const tokens = deviceRecords
-        .map((d) => d.ud_device_fcmToken)
-        .filter(Boolean);
+      const tokens = deviceRecords.map((d) => d.ud_device_fcmToken).filter(Boolean);
 
       const amount = donation.d_amount_to_owner;
-
       const notiTitle = "Payout Sent!";
       const notiBody = `₹${amount} successfully transferred to your linked debit card.`;
 
-      // Save notification in DB
       await NotificationModel.create({
         n_uuid: v4(),
         n_fk_uc_uuid: userId,
@@ -119,7 +144,6 @@ payoutObj.processPayout = async function (req, res) {
         },
       });
 
-      // Send Push Notification
       if (tokens.length > 0) {
         await newModelObj.sendNotificationToUser({
           userId,
@@ -136,8 +160,6 @@ payoutObj.processPayout = async function (req, res) {
     } catch (sendErr) {
       console.error("⚠️ Payout Notification Error:", sendErr);
     }
-
-    // ---------------------------------------
 
     return commonHelper.successHandler(res, {
       status: true,
@@ -159,8 +181,16 @@ payoutObj.processPayout = async function (req, res) {
   }
 };
 
-
-// ----- PAYOUT HISTORY -----
+/**
+ * Get payout history for the logged-in user.
+ *
+ * Fetches all payouts related to the user, sorted by creation date.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
 payoutObj.getPayoutHistory = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);

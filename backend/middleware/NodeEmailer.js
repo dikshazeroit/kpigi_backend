@@ -1,25 +1,22 @@
-// import nodemailer from "nodemailer";
 
-// export const sendOTP = async (email, otp) => {
-
-//   const transporter = nodemailer.createTransport({
-//   service: "Gmail",
-//   auth: {
-//     user: process.env.SENDER_EMAIL,
-//     pass: process.env.SENDER_PASSWORD,
-//   },
-// });
-
-// const mailOptions = {
-//   from: process.env.SENDER_EMAIL,
-//   to: email,
-//   subject: "Your OTP for Password Reset",
-//   text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
-// };
-
-
-//   await transporter.sendMail(mailOptions);
-// };
+/**
+ * ================================================================================
+ * ⛔ COPYRIGHT NOTICE
+ * --------------------------------------------------------------------------------
+ * © Zero IT Solutions – All Rights Reserved
+ * 
+ * ⚠️ Unauthorized copying, distribution, or reproduction of this file, 
+ *     via any medium, is strictly prohibited.
+ * 
+ * 🔒 This file contains proprietary and confidential information. Dissemination 
+ *     or use of this material is forbidden unless prior written permission is 
+ *     obtained from Zero IT Solutions.
+ * --------------------------------------------------------------------------------
+ * 🧑‍💻 Author       : Sangeeta Kumari <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : OTP email sender using Nodemailer (Gmail App Password)
+ * ================================================================================
+ */
 import nodemailer from "nodemailer";
 
 export const sendOTP = async (email, otp) => {

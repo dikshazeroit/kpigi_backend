@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal Kumar <vishal.zeroitsolutions@gmail.com>
- *  @date       Aug 2025
+ *  @author     Sangeeta Kumari <sangeeta.zeroit@gmail.com>
+ *  @date       dec 2025
  *  @version    1.0.0
  *  @module     About Services
  *  @description Contains all database service functions for the Admin About module such as

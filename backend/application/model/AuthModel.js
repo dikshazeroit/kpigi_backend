@@ -1,7 +1,34 @@
-import UserDevice from './UserDeviceModel.js'; // adjust path if needed
+/**
+ * ================================================================================
+ * ⛔ COPYRIGHT NOTICE
+ * --------------------------------------------------------------------------------
+ * © Zero IT Solutions – All Rights Reserved
+ *
+ * ⚠️ Unauthorized copying, distribution, or reproduction of this file,
+ *     via any medium, is strictly prohibited.
+ *
+ * 🔒 This file contains proprietary and confidential information. Dissemination
+ *     or use of this material is forbidden unless prior written permission is
+ *     obtained from Zero IT Solutions.
+ * --------------------------------------------------------------------------------
+ * 🧑‍💻 Written By  : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : User authentication device management.
+ * ✏️ Modified By   :
+ * ================================================================================
+ * MAIN MODULE HEADING: Zero IT Solutions - Auth / Device Module
+ */
+
+import UserDevice from './UserDeviceModel.js';
 
 const authModel = {};
 
+/**
+ * Remove all devices of a specific user
+ *
+ * @param {string} userId
+ * @returns {boolean} success status
+ */
 authModel.removeUserDevice = async function (userId) {
   if (!userId) {
     console.error("Invalid userId provided for device removal.");
@@ -18,6 +45,12 @@ authModel.removeUserDevice = async function (userId) {
   }
 };
 
+/**
+ * Add a new device for user after removing existing devices
+ *
+ * @param {object} data - device data
+ * @returns {boolean} success status
+ */
 authModel.addDeviceIfNotExists = async function (data) {
   try {
     const removed = await authModel.removeUserDevice(data.ud_fk_uc_uuid);

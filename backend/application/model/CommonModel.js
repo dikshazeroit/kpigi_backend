@@ -1,13 +1,22 @@
 /**
- * Copyright (C) Zero IT Solutions - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential. Dissemination of this information or reproduction 
- * of this material is strictly forbidden unless prior written permission is obtained
- * from Zero IT Solutions.
-
- * Written By  : Payal Sharma  <Payal.zeroit@gmail.com>, April 2025
- * Description :
- * Modified By :
+ * ================================================================================
+ * ⛔ COPYRIGHT NOTICE
+ * --------------------------------------------------------------------------------
+ * © Zero IT Solutions – All Rights Reserved
+ *
+ * ⚠️ Unauthorized copying, distribution, or reproduction of this file,
+ *     via any medium, is strictly prohibited.
+ *
+ * 🔒 This file contains proprietary and confidential information. Dissemination
+ *     or use of this material is forbidden unless prior written permission is
+ *     obtained from Zero IT Solutions.
+ * --------------------------------------------------------------------------------
+ * 🧑‍💻 Written By  : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : Common send notification model
+ * ✏️ Modified By   :
+ * ================================================================================
+ * MAIN MODULE HEADING: Zero IT Solutions - Common send notification Module
  */
 
 import admin from "firebase-admin";

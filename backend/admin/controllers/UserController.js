@@ -8,7 +8,7 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal Kumar <vishal@zeroitsolutions.com>
+ *  @author     Sangeeta <sangeeta.zeroit@gmail.com>
  *  @date       Aug 2025
  *  @version    1.0.0
  *  @module     About Controller
@@ -21,9 +21,6 @@
 
 import { successHandler } from "../../middleware/SuccessHandler.js";
 import userModel from "../../application/model/UserModel.js";
-import swipeModel from "../../application/model/SwipeModel.js";
-import callScheduleModel from "../../application/model/ScheduledCallModel.js";
-
 
 export const getAllUsers = async (req, res, next) => {
   try {
@@ -37,48 +34,31 @@ export const getAllUsers = async (req, res, next) => {
       : {};
 
     const total = await userModel.countDocuments(query);
-    console.log(total,"husfhshfsfsffgh")
 
     const users = await userModel
       .find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 });
-       console.log(users,"husfhshfsfsffgh")
 
     const totalPages = Math.ceil(total / limit);
-     console.log(totalPages,"husfhshfsfsffgh")
 
-    const baseUrl = `${req.protocol}://${req.get("host")}${req.baseUrl}${req.path}`;
-
-    const prevPage =
-      page > 1 ? `${baseUrl}?page=${page - 1}&limit=${limit}&search=${search}` : null;
-
-    const nextPage =
-      page < totalPages
-        ? `${baseUrl}?page=${page + 1}&limit=${limit}&search=${search}`
-        : null;
-        console.log(nextPage,"husfhshfsfsffgh")
-        
     return res.status(200).json({
       status: true,
-      message: "Get all users successfully",
+      message: "All users fetched successfully",
       payload: users,
       pagination: {
-          currentPage: page,
-          totalPages,
-          totalRecords: total,
-          pageSize: limit,
-          prevPage,
-          nextPage,
-        },
-      
+        currentPage: page,
+        totalPages,
+        totalRecords: total,
+        pageSize: limit,
+      },
     });
-    
   } catch (error) {
     next(error);
   }
 };
+
 
 
 

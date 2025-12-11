@@ -11,9 +11,9 @@
  *     or use of this material is forbidden unless prior written permission is
  *     obtained from Zero IT Solutions.
  * --------------------------------------------------------------------------------
- * 🧑‍💻 Author       : Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * 📅 Created On    : May 2025
- * 📝 Description   : Route configuration for authentication and user modules.
+ * 🧑‍💻 Author       : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : Route configuration for authentication and user modules etc.
  * ✏️ Last Modified : [To be updated when modified]
  * ================================================================================
  */
@@ -48,8 +48,6 @@ router.post("/auth/forgot-password", authObj.userForgotPasswordEmail);
 router.post("/auth/resend-otp", authObj.resendOtp);
 router.post("/auth/reset-password", authObj.resetPasswordEmail);
 router.post("/auth/verify-forgot-email", authObj.verifyForgotEmail);    
-router.post("/auth/verify-card", authObj.verifyCardPayment);
-
 router.post("/auth/google-signin", authObj.signinWithGoogleId);
 router.post("/auth/apple-signin", authObj.signinWithAppleId);
 

@@ -28,8 +28,7 @@ import commonHelper from "../../utils/Helper.js";
 import * as helper from "../helpers/Index.js";
 import { v4 as uuidv4 } from "uuid";
 import authModel from '../model/AuthModel.js';
-import UserDevice from "../model/UserDeviceModel.js";
-import constants from "../../config/Constants.js";
+import UserDevice from "../model/UserDeviceModel.js"
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const JWT_SECRET = process.env.JWT_SECRET; // from .env
 let authObj = {};
@@ -89,14 +88,16 @@ authObj.sendEmailCode = async function (email) {
 };
 
 /**
- * New user register
+ * Register a new user using email and phone number.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Validates input, checks for existing users, hashes password,
+ * and stores new user record in the database.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
-
 
 
 authObj.registerWithEmail = async function (req, res) {
@@ -198,14 +199,16 @@ authObj.registerWithEmail = async function (req, res) {
 };
 
 /**
- *Check email exists
+ * Check whether an email is already registered in the system.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Accepts an email from the request body, validates it, 
+ * and returns whether the email exists in the database.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
-
 
 authObj.checkEmailExists = async function (req, res) {
   try {
@@ -263,13 +266,17 @@ authObj.checkEmailExists = async function (req, res) {
 };
 
 /**
- *Verify  email otp
+ * Verify email OTP during user authentication or registration.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Accepts email and OTP from the request body, validates OTP,
+ * and confirms whether the email has been successfully verified.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
+
 authObj.verifyEmail = async function (req, res) {
   try {
     const { email, otp } = req.body;
@@ -344,16 +351,20 @@ authObj.verifyEmail = async function (req, res) {
 
 
 /**
- * Logs in a user using email and password.
- * Validates input fields, verifies credentials, checks active status,
- * and returns basic user info on successful authentication.
- * Sends error responses for invalid credentials, inactive accounts, or missing fields.
+ * Log in a user using email and password.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Validates input fields, checks if the user exists, verifies the password,
+ * ensures the account is active, and updates device information.
+ * Returns authenticated user data and access token on success.
+ * Sends appropriate error responses for invalid credentials, inactive accounts,
+ * or missing required fields.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
+
 
 authObj.loginWithEmail = async function (req, res) {
   try {
@@ -444,18 +455,19 @@ authObj.loginWithEmail = async function (req, res) {
   }
 };
 
-
-
-
-
 /**
- * Sends a forgot password OTP to the user's email if the account exists and is active.
+ * Send OTP to user email for resetting the password.
  *
- * @param {object} req - 
- * @param {object} res -
+ * Checks if the email exists and the account is active.
+ * Generates a new OTP, stores it, and sends it to the user's email
+ * for password recovery.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
+
 
 authObj.userForgotPasswordEmail = async function (req, res) {
   try {
@@ -536,14 +548,18 @@ authObj.userForgotPasswordEmail = async function (req, res) {
 };
 
 /**
- * Resets the user's password using the provided email, new password, and OTP.
- * Validates the OTP before allowing the password reset.
+ * Reset user password using email, OTP, and a new password.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Validates the provided OTP, ensures the user exists and is eligible
+ * for password reset, then updates the user's password securely.
+ * Sends error responses for invalid OTP, expired OTP, or missing fields.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
- * @developer sangeeta
+ * @developer Sangeeta
  */
+
 
 authObj.resetPasswordEmail = async function (req, res) {
   try {
@@ -612,10 +628,13 @@ authObj.resetPasswordEmail = async function (req, res) {
 };
 
 /**
- * Resends OTP to the user's email for account verification.
+ * Resend verification OTP to the user's email.
  *
- * @param {object} req - 
- * @param {object} res - 
+ * Validates the email, checks if the account exists, generates a new OTP,
+ * updates the record, and sends the OTP again for account verification.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
  * @developer Sangeeta
  */
@@ -682,14 +701,16 @@ authObj.resendOtp = async function (req, res) {
   }
 };
 
-
 /**
- *  Verifies the OTP sent to the user's email during the password reset process.
+ * Verify the OTP sent to the user's email for password reset.
  *
- * @param {object} req 
- * @param {object} res 
+ * Validates the provided email and OTP, checks OTP correctness and expiry,
+ * and confirms whether the user is allowed to proceed with password reset.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
- * @developer Sangeeta 
+ * @developer Sangeeta
  */
 
 authObj.verifyForgotEmail = async function (req, res) {
@@ -757,103 +778,19 @@ authObj.verifyForgotEmail = async function (req, res) {
   }
 };
 
-
-
-
-
- /**
- * Used to Verify card payment
+/**
+ * Sign in or register a user using Google ID authentication.
  *
- * @param {object} req 
- * @param {object} res 
+ * Verifies the Google user details, checks if the user already exists,
+ * creates a new account if necessary, updates device information,
+ * and returns an authentication token with user details.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
- * @developer Sangeeta 
+ * @developer Sangeeta
  */
 
-authObj.verifyCardPayment = async function (req, res) {
-  try {
-    const { email, paymentIntentId } = req.body || {};
-
-    if (!email || !paymentIntentId) {
-      console.log("❌ Missing required fields:", { email, paymentIntentId });
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "SUB-UPD-E400",
-          message: "Email and paymentIntentId are required.",
-          status: false,
-        },
-        200
-      );
-    }
-
-    console.log("🔍 Verifying payment for:", email, paymentIntentId);
-
-    // ✅ Retrieve payment info from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    console.log("💳 Stripe Payment Status:", paymentIntent.status);
-
-    // ✅ Check payment status
-    if (paymentIntent.status === "succeeded") {
-      // Update user verification status in MongoDB
-      const updatedUser = await userModel.findOneAndUpdate(
-        { uc_email: email.toLowerCase(), uc_deleted: "0" },
-        { $set: { uc_card_verified: true } },
-        { new: true }
-      );
-
-      if (!updatedUser) {
-        return commonHelper.errorHandler(
-          res,
-          {
-            code: "SUB-UPD-E404",
-            message: "User not found or already deleted.",
-            status: false,
-          },
-          200
-        );
-      }
-
-      return commonHelper.successHandler(res, {
-        status: true,
-        message: "✅ Payment verified successfully with Stripe.",
-        payload: updatedUser,
-      });
-    } else {
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "SUB-UPD-E402",
-          message: `Payment not completed. Stripe status: ${paymentIntent.status}`,
-          status: false,
-        },
-        200
-      );
-    }
-  } catch (error) {
-    console.error("🚨 Error verifying payment:", error);
-    return commonHelper.errorHandler(
-      res,
-      {
-        code: "SUB-UPD-E500",
-        message: error.message || "Internal server error",
-        status: false,
-      },
-      200
-    );
-  }
-};
-
-
- /**
- * Used to sign in or register user with Google ID.
- *
- * @param {object} req 
- * @param {object} res 
- * @returns {void}
- * @developer Sangeeta 
- */
 authObj.signinWithGoogleId = async function (req, res) {
   try {
     const { email, name, deviceFcmToken, devicePlatform, deviceId } = req.body;
@@ -974,13 +911,18 @@ authObj.signinWithGoogleId = async function (req, res) {
 
 
 /**
- * Used to sign in or register user with Apple ID.
+ * Sign in or register a user using Apple ID authentication.
  *
- * @param {object} req 
- * @param {object} res 
+ * Verifies the Apple user details, checks if the user already exists,
+ * creates a new account if necessary, updates device information,
+ * and returns an authentication token along with user details.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
  * @returns {void}
- * @developer Sangeeta 
+ * @developer Sangeeta
  */
+
 
 authObj.signinWithAppleId = async function (req, res) {
   try {

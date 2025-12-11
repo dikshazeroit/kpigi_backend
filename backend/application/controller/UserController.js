@@ -11,12 +11,14 @@
  *     or use of this material is forbidden unless prior written permission is
  *     obtained from Zero IT Solutions.
  * --------------------------------------------------------------------------------
- * 🧑‍💻 Written By  : Payal Sharma <payal@zeroitsolutions.com>
- * 📅 Created On    : June 2025
- * 📝 Description   : Admin authentication and profile management.
+ * 🧑‍💻 Written By  : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
+ * 📝 Description   : user authentication and profile management.
  * ✏️ Modified By   :
  * ================================================================================
+ * MAIN MODULE HEADING: Zero IT Solutions - User Module
  */
+
 import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -25,20 +27,18 @@ import bcrypt from "bcryptjs";
 import userModel from "../model/UserModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
-import constants from "../../config/Constants.js";
 
 let userObj = {};
 /**
- * Get current user profile
+ *  Fetch current logged-in user's profile
  *
- * @param {object} req - 
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
-
 userObj.getUserProfile = async function (req, res) {
   try {
-
-     
     const userId = await appHelper.getUUIDByToken(req);
 
     if (!userId) {
@@ -53,7 +53,6 @@ userObj.getUserProfile = async function (req, res) {
       );
     }
 
-   
     const user = await userModel.findOne({ uc_uuid: userId, uc_deleted: "0" }).lean();
 
     if (!user) {
@@ -67,7 +66,7 @@ userObj.getUserProfile = async function (req, res) {
         200
       );
     }
-    
+
     return commonHelper.successHandler(
       res,
       {
@@ -91,13 +90,16 @@ userObj.getUserProfile = async function (req, res) {
     );
   }
 };
-
 /**
- * Update user location 
+ *  Update the user's current latitude and longitude
  *
- * @param {object} req - 
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
+
+
 userObj.updateUserLocation = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -165,23 +167,17 @@ userObj.updateUserLocation = async function (req, res) {
     );
   }
 };
-
-
-
-
-
-
-
 /**
- * Update current user profile
+ * Update current user's profile information
  *
- * @param {object} req -
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
 
 userObj.updateUserProfile = async function (req, res) {
   try {
-    // Extract user ID from token
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
       return commonHelper.errorHandler(res, {
@@ -210,7 +206,6 @@ userObj.updateUserProfile = async function (req, res) {
       }, 200);
     }
 
-    // Update allowed fields only
     if (uc_phone) user.uc_phone = uc_phone;
     if (uc_country_code) user.uc_country_code = uc_country_code;
     if (uc_address) user.uc_address = uc_address;
@@ -237,10 +232,12 @@ userObj.updateUserProfile = async function (req, res) {
 };
 
 /**
- * upload current user photo
+ * Upload or update the user's profile photo
  *
- * @param {object} req -
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
 userObj.uploadProfilePhoto = async function (req, res) {
   try {
@@ -253,8 +250,7 @@ userObj.uploadProfilePhoto = async function (req, res) {
         message: "Unauthorized access.",
       }, 200);
     }
- const conObj = await constants();
-    // Ensure file is uploaded
+
     if (!req.files?.profileImage?.[0]) {
       return commonHelper.errorHandler(res, {
         status: false,
@@ -267,16 +263,14 @@ userObj.uploadProfilePhoto = async function (req, res) {
     const ext = path.extname(file.originalname).toLowerCase();
     const fileName = `profile-${Date.now()}${ext}`.replace(/ /g, "_");
 
-    // Upload to AWS
     await commonHelper.uploadFile({
       fileName,
       chunks: [file.buffer],
       encoding: file.encoding,
       contentType: file.mimetype,
-      uploadFolder: conObj.AWS_USER_FILE_FOLDER,
+      uploadFolder: process.env.AWS_USER_FILE_FOLDER,
     });
 
-    // Find user
     const user = await userModel.findOne({ uc_uuid: userId });
     if (!user) {
       return commonHelper.errorHandler(res, {
@@ -286,16 +280,13 @@ userObj.uploadProfilePhoto = async function (req, res) {
       }, 200);
     }
 
-    // Save uploaded image name
     user.uc_profile_photo = fileName;
     await user.save();
 
     return commonHelper.successHandler(res, {
       status: true,
       message: "Profile photo updated successfully.",
-      payload: {
-        profilePhoto: fileName,
-      },
+      payload: { profilePhoto: fileName },
     });
 
   } catch (error) {
@@ -308,12 +299,13 @@ userObj.uploadProfilePhoto = async function (req, res) {
   }
 };
 
-
 /**
- * Update user settings
+ * Update user settings like full name, bio, notifications
  *
- * @param {object} req -
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
 userObj.updateSettings = async function (req, res) {
   try {
@@ -361,10 +353,12 @@ userObj.updateSettings = async function (req, res) {
   }
 };
 /**
- * User changed password 
+ *  Update user's password
  *
- * @param {object} req -
- * @param {object} res - 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
 userObj.changePassword = async function (req, res) {
   try {
@@ -416,15 +410,14 @@ userObj.changePassword = async function (req, res) {
     }, 200);
   }
 };
-
-
 /**
- * Delete Account user permanently
+ *  Permanently delete user's account
  *
- * @param {object}
- * @param {object} 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
-
 userObj.deleteAccount = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -438,7 +431,6 @@ userObj.deleteAccount = async function (req, res) {
       }, 200);
     }
 
-         // Delete the user itself
     await userModel.deleteOne({ uc_uuid: userId });
 
     return commonHelper.successHandler(res, {
@@ -457,14 +449,16 @@ userObj.deleteAccount = async function (req, res) {
 };
 
 /**
- * Update Payout Card
+ *  FUNCTION: updatePayoutCard
+ *  DESCRIPTION: Update user's payout card information
  *
- * @param {object}
- * @param {object} 
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
  */
 userObj.updatePayoutCard = async function (req, res) {
   try {
-    // 1️⃣ Get user ID from token
     const userId = await appHelper.getUUIDByToken(req);
     console.log(userId, "User ID from token");
 
@@ -488,7 +482,6 @@ userObj.updatePayoutCard = async function (req, res) {
       card_exp_year,
     } = req.body;
 
-    // 2️⃣ Validate required fields
     if (!card_token || !card_last4 || !card_brand) {
       return commonHelper.errorHandler(
         res,
@@ -501,7 +494,6 @@ userObj.updatePayoutCard = async function (req, res) {
       );
     }
 
-    // 3️⃣ Fetch user from DB
     const user = await userModel.findOne({ uc_uuid: userId });
     if (!user) {
       return commonHelper.errorHandler(
@@ -515,7 +507,6 @@ userObj.updatePayoutCard = async function (req, res) {
       );
     }
 
-    // 4️⃣ Update card info
     user.uc_payout_card_token = card_token;
     user.uc_card_last4 = card_last4;
     user.uc_card_brand = card_brand;
@@ -524,10 +515,8 @@ userObj.updatePayoutCard = async function (req, res) {
 
     await user.save();
 
-    // 5️⃣ Mask the token for response
     const maskedToken = "**** **** **** " + card_last4;
 
-    // 6️⃣ Send success response
     return commonHelper.successHandler(res, {
       status: true,
       message: "Payout card updated successfully.",
@@ -536,7 +525,7 @@ userObj.updatePayoutCard = async function (req, res) {
         card_brand,
         card_exp_month: user.uc_card_exp_month,
         card_exp_year: user.uc_card_exp_year,
-        card_token: maskedToken, // safe masked token
+        card_token: maskedToken,
       },
     });
   } catch (error) {
@@ -552,6 +541,5 @@ userObj.updatePayoutCard = async function (req, res) {
     );
   }
 };
-
 
 export default userObj;

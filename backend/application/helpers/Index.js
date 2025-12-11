@@ -11,8 +11,8 @@
  *    Dissemination or use of this material is forbidden unless prior written
  *    permission is obtained from Zero IT Solutions.
  * --------------------------------------------------------------------------------
- * 🧑‍💻 Written By  : Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * 📅 Created On   : June 2025
+ * 🧑‍💻 Written By  : Sangeeta  <sangeeta.zeroit@gmail.com>
+ * 📅 Created On   : Dec 2025
  * 📝 Description  : Email helper to send mails using Gmail SMTP.
  * ✏️ Modified By  :
  * ================================================================================
@@ -102,57 +102,6 @@ helper.getUUIDByToken = async function (req, uuid = '') {
   return '';
 };
 
-helper.calculateAge = async function (req,dob) {  
-  if (!dob) return null;
-  const birthDate = new Date(dob);
-  const ageDifMs = Date.now() - birthDate.getTime();
-  const ageDate = new Date(ageDifMs);
-  return Math.abs(ageDate.getUTCFullYear() - 1970);
-};
 
-// Haversine formula to calculate distance between two coordinates
-helper.getDistanceFromLatLonInKm = async function (lat1, lon1, lat2, lon2) {
-  // Use Haversine formula
-  const R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; // Distance in km
-  return d;
-};
-
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-/**
- * Check if two users are blocked from each other
- *
- * @param {String} senderUUID - sender user
- * @param {String} receiverUUID - receiver user
- * @returns {Boolean} true if blocked else false
- */
-helper.isBlocked = async (senderUUID, receiverUUID) => {
-  try {
-    // Check both directions:
-    // A blocked B OR B blocked A
-    const blockExists = await BlockUser.findOne({
-      bu_deleted: "0",
-      $or: [
-        { bu_user_uuid: senderUUID, bu_blocked_uuid: receiverUUID },
-        { bu_user_uuid: receiverUUID, bu_blocked_uuid: senderUUID }
-      ]
-    });
-
-    return !!blockExists; // returns true or false
-  } catch (error) {
-    console.error("❌ Block Check Error:", error);
-    return false; // fail-safe: don't block if DB fails, optional change to true if needed
-  }
-};
 
 export default helper;

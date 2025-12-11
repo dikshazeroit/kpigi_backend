@@ -11,8 +11,8 @@
  *     or use of this material is forbidden unless prior written permission is
  *     obtained from Zero IT Solutions.
  * --------------------------------------------------------------------------------
- * 🧑‍💻 Written By   : Diksha <dikshaj.zeroit@gmail.com>
- * 📅 Created On    : May 2025
+ * 🧑‍💻 Written By   : Sangeeta <sangeeta.zeroit@gmail.com>
+ * 📅 Created On    : Dec 2025
  * 📝 Description   : Provides AWS and application constants for use across modules.
  * ✏️ Modified By   :
  * ================================================================================
@@ -63,8 +63,8 @@ const helper = {};
  * @param {object} [options.payload={}] - The data payload to include in the response.
  * @returns {object} - JSON response sent to the client.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.successHandler = (
@@ -84,8 +84,8 @@ helper.successHandler = (
  * @param {number} [statusCode=500] - HTTP status code to be sent (default: 500).
  * @returns {object} - JSON error response sent to the client.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.errorHandler = (
@@ -104,8 +104,8 @@ helper.errorHandler = (
  *                                     "ID" (default) verifies the user in DB before returning ID.
  * @returns {Promise<string|boolean>} - Returns user ID, email, or false if verification fails.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.getUidByToken = async (req, returnType = "ID") => {
@@ -139,8 +139,8 @@ helper.getUidByToken = async (req, returnType = "ID") => {
  *                             "" (default) returns full formatted date and time as "Mon DD, YYYY, hh:mm AM/PM".
  * @returns {string} - Formatted date string or original input if invalid.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.dateFormat = (date, type = "") => {
@@ -171,8 +171,8 @@ helper.dateFormat = (date, type = "") => {
  *                             any other value returns a full JavaScript Date object.
  * @returns {Promise<string|Date>} - The current UTC time in the requested format.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.getUtcTime = async (type = "") => {
@@ -192,8 +192,8 @@ helper.getUtcTime = async (type = "") => {
  * @param {string} [options.html] - HTML content of the email (optional).
  * @returns {Promise<object>} - Returns the result of the email sending operation.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.sendMail = async ({ from, to, subject, text, html }) => {
@@ -213,8 +213,8 @@ helper.sendMail = async ({ from, to, subject, text, html }) => {
  * @param {string} [options.uploadFolder=""] - Optional folder path within the S3 bucket.
  * @returns {Promise<object|boolean>} - Returns the S3 upload response object on success, or false on failure.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.uploadFile = async ({
@@ -246,8 +246,8 @@ helper.uploadFile = async ({
  * @param {string} [options.folderName=""] - Optional folder path in the bucket where the file is located.
  * @returns {Promise<boolean>} - Returns true if deletion is successful, otherwise false.
  *
- * @developer Diksha Jaswal <dikshaj.zeroit@gmail.com>
- * @created May 2025
+ * @developer Sangeeta <sangeeta.zeroit@gmail.com>
+ * @created Dec 2025
  * @modified
  */
 helper.deleteAWSFile = async ({ fileName, folderName = "" }) => {

@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal verma <vishalverma@zeroitsolutions.com>
- *  @date       June 2025
+ *  @author     Sangeeta <sangeeta.zeroit@gmail.com>
+ *  @date       Dec 2025
  *  @version    1.0.0
  *  @module     Permission Controller
  *  @description Handles all permission-based-access API endpoints including creation,

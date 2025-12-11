@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal Verma <vishal@zeroitsolutions.com>
- *  @date       June 2025
+ *  @author    Sangeeta <sangeeta.zeroit@gmail.com>
+ *  @date       dec 2025
  *  @version    1.0.0
  *  @module     Faq Model
  *  @description Defines the Mongoose schema for Permision, including validation rules

@@ -8,8 +8,8 @@
  *  Zero IT Solutions.
  * ============================================================================
  *
- *  @author     Vishal Kumar <vishal@zeroitsolutions.com>
- *  @date       Aug 2025
+ *  @author     Sangeeta <sangeeta.zeroit@gmail.com>
+ *  @date       dec 2025
  *  @version    1.0.0
  *  @module     About Controller
  *  @description Handles all app about API endpoints including creation,
@@ -18,14 +18,14 @@
  *
  */
 import { successHandler } from "../../middleware/SuccessHandler.js";
-import { getAppInfo, saveAppInfo } from "../../services/aboutServices.js";
+import { getAppInfo, saveAppInfo } from "../../services/AboutServices.js";
 
 /**
  *
  * This function is using to save privacy policy
  * @param     :
  * @returns   :
- * @developer :Vishal Kumar
+ * @developer :Sangeeta Kumar
  * @updatedBy :
  */
 
@@ -75,7 +75,7 @@ export const savePrivacyPolicy = async (req, res, next) => {
  * This function is using to save privacy policy
  * @param     :
  * @returns   :
- * @developer :Vishal Kumar
+ * @developer :sangeeta
  * @updatedBy :
  */
 
