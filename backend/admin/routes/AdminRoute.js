@@ -21,6 +21,8 @@ import {
   resumeFundraiser,
   editFundraiser,
 } from "../controllers/FundraisersController.js";
+import {getAllDonations,markDonationSafe,markDonationFraud} from "../controllers/DonationController.js";
+import {getAllPayouts,approvePayout,rejectPayout,updatePayoutStatus} from "../controllers/PayoutController.js";
 
 const router = express.Router();
 
