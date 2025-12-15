@@ -1,0 +1,274 @@
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Table,
+  Button,
+  Modal,
+  Form,
+  Badge,
+  Spinner,
+  InputGroup,
+} from "@themesberg/react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faEdit,
+  faTrash,
+  faSearch,
+  faHome
+} from "@fortawesome/free-solid-svg-icons";
+
+import {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  toggleCategoryStatus,
+} from "../../api/ApiServices";
+import { Breadcrumb } from "@themesberg/react-bootstrap";
+import { Link } from "react-router-dom";
+
+
+const CategoriesPage = () => {
+  const [categories, setCategories] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  const [form, setForm] = useState({
+    c_name: "",
+    c_description: "",
+  });
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    const res = await getAllCategories();
+    setCategories(res.data || []);
+    setFiltered(res.data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const s = search.toLowerCase();
+    setFiltered(
+      categories.filter((c) => c.c_name.toLowerCase().includes(s))
+    );
+  }, [search, categories]);
+
+  const handleSubmit = async () => {
+    if (!form.c_name.trim()) return alert("Category name required");
+
+    if (editData) {
+      await updateCategory({ c_uuid: editData.c_uuid, ...form });
+    } else {
+      await createCategory(form);
+    }
+
+    setShowModal(false);
+    setEditData(null);
+    setForm({ c_name: "", c_description: "" });
+    fetchCategories();
+  };
+
+  const handleStatus = async (cat) => {
+    await toggleCategoryStatus({
+      c_uuid: cat.c_uuid,
+      c_status: cat.c_status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+    });
+    fetchCategories();
+  };
+
+  const handleDelete = async (cat) => {
+    if (cat.c_is_default) {
+      alert("Default category cannot be deleted");
+      return;
+    }
+
+    if (window.confirm(`Delete "${cat.c_name}" category?`)) {
+      await deleteCategory(cat.c_uuid);
+      fetchCategories();
+    }
+  };
+
+  return (
+    <Card border="light" className="shadow-sm">
+      {/* HEADER */}
+     {/* HEADER */}
+<div className="d-flex justify-content-between align-items-center page-header mb-4">
+  <Breadcrumb className="breadcrumb-dark breadcrumb-transparent">
+    <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+      <FontAwesomeIcon icon={faHome} /> Home
+    </Breadcrumb.Item>
+    <Breadcrumb.Item active>Category Management</Breadcrumb.Item>
+  </Breadcrumb>
+
+  <Button
+    variant="primary"
+    onClick={() => {
+      setEditData(null);
+      setForm({ c_name: "", c_description: "" });
+      setShowModal(true);
+    }}
+  >
+    <FontAwesomeIcon icon={faPlus} className="me-2" />
+    Add Category
+  </Button>
+</div>
+
+
+      {/* SEARCH */}
+      <Card.Body>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>
+            <FontAwesomeIcon icon={faSearch} />
+          </InputGroup.Text>
+          <Form.Control
+            placeholder="Search category..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </InputGroup>
+
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-5 text-muted">
+            <h6>No categories found</h6>
+            <small>Add a new category to get started</small>
+          </div>
+        ) : (
+          <Table responsive hover className="align-middle">
+            <thead className="bg-light">
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th className="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((cat) => (
+                <tr key={cat.c_uuid}>
+                  <td>
+                    <strong>{cat.c_name}</strong>{" "}
+                    {cat.c_is_default && (
+                      <Badge bg="info" className="ms-2">
+                        Default
+                      </Badge>
+                    )}
+                  </td>
+
+                  <td className="text-muted">
+                    {cat.c_description || "-"}
+                  </td>
+
+                  <td>
+                    <Form.Check
+                      type="switch"
+                      checked={cat.c_status === "ACTIVE"}
+                      onChange={() => handleStatus(cat)}
+                      label={
+                        <Badge
+                          bg={
+                            cat.c_status === "ACTIVE"
+                              ? "success"
+                              : "secondary"
+                          }
+                        >
+                          {cat.c_status}
+                        </Badge>
+                      }
+                    />
+                  </td>
+
+                  <td className="text-end">
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() => {
+                        setEditData(cat);
+                        setForm({
+                          c_name: cat.c_name,
+                          c_description: cat.c_description,
+                        });
+                        setShowModal(true);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+
+                    {!cat.c_is_default && (
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() => handleDelete(cat)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card.Body>
+
+      {/* MODAL */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {editData ? "Edit Category" : "Add Category"}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Category Name</Form.Label>
+            <Form.Control
+              placeholder="e.g. Medical, Education"
+              value={form.c_name}
+              onChange={(e) =>
+                setForm({ ...form, c_name: e.target.value })
+              }
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Description</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Optional description"
+              value={form.c_description}
+              onChange={(e) =>
+                setForm({ ...form, c_description: e.target.value })
+              }
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="light" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSubmit}>
+            Save Category
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Card>
+  );
+};
+
+export default CategoriesPage;
