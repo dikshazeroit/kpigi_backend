@@ -23,7 +23,15 @@ import {
 } from "../controllers/FundraisersController.js";
 import {getAllDonations,markDonationSafe,markDonationFraud} from "../controllers/DonationController.js";
 import {getAllPayouts,approvePayout,rejectPayout,updatePayoutStatus} from "../controllers/PayoutController.js";
+import {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  toggleCategoryStatus,
+} from "../controllers/CategoryController.js";
 
+import{getDashboardSummary,getDashboardStats,getRecentActivities} from "../controllers/DashboardController.js";
 const router = express.Router();
 
 // 🌍 Global middleware
@@ -83,5 +91,20 @@ router.get("/private/payouts-list", adminAuth, getAllPayouts);
 router.post("/private/payout-approve", adminAuth, approvePayout);
 router.post("/private/payout-reject", adminAuth, rejectPayout);
 router.post("/private/payout-update-status", adminAuth, updatePayoutStatus);
+
+
+//****************************** 🔐 Category Routes *******************************************//
+
+router.get("/private/categories-list", adminAuth, getAllCategories);
+router.post("/private/category-create", adminAuth, createCategory);
+router.post("/private/category-update", adminAuth, updateCategory);
+router.delete("/private/category-delete/:id", adminAuth, deleteCategory);
+router.post("/private/category-toggle-status", adminAuth, toggleCategoryStatus);
+
+//****************************** 🔐 Dashboard Routes *******************************************//
+
+router.get("/private/dashboard-summary", adminAuth, getDashboardSummary);
+router.get("/private/dashboard-stats", adminAuth, getDashboardStats);
+router.get("/private/dashboard-recent-activities", adminAuth, getRecentActivities);
 
 export default router;
