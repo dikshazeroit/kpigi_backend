@@ -117,65 +117,59 @@ authObj.registerWithEmail = async function (req, res) {
       );
     }
 
-    console.log("Received registration request:", req.body);
-
     const normalizedEmail = email.toLowerCase();
     const normalizedPhone = phone.trim();
 
-    // Check existing email
-    const existingVerifiedEmail = await userModel.findOne({
+    // 🔎 CHECK EMAIL (verified + not verified)
+    const existingUser = await userModel.findOne({
       uc_email: normalizedEmail,
-      uc_active: "1", 
     });
 
-    if (existingVerifiedEmail) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "ZIS-E1000",
-          message: "Email already registered.",
-          status: false,
-        },
-        200
-      );
+    if (existingUser) {
+      // ✔ Already verified
+      if (existingUser.uc_active === "1") {
+        return commonHelper.errorHandler(
+          res,
+          {
+            code: "ZIS-E1000",
+            message: "Email already registered.",
+            status: false,
+          },
+          200
+        );
+      }
+
+      // ⏳ Registered but NOT verified
+      if (existingUser.uc_active === "0") {
+        return commonHelper.errorHandler(
+          res,
+          {
+            code: "ZIS-E1003",
+            message: "Email is registered but not verified. Please verify your account.",
+            status: false,
+          },
+          200
+        );
+      }
     }
-
-    // Check existing phone
-    // const existingVerifiedPhone = await userModel.findOne({
-    //   uc_phone: normalizedPhone,
-    //   uc_active: "1",
-    // });
-
-    // if (existingVerifiedPhone) {
-    //   return commonHelper.errorHandler(
-    //     res,
-    //     {
-    //       code: "ZIS-E1001",
-    //       message: "Phone number already registered.",
-    //       status: false,
-    //     },
-    //     200
-    //   );
-    // }
 
     // ==========================
     // ✔ HASH THE PASSWORD
     // ==========================
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save temporary unverified user
+    // 🆕 Create unverified user
     const tempUser = await userModel.create({
       uc_email: normalizedEmail,
       uc_phone: normalizedPhone,
       uc_country_code: country_code,
-      uc_password: hashedPassword,   // <-- Hashed password stored
+      uc_password: hashedPassword,
       uc_full_name: full_name,
       uc_active: "0",
     });
 
-    // Send OTP
-    const sendOtp = await authObj.sendEmailCode(normalizedEmail);
-    console.log("OTP sent:", sendOtp);
+    // 📩 Send OTP
+    await authObj.sendEmailCode(normalizedEmail);
 
     return commonHelper.successHandler(res, {
       status: true,
@@ -197,6 +191,7 @@ authObj.registerWithEmail = async function (req, res) {
     );
   }
 };
+
 
 /**
  * Check whether an email is already registered in the system.
