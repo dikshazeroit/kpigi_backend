@@ -37,7 +37,7 @@ import { errorHandler } from "./backend/middleware/ErrorHandler.js";
 import appRoutes from "./backend/application/routes/AppRoutes.js";
 import adminRoute from "./backend/admin/routes/AdminRoute.js";
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const server = http.createServer(app);
 
 
@@ -64,7 +64,7 @@ app.use(errorHandler);
     await connectDB();
 
     server.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
+      console.log(`🚀 kpigi Server running at http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("❌ Server initialization failed:", error);

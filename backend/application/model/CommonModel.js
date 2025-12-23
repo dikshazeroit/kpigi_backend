@@ -20,7 +20,7 @@
  */
 
 import admin from "firebase-admin";
-import serviceAccount from "../../config/firebaseAdminSDK.json" with { type: "json" };
+import serviceAccount from "../../config/firebaseAdminSDK.json" assert { type: "json" };
 import UserDevice from "./UserDeviceModel.js"; 
 import notificationModel from "./NotificationModel.js";
 

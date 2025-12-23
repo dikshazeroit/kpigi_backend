@@ -125,7 +125,7 @@ authObj.registerWithEmail = async function (req, res) {
     // Check existing email
     const existingVerifiedEmail = await userModel.findOne({
       uc_email: normalizedEmail,
-      uc_active: "1",
+      uc_active: "1", 
     });
 
     if (existingVerifiedEmail) {
