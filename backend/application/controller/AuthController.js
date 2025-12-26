@@ -695,6 +695,74 @@ authObj.resendOtp = async function (req, res) {
     );
   }
 };
+authObj.verifyForgotPasswordOtp = async function (req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    // 1️⃣ Validation
+    if (!email || !otp) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          code: "CCS-E2001",
+          message: "Email and OTP are required.",
+          status: false,
+        },
+        200
+      );
+    }
+
+    // 2️⃣ Find user
+    const user = await userModel.findOne({
+      uc_email: email.toLowerCase(),
+    });
+
+    if (!user) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          code: "ZIS-E2005",
+          message: "User not found.",
+          status: false,
+        },
+        200
+      );
+    }
+
+    // 3️⃣ OTP check (uc_activation_token)
+    if (user.uc_activation_token !== otp) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          code: "ZIS-E2004",
+          message: "Invalid OTP.",
+          status: false,
+        },
+        200
+      );
+    }
+
+    // ✅ ONLY OTP VERIFIED (no activation, no password reset here)
+    return commonHelper.successHandler(res, {
+      message: "Forgot password OTP verified successfully.",
+      status: true,
+    });
+
+  } catch (err) {
+    console.error("Error in verifyForgotPasswordOtp:", err);
+    return commonHelper.errorHandler(
+      res,
+      {
+        code: "CCS-E5000",
+        message: "Something went wrong. Please try again.",
+        status: false,
+      },
+      200
+    );
+  }
+};
+
+
 
 /**
  * Verify the OTP sent to the user's email for password reset.

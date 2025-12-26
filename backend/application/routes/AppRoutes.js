@@ -46,6 +46,7 @@ router.post("/auth/verify-email", authObj.verifyEmail);
 router.post("/auth/login", authObj.loginWithEmail);
 router.post("/auth/forgot-password", authObj.userForgotPasswordEmail);
 router.post("/auth/resend-otp", authObj.resendOtp);
+router.post("/auth/verify-forgot-password-otp",authObj.verifyForgotPasswordOtp);
 router.post("/auth/reset-password", authObj.resetPasswordEmail);
 router.post("/auth/verify-forgot-email", authObj.verifyForgotEmail);    
 router.post("/auth/google-signin", authObj.signinWithGoogleId);
