@@ -821,10 +821,6 @@ authObj.verifyForgotEmail = async function (req, res) {
       );
     }
 
-    // OTP matches – update user status
-    user.uc_active = "1";
-   // user.uc_activation_token = "";
-    await user.save();
 
     return commonHelper.successHandler(res, {
       message: "OTP verified successfully.",
