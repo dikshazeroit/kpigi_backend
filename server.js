@@ -36,10 +36,14 @@ import { allowHeaders } from "./backend/middleware/Cors.js";
 import { errorHandler } from "./backend/middleware/ErrorHandler.js";
 import appRoutes from "./backend/application/routes/AppRoutes.js";
 import adminRoute from "./backend/admin/routes/AdminRoute.js";
+import stripeWebhookRoute from "./backend/application/routes/StripeWebhookRoute.js";
 const app = express();
 const PORT = process.env.PORT || 3002;
 const server = http.createServer(app);
 
+
+/* ================= STRIPE WEBHOOK (MUST BE FIRST) ================= */
+app.use("/api", stripeWebhookRoute);
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));

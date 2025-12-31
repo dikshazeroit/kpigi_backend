@@ -57,14 +57,17 @@ router.post("/auth/apple-signin", authObj.signinWithAppleId);
 
 router.post("/private/update-user-profile", userObj.updateUserProfile);
 router.post("/private/upload-photo", combinedUpload, userObj.uploadProfilePhoto);
+router.post("/private/edit-update-user-profile", combinedUpload, userObj.editUpdateUserProfile);
 router.post("/private/settings", userObj.updateSettings);
 router.post("/private/change-password", userObj.changePassword);
 router.post("/private/get-user-profile", userObj.getUserProfile);
 router.post("/private/update-user-location", userObj.updateUserLocation);
 router.post("/private/delete-account", userObj.deleteAccount);
 router.post("/private/update-payout-card", userObj.updatePayoutCard);
-
+router.post("/private/check-bank-details",userObj.checkBankDetails);
+router.post("/category-list",userObj.categoryList);
 //****************************** 🔐 Found Routes *******************************************//
+
 router.post("/private/create-fund",fundUpload,fundObj.createFundRequest);
 router.post("/private/fund-list", fundObj.getFundList);
 router.post("/private/fund-details", fundObj.getFundDetails);

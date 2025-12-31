@@ -64,7 +64,10 @@ const usersCredentialsSchema = new Schema(
       type: String,
       required: false,
     },
-
+uc_country_name: {
+      type: String,
+      required: false,
+    },
     uc_bio: {
       type: String,
       required: false,
@@ -109,16 +112,22 @@ const usersCredentialsSchema = new Schema(
     uc_card_info: {
       brand: { type: String, default: "" },
       last4: { type: String, default: "" },
-      exp_month: { type: Number, default: null },
-      exp_year: { type: Number, default: null },
+      exp_month: { type: Number, default: "" },
+      exp_year: { type: Number, default: "" },
     },
+
+    uc_stripe_account_id: {
+    type: String,
+    default: "",
+  },
+
 
     // NEW payout card fields
     uc_payout_card_token: { type: String, default: "" },
     uc_card_last4: { type: String, default: "" },
     uc_card_brand: { type: String, default: "" },
-    uc_card_exp_month: { type: Number, default: null },
-    uc_card_exp_year: { type: Number, default: null },
+    uc_card_exp_month: { type: Number, default: "" },
+    uc_card_exp_year: { type: Number, default: "" },
 
     uc_lat: {
       type: Number,
@@ -131,7 +140,7 @@ const usersCredentialsSchema = new Schema(
 
     uc_address: {
       type: String,
-      default: null,
+      default: "",
     },
 
     uc_active: {

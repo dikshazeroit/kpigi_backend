@@ -28,6 +28,9 @@ import UserDevice from "../model/UserDeviceModel.js";
 import newModelObj from "../model/CommonModel.js";
 import NotificationModel from "../model/NotificationModel.js";
 
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 let donationObj = {};
 
 /**
@@ -54,142 +57,119 @@ function calculateFee(amount) {
  */
 donationObj.createDonation = async function (req, res) {
   try {
-    let donorUuid = null;
-
-    try {
-      donorUuid = await appHelper.getUUIDByToken(req);
-    } catch (e) {
-      donorUuid = null;
+    const donorUuid = await appHelper.getUUIDByToken(req);
+    if (!donorUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1000",
+        message: "Unauthorized",
+      }, 200);
     }
 
     const { fund_uuid, amount, is_anonymous } = req.body;
 
-    if (!fund_uuid || !amount) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          status: false,
-          code: "DON-E1001",
-          message: "fund_uuid and amount are required.",
-        },
-        200
-      );
+    if (!fund_uuid || !amount || Number(amount) <= 0) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1001",
+        message: "fund_uuid and valid amount are required.",
+      }, 200);
     }
 
+    /* -------------------------------------------------------
+       1. Fetch Fund
+    ------------------------------------------------------- */
     const fund = await FundModel.findOne({ f_uuid: fund_uuid });
-
     if (!fund) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          status: false,
-          code: "DON-E1002",
-          message: "Fund not found.",
-        },
-        200
-      );
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1002",
+        message: "Fund not found.",
+      }, 200);
     }
 
-    const requesterUuid = fund.f_fk_uc_uuid;
-    const requester = await UsersCredentialsModel.findOne({ uc_uuid: requesterUuid });
+    /* -------------------------------------------------------
+       2. Fetch Requester (Fund Owner)
+    ------------------------------------------------------- */
+    const requester = await UsersCredentialsModel.findOne({
+      uc_uuid: fund.f_fk_uc_uuid,
+    });
 
-    if (!requester || !requester.uc_payout_card_token) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          status: false,
-          code: "DON-E1003",
-          message: "Requester payout card not found. Donation stopped.",
-        },
-        200
-      );
+    if (!requester || !requester.uc_stripe_account_id) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1003",
+        message: "Requester payout account not linked.",
+      }, 200);
     }
 
-    const { fee, net } = calculateFee(Number(amount));
+    /* -------------------------------------------------------
+       3. Fee Calculation (2.8%)
+    ------------------------------------------------------- */
+    const amountInCents = Math.round(Number(amount) * 100);
+    const platformFee = Math.round(amountInCents * 0.028);
+    const netAmount = amountInCents - platformFee;
 
+    /* -------------------------------------------------------
+       4. Create Stripe PaymentIntent (SPLIT PAYMENT)
+    ------------------------------------------------------- */
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: "usd",
+      application_fee_amount: platformFee,
+      transfer_data: {
+        destination: requester.uc_stripe_account_id,
+      },
+      metadata: {
+        fund_uuid,
+        donor_uuid: donorUuid,
+        requester_uuid: requester.uc_uuid,
+      },
+    });
+
+    /* -------------------------------------------------------
+       5. Save Donation Record (PENDING → SUCCESS via webhook)
+    ------------------------------------------------------- */
     const donationUuid = v4();
-    const donationRecord = new DonationModel({
+    await DonationModel.create({
       d_uuid: donationUuid,
       d_fk_uc_uuid: donorUuid,
       d_fk_f_uuid: fund_uuid,
       d_amount: Number(amount),
-      d_platform_fee: fee,
-      d_amount_to_owner: net,
+      d_platform_fee: platformFee / 100,
+      d_amount_to_owner: netAmount / 100,
       d_is_anonymous: !!is_anonymous,
-      d_status: "SUCCESS",
+      d_payment_intent_id: paymentIntent.id,
+      d_status: "PENDING",
     });
 
-    await donationRecord.save();
-
-    const payoutUuid = v4();
-    const payoutRecord = new PayoutModel({
-      p_uuid: payoutUuid,
-      p_fk_d_uuid: donationUuid,
-      p_fk_uc_uuid: requesterUuid,
-      p_amount: net,
-      p_fee: fee,
-      p_status: "SENT",
-      p_meta: {},
-    });
-
-    await payoutRecord.save();
-
-    // Send notification
-    try {
-      const deviceRecords = await UserDevice.find({
-        ud_fk_uc_uuid: requesterUuid,
-        ud_device_fcmToken: { $exists: true, $ne: "" },
-      }).select("ud_device_fcmToken");
-
-      const tokens = deviceRecords.map((d) => d.ud_device_fcmToken).filter(Boolean);
-
-      const notiTitle = "New donation received!";
-      const notiBody = `You received $${net} from a supporter.`;
-
-      await NotificationModel.create({
-        n_uuid: v4(),
-        n_fk_uc_uuid: requesterUuid,
-        n_title: notiTitle,
-        n_body: notiBody,
-        n_payload: {
-          fund_uuid,
-          donation_uuid: donationUuid,
-          amount: net,
-          type: "donation_received",
-        },
-      });
-
-      if (tokens.length > 0) {
-        await newModelObj.sendNotificationToUser({
-          userId: requesterUuid,
-          title: notiTitle,
-          body: notiBody,
-          data: {
-            fund_uuid,
-            donation_uuid: donationUuid,
-            type: "donation_received",
-          },
-          tokens,
-        });
-      }
-    } catch (sendErr) {
-      console.error("⚠️ Donation Notification Error:", sendErr);
-    }
-
+    /* -------------------------------------------------------
+       6. RESPONSE → Frontend will confirm payment
+    ------------------------------------------------------- */
     return commonHelper.successHandler(res, {
       status: true,
-      message: "Donation successful. Amount sent to requester.",
-      payload: { donation_uuid: donationUuid, payout_uuid: payoutUuid },
+      message: "Donation initiated",
+      payload: {
+        client_secret: paymentIntent.client_secret,
+        donation_uuid: donationUuid,
+        breakdown: {
+          donation: Number(amount),
+          fee: platformFee / 100,
+          payout: netAmount / 100,
+        },
+      },
     });
+
   } catch (err) {
-    console.error("❌ createDonation:", err);
-    return commonHelper.errorHandler(
-      res,
-      { status: false, code: "DON-E9999", message: "Internal server error." },
-      200
-    );
+    console.error("❌ createDonation Stripe Error:", err);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "DON-E9999",
+      message: "Donation failed.",
+    }, 200);
   }
 };
+
 
 /**
  * Fetch donations made by the current user.

@@ -25,6 +25,7 @@ const require = createRequire(import.meta.url);
 import { v4 } from "uuid";
 import bcrypt from "bcryptjs";
 import userModel from "../model/UserModel.js";
+import categoryModel from "../model/CategoryModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
 
@@ -299,6 +300,100 @@ userObj.uploadProfilePhoto = async function (req, res) {
   }
 };
 
+
+/**
+ * Upload or update the user's profile photo Combined api
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
+
+userObj.editUpdateUserProfile = async function (req, res) {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+console.log(userId,"ooooooooooooooooooooooooooooooooo")
+    if (!userId) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "UP-E1001",
+        message: "Unauthorized access.",
+      }, 200);
+    }
+
+    const {
+      fullName,
+      countryName,
+      countryCode,
+      phone,
+      shortBio,
+    } = req.body;
+
+    const user = await userModel.findOne({ uc_uuid: userId });
+
+    if (!user) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "UP-E1002",
+        message: "User not found.",
+      }, 200);
+    }
+
+    /* =====================
+       🖼️ Profile Image
+    ===================== */
+    if (req.files?.profileImage?.[0]) {
+      const file = req.files.profileImage[0];
+      const ext = path.extname(file.originalname).toLowerCase();
+      const fileName = `profile-${Date.now()}${ext}`.replace(/ /g, "_");
+
+      await commonHelper.uploadFile({
+        fileName,
+        chunks: [file.buffer],
+        encoding: file.encoding,
+        contentType: file.mimetype,
+        uploadFolder: process.env.AWS_USER_FILE_FOLDER,
+      });
+
+      user.uc_profile_photo = fileName;
+    }
+
+    /* =====================
+       ✏️ Screen Fields
+    ===================== */
+    if (fullName) user.uc_full_name = fullName;
+    if (countryName) user.uc_country_name = countryName;
+    if (countryCode) user.uc_country_code = countryCode;
+    if (phone) user.uc_phone = phone;
+    if (shortBio) user.uc_bio = shortBio;
+
+    await user.save();
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Profile updated successfully.",
+      payload: {
+        fullName: user.uc_full_name,
+        countryName: user.uc_country_name,
+        countryCode: user.uc_country_code,
+        phone: user.uc_phone,
+        shortBio: user.uc_bio,
+        profilePhoto: user.uc_profile_photo,
+      },
+    });
+
+  } catch (error) {
+    console.error("❌ updateUserProfile Error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "UP-E9999",
+      message: "Internal server error",
+    }, 200);
+  }
+};
+
+
 /**
  * Update user settings like full name, bio, notifications
  *
@@ -539,6 +634,100 @@ userObj.updatePayoutCard = async function (req, res) {
       },
       200
     );
+  }
+};
+
+/**
+ *  FUNCTION: checkBankDetails
+ *  DESCRIPTION: To check the card details added or not 
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
+userObj.checkBankDetails = async function (req, res) {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+
+    if (!userId) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "CBD-E1001",
+        message: "Unauthorized access.",
+      }, 200);
+    }
+
+    const user = await userModel.findOne({
+      uc_uuid: userId,
+      uc_deleted: "0",
+    });
+
+    if (!user) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "CBD-E1002",
+        message: "User not found.",
+      }, 200);
+    }
+
+    /* =========================
+       🏦 Bank / Card Check
+    ========================= */
+    const hasBankDetails =
+      user.uc_payout_card_token &&
+      user.uc_card_last4 &&
+      user.uc_card_brand &&
+      user.uc_card_exp_month &&
+      user.uc_card_exp_year;
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: hasBankDetails
+        ? "Bank details available."
+        : "Bank details not added.",
+      payload: {
+        isBankAdded: !!hasBankDetails,
+        cardVerified: user.uc_card_verified,
+        cardBrand: user.uc_card_brand || "",
+        cardLast4: user.uc_card_last4 || "",
+        cardExpMonth: user.uc_card_exp_month,
+        cardExpYear: user.uc_card_exp_year,
+      },
+    });
+
+  } catch (error) {
+    console.error("❌ checkBankDetails Error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "CBD-E9999",
+      message: "Internal server error.",
+    }, 200);
+  }
+};
+
+
+
+userObj.categoryList = async function (req, res) {
+  try {
+    const categories = await categoryModel.find({
+      c_is_deleted: false,
+      c_status: "ACTIVE",
+    });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Category list fetched successfully.",
+      payload: categories,
+    });
+
+  } catch (error) {
+    console.error("❌ categoryList Error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "CAT-L9999",
+      message: "Internal server error.",
+    }, 200);
   }
 };
 

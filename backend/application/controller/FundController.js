@@ -139,16 +139,44 @@ fundObj.getFundList = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-L1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-L1001",
+          message: "Unauthorized access.",
+        },
+        200
+      );
     }
 
-    const funds = await FundModel.find({ f_fk_uc_uuid: userId }).sort({ createdAt: -1 });
-    return commonHelper.successHandler(res, { status: true, message: "Fund list fetched successfully.", payload: funds });
+    const today = new Date();
+
+    const funds = await FundModel.find({
+      f_fk_uc_uuid: userId,
+      f_deadline: { $gte: today },   // ✅ deadline not crossed
+    }).sort({ createdAt: -1 });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Active fund list fetched successfully.",
+      payload: funds,
+    });
+
   } catch (error) {
     console.error("❌ getFundList Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-L9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "FUND-L9999",
+        message: "Internal server error.",
+      },
+      200
+    );
   }
 };
+
 
 /**
  * Get details of a specific fund.
