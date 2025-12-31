@@ -44,9 +44,7 @@ let authObj = {};
 
 authObj.sendEmailCode = async function (email) {
   try {
-    // const token = Math.floor(1000 + Math.random() * 9000); // 4-digit OTP
-    const token = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-
+    const token = Math.floor(Math.random() * 900000) + 100000;  // 6-digit OTP
     const lowerEmail = email.toLowerCase();
 
     let user = await userModel.findOne({ uc_email: lowerEmail });
@@ -509,8 +507,7 @@ authObj.userForgotPasswordEmail = async function (req, res) {
     }
 
     // Generate 4-digit OTP
-    // const otp = Math.floor(Math.random() * 9000) + 1000;
-    const token = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    const otp = Math.floor(Math.random() * 900000) + 100000; // 6-digit OTP
 
 
     // Update OTP in user record
@@ -668,7 +665,9 @@ authObj.resendOtp = async function (req, res) {
       );
     }
 
-    const otp = Math.floor(Math.random() * 9000) + 1000; // 4-digit OTP
+    const otp = Math.floor(Math.random() * 900000) + 100000; // 6-digit OTP
+
+    
 
     user.uc_activation_token = otp.toString();
     await user.save();
@@ -822,10 +821,6 @@ authObj.verifyForgotEmail = async function (req, res) {
       );
     }
 
-    // OTP matches – update user status
-    user.uc_active = "1";
-   // user.uc_activation_token = "";
-    await user.save();
 
     return commonHelper.successHandler(res, {
       message: "OTP verified successfully.",
