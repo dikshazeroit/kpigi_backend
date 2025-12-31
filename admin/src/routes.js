@@ -19,7 +19,7 @@ export const Routes = {
   AnalyticsPage: { path: "/analytics" },
   DisputesWrapper: { path: "/disputes/list" },
   Help: { path: "/support/help" },
-  FAQ: { path: "/support/faq" },
+  FaqsPage: { path: "/support/faq" },
   PrivacyPolicy: { path: "/privacy-policy" },
   TermsAndConditions: { path: "/terms-and-conditions" },
 

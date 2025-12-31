@@ -277,85 +277,70 @@ export const getRecentActivities = async () => {
   return res.data;
 };
 
+// ================= FAQ APIs =================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export const createSubscription = async (name, description, tag, prices) => {
+// Get all FAQs
+export const getAllFaqs = async () => {
   try {
-    const response = await apiClient.post("private/subscription", {
-      name,
-      description,
-      tag,
-      prices,
-    });
+    const response = await apiClient.get("private/faqs-list");
     return response.data;
   } catch (error) {
-    console.error("Error creating subscription:", error);
+    console.error("Error fetching FAQs:", error);
+    throw error;
+  }
+};
+
+// Create FAQ
+export const createFaq = async (payload) => {
+  try {
+    const response = await apiClient.post("private/faq-create", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating FAQ:", error);
+    throw error;
+  }
+};
+
+// Update FAQ
+export const updateFaq = async (payload) => {
+  try {
+    const response = await apiClient.post("private/faq-update", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating FAQ:", error);
+    throw error;
+  }
+};
+
+// Delete FAQ
+export const deleteFaq = async (f_uuid) => {
+  try {
+    const response = await apiClient.delete(
+      `private/faq-delete/${f_uuid}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting FAQ:", error);
+    throw error;
+  }
+};
+
+// Toggle FAQ status
+export const toggleFaqStatus = async (payload) => {
+  try {
+    const response = await apiClient.post(
+      "private/faq-toggle-status",
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating FAQ status:", error);
     throw error;
   }
 };
 
 
-export const getAllSubscriptions = async (search) => {
-  try {
-    const response = await apiClient.get("private/getallsubscription", {
-      params: { search },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching subscriptions:", error);
-    throw error;
-  }
-};
 
-
-export const getSubscriptionById = async (id) => {
-  try {
-    const response = await apiClient.get(`private/getsubscription/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching subscription by ID:", error);
-    throw error;
-  }
-};
-
-
-export const updateSubscription = async (id, data) => {
-  try {
-    const response = await apiClient.put(`private/updatesubscription/${id}`, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating subscription:", error);
-    throw error;
-  }
-};
-
-
-export const deleteSubscription = async (id) => {
-  try {
-    const response = await apiClient.delete(`private/deletesubscription/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting subscription:", error);
-    throw error;
-  }
-};
 
 
 export const getPrivacyPolicy = async () => {
@@ -446,7 +431,7 @@ export const updateQuestionOrOptionAPI = async (id, payload) => {
   }
 };
 
-export const getAllUsers = async (page = 1, limit = 3, search = "") => {
+export const getAllUsers = async (page = 1, limit = 10, search = "") => {
   try {
     const response = await apiClient.get(`private/getAllUsers?page=${page}&limit=${limit}&search=${search}`);
     return response.data;
@@ -851,65 +836,12 @@ export const getUserReligionDistribution = async () => {
   }
 };
 
-export const createFaq = async (faqData) => {
-  try {
-    const response = await apiClient.post("/private/faqCreate", faqData);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating FAQ:", error);
-    throw error;
-  }
-};
-
-export const getAllFaqs = async () => {
-  try {
-    const response = await apiClient.get("/private/getAllFaqs");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching all FAQs:", error);
-    throw error;
-  }
-};
-
-export const getFaqById = async (id) => {
-  try {
-    const response = await apiClient.get(`/private/getFaqById/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching FAQ by ID:", error);
-    throw error;
-  }
-};
 
 
-export const updateFaq = async (id, faqData) => {
-  try {
-    const response = await apiClient.put(`/private/updateFaq/${id}`, faqData);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating FAQ:", error);
-    throw error;
-  }
-};
 
 
-export const deleteFaq = async (id) => {
-  try {
-    const response = await apiClient.delete(`/private/deleteFaq/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting FAQ:", error);
-    throw error;
-  }
-};
 
 
-export const toggleFaqStatus = async (id) => {
-  try {
-    const response = await apiClient.put(`/private/faqtogglestatus/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error toggling FAQ status:", error);
-    throw error;
-  }
-};
+
+
+

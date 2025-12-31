@@ -219,22 +219,22 @@ const handleLogout = () => {
                 textColor="#ffa500"
                 iconColor="#ffa500"
               />
-              <NavItem
+              {/* <NavItem
                 title="Wallet"
                 link={Routes.WalletPage.path}
                 icon={faWallet}
                 textColor="#ff69b4"
                 iconColor="#ff69b4"
-              />
-             
+              /> */}
+{/*              
               <NavItem
                 title="Analytics"
                 link={Routes.AnalyticsPage.path}
                 icon={faChartLine}
                 textColor="#20b2aa"
                 iconColor="#20b2aa"
-              />
-              <NavItem
+              /> */}
+              {/* <NavItem
                 title="Disputes"
                 link={Routes.DisputesWrapper.path}
                 icon={faGavel}
@@ -247,10 +247,10 @@ const handleLogout = () => {
                 icon={faLifeRing}
                 textColor="#00ced1"
                 iconColor="#00ced1"
-              />
+              /> */}
               <NavItem
                 title="FAQs"
-                link={Routes.FAQ.path}
+                link={Routes.FaqsPage.path}
                 icon={faLifeRing}
                 textColor="#00ced1"
                 iconColor="#00ced1"

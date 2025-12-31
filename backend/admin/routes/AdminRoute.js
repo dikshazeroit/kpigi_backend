@@ -32,6 +32,8 @@ import {
 } from "../controllers/CategoryController.js";
 
 import{getDashboardSummary,getDashboardStats,getRecentActivities} from "../controllers/DashboardController.js";
+import {createFaq, getAllFaqs, getFaqById, updateFaq, deleteFaq, toggleFaqStatus} from "../controllers/FaqController.js";
+
 const router = express.Router();
 
 // 🌍 Global middleware
@@ -106,5 +108,17 @@ router.post("/private/category-toggle-status", adminAuth, toggleCategoryStatus);
 router.get("/private/dashboard-summary", adminAuth, getDashboardSummary);
 router.get("/private/dashboard-stats", adminAuth, getDashboardStats);
 router.get("/private/dashboard-recent-activities", adminAuth, getRecentActivities);
+
+//****************************** 🔐 FAQ Routes *******************************************//
+
+
+router.get("/private/faqs-list", adminAuth, getAllFaqs);
+router.get("/private/faq/:id", adminAuth, getFaqById);
+router.post("/private/faq-create", adminAuth, createFaq);
+router.post("/private/faq-update", adminAuth, updateFaq);
+router.delete("/private/faq-delete/:id", adminAuth, deleteFaq);
+router.post("/private/faq-toggle-status", adminAuth, toggleFaqStatus);
+
+
 
 export default router;

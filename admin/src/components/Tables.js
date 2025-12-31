@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Form, Row, Col, Pagination } from "@themesberg/react-bootstrap";
+import {
+  Card,
+  Table,
+  Form,
+  Row,
+  Col,
+  Pagination,
+  Spinner,
+} from "@themesberg/react-bootstrap";
 import { getAllUsers } from "../api/ApiServices";
 
 export const PageUserTable = () => {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState(""); // requester / donor
+  const [role, setRole] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
@@ -14,52 +24,52 @@ export const PageUserTable = () => {
 
   const limit = 10;
 
+  // ================= FETCH USERS =================
   const fetchUsers = async () => {
     try {
-      const params = { page, limit, search };
-      const res = await getAllUsers(params);
+      setLoading(true);
+
+      // ✅ CORRECT FUNCTION CALL
+      const res = await getAllUsers(page, limit, search);
 
       let data = res.payload || [];
 
-      // ⭐ Filter: requester / donor
+      // Optional frontend filters
       if (role) {
-        data = data.filter((u) => (u.uc_role || "").toLowerCase() === role.toLowerCase());
+        data = data.filter(
+          (u) => (u.uc_role || "").toLowerCase() === role.toLowerCase()
+        );
       }
 
-      // ⭐ Filter: date range
       if (start) {
-        data = data.filter((u) => u.uc_created_at?.substring(0, 10) >= start);
+        data = data.filter(
+          (u) => u.uc_created_at?.substring(0, 10) >= start
+        );
       }
 
       if (end) {
-        data = data.filter((u) => u.uc_created_at?.substring(0, 10) <= end);
-      }
-
-      // ⭐ Search (name or email)
-      if (search) {
         data = data.filter(
-          (u) =>
-            u.uc_full_name?.toLowerCase().includes(search.toLowerCase()) ||
-            u.uc_email?.toLowerCase().includes(search.toLowerCase())
+          (u) => u.uc_created_at?.substring(0, 10) <= end
         );
       }
 
       setUsers(data);
-      setTotalPages(res.pagination.totalPages);
-    } catch (error) {
-      console.error("Error loading users", error);
+      setTotalPages(res.pagination?.totalPages || 1);
+    } catch (err) {
+      console.error("Error loading users", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Load users when page or search changes
+  // Load on page/search
   useEffect(() => {
     fetchUsers();
   }, [page, search]);
 
-  // Reload when filters change
+  // Reset page on filters
   useEffect(() => {
     setPage(1);
-    fetchUsers();
   }, [role, start, end]);
 
   return (
@@ -69,106 +79,124 @@ export const PageUserTable = () => {
       </Card.Header>
 
       <Card.Body>
-
-        {/* Filters */}
-        <Row className="mb-3 align-items-end">
-
-          {/* User Role filter */}
+        {/* ================= FILTERS ================= */}
+        <Row className="mb-3">
           <Col md={3}>
-            <Form.Group>
-              <Form.Label>User Role</Form.Label>
-              <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="">All</option>
-                <option value="requester">Requester</option>
-                <option value="donor">Donor</option>
-              </Form.Select>
-            </Form.Group>
+            <Form.Label>User Role</Form.Label>
+            <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="">All</option>
+              <option value="requester">Requester</option>
+              <option value="donor">Donor</option>
+            </Form.Select>
           </Col>
 
-          {/* Date from */}
           <Col md={2}>
-            <Form.Group>
-              <Form.Label>From</Form.Label>
-              <Form.Control
-                type="date"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-              />
-            </Form.Group>
+            <Form.Label>From</Form.Label>
+            <Form.Control
+              type="date"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
           </Col>
 
-          {/* Date to */}
           <Col md={2}>
-            <Form.Group>
-              <Form.Label>To</Form.Label>
-              <Form.Control
-                type="date"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-              />
-            </Form.Group>
+            <Form.Label>To</Form.Label>
+            <Form.Control
+              type="date"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
           </Col>
 
-          {/* Search */}
           <Col md={5}>
-            <Form.Group>
-              <Form.Label>Search</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Search by name or email"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Form.Group>
+            <Form.Label>Search</Form.Label>
+            <Form.Control
+              placeholder="Search by name or email"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </Col>
         </Row>
 
-        {/* USERS TABLE */}
-        <Table hover responsive>
-          <thead className="thead-light">
-            <tr>
-              <th>#</th>
-              <th>User Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Date Created</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {users.length > 0 ? (
-              users.map((u, index) => (
-                <tr key={u._id}>
-                  <td>{index + 1}</td>
-                  <td>{u.uc_full_name}</td>
-                  <td>{u.uc_email}</td>
-
-                  {/* uc_role (requester / donor) */}
-                  <td className="text-capitalize">{u.uc_role || "N/A"}</td>
-
-                  {/* Date */}
-                  <td>{u.uc_created_at?.substring(0, 10)}</td>
-                </tr>
-              ))
-            ) : (
+        {/* ================= TABLE ================= */}
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" />
+          </div>
+        ) : (
+          <Table hover responsive>
+            <thead>
               <tr>
-                <td colSpan="5" className="text-center py-3">
-                  No Users Found
-                </td>
+                <th>#</th>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Date Created</th>
               </tr>
-            )}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map((u, index) => (
+                  <tr key={u._id}>
+                    <td>{(page - 1) * limit + index + 1}</td>
+                    <td>{u.uc_full_name}</td>
+                    <td>{u.uc_email}</td>
+                    <td className="text-capitalize">{u.uc_role || "N/A"}</td>
+                    <td>{u.uc_created_at?.substring(0, 10)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-3">
+                    No Users Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        )}
 
-        {/* Pagination */}
-        <Pagination className="d-flex justify-content-end">
-          <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
-          <Pagination.Item active>{page}</Pagination.Item>
-          <Pagination.Next
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-          />
-        </Pagination>
+        {/* ================= PAGINATION ================= */}
+{totalPages > 1 && (
+  <Pagination className="justify-content-end">
+    {/* PREV */}
+    <Pagination.Prev
+      disabled={page === 1}
+      onClick={() => setPage(page - 1)}
+    />
+
+    {(() => {
+      const visiblePages = 5;
+      let start = Math.max(1, page - Math.floor(visiblePages / 2));
+      let end = start + visiblePages - 1;
+
+      if (end > totalPages) {
+        end = totalPages;
+        start = Math.max(1, end - visiblePages + 1);
+      }
+
+      const pages = [];
+      for (let i = start; i <= end; i++) {
+        pages.push(
+          <Pagination.Item
+            key={i}
+            active={page === i}
+            onClick={() => setPage(i)}
+          >
+            {i}
+          </Pagination.Item>
+        );
+      }
+      return pages;
+    })()}
+
+    {/* NEXT */}
+    <Pagination.Next
+      disabled={page === totalPages}
+      onClick={() => setPage(page + 1)}
+    />
+  </Pagination>
+)}
 
       </Card.Body>
     </Card>

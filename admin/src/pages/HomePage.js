@@ -38,7 +38,7 @@ import CategoriesPage from "./Category/CategoriesPage"
 import AnalyticsPage from "./Analytics/AnalyticsManagement";
 import Disputes from "./diputes/Disputes";
 import HelpWrapper from "./Helps/helps";
-import FAQ from "./Helps/helps";
+import FaqsPage from "./support/FaqsPage";
 import PrivacyPage from "./PrivacyPolicy/privacy";
 import TermsPage from "./TERMS/Terms";
 
@@ -130,7 +130,7 @@ export default function AppRoutes() {
       <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
       <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={Disputes} />
       <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
-      <RouteWithSidebar exact path={Routes.FAQ.path} component={FAQ} />
+      <RouteWithSidebar exact path={Routes.FaqsPage.path} component={FaqsPage} />
       <RouteWithSidebar exact path={Routes.PrivacyPolicy.path} component={PrivacyPage} />
       <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsPage} />
 

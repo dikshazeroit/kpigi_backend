@@ -890,11 +890,7 @@ authObj.signinWithGoogleId = async function (req, res) {
       // Fetch device info from DB (same as email login)
       const deviceInfo = await UserDevice.findOne({ ud_fk_uc_uuid: user.uc_uuid });
 
-      // Fetch subscription
-      const lastSubscription = await SubscriptionPaymentModel.findOne({
-        sp_fk_uc_uuid: user.uc_uuid,
-        sp_payment_status: "completed",
-      }).sort({ createdAt: -1 }).lean();
+     
 
       const updatedUser = await userModel.findOne({ uc_uuid: user.uc_uuid }).lean();
 
