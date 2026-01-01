@@ -34,7 +34,7 @@ const FundSchema = new mongoose.Schema(
     // 🔗 Category handling
     f_category_uuid: {
       type: String,
-      required: true, // references categories.category_uuid
+      required: false, // references categories.category_uuid
     },
 
     // 🟡 Used only when category = "Other"
