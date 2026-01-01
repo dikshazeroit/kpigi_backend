@@ -42,15 +42,11 @@ export const PageUserTable = () => {
       }
 
       if (start) {
-        data = data.filter(
-          (u) => u.uc_created_at?.substring(0, 10) >= start
-        );
+        data = data.filter((u) => u.uc_created_at?.substring(0, 10) >= start);
       }
 
       if (end) {
-        data = data.filter(
-          (u) => u.uc_created_at?.substring(0, 10) <= end
-        );
+        data = data.filter((u) => u.uc_created_at?.substring(0, 10) <= end);
       }
 
       setUsers(data);
@@ -156,48 +152,88 @@ export const PageUserTable = () => {
           </Table>
         )}
 
+        {totalPages > 1 && (
+          <Pagination className="justify-content-end">
+            {/* PREV */}
+            <Pagination.Prev
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            />
+
+            {(() => {
+              const visiblePages = 5;
+              let start = Math.max(1, page - Math.floor(visiblePages / 2));
+              let end = start + visiblePages - 1;
+
+              if (end > totalPages) {
+                end = totalPages;
+                start = Math.max(1, end - visiblePages + 1);
+              }
+
+              const pages = [];
+              for (let i = start; i <= end; i++) {
+                pages.push(
+                  <Pagination.Item
+                    key={i}
+                    active={page === i}
+                    onClick={() => setPage(i)}
+                  >
+                    {i}
+                  </Pagination.Item>
+                );
+              }
+              return pages;
+            })()}
+
+            {/* NEXT */}
+            <Pagination.Next
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            />
+          </Pagination>
+        )}
+
         {/* ================= PAGINATION ================= */}
-{totalPages > 1 && (
-  <Pagination className="justify-content-end">
-    {/* PREV */}
-    <Pagination.Prev
-      disabled={page === 1}
-      onClick={() => setPage(page - 1)}
-    />
+        {/* {totalPages > 1 && ( */}
+          {/* <Pagination className="justify-content-end">
+            {/* PREV */}
+            <Pagination.Prev
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            />
 
-    {(() => {
-      const visiblePages = 5;
-      let start = Math.max(1, page - Math.floor(visiblePages / 2));
-      let end = start + visiblePages - 1;
+            {(() => {
+              const visiblePages = 5;
+              let start = Math.max(1, page - Math.floor(visiblePages / 2));
+              let end = start + visiblePages - 1;
 
-      if (end > totalPages) {
-        end = totalPages;
-        start = Math.max(1, end - visiblePages + 1);
-      }
+              if (end > totalPages) {
+                end = totalPages;
+                start = Math.max(1, end - visiblePages + 1);
+              }
 
-      const pages = [];
-      for (let i = start; i <= end; i++) {
-        pages.push(
-          <Pagination.Item
-            key={i}
-            active={page === i}
-            onClick={() => setPage(i)}
-          >
-            {i}
-          </Pagination.Item>
-        );
-      }
-      return pages;
-    })()}
+              const pages = [];
+              for (let i = start; i <= end; i++) {
+                pages.push(
+                  <Pagination.Item
+                    key={i}
+                    active={page === i}
+                    onClick={() => setPage(i)}
+                  >
+                    {i}
+                  </Pagination.Item>
+                );
+              }
+              return pages;
+            })()}
 
-    {/* NEXT */}
-    <Pagination.Next
-      disabled={page === totalPages}
-      onClick={() => setPage(page + 1)}
-    />
-  </Pagination>
-)}
-
+            {/* NEXT */}
+            <Pagination.Next
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            />
+          {/* </Pagination> */} 
+        {/* // )} */}
       </Card.Body>
     </Card>
   );
