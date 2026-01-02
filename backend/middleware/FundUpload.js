@@ -17,11 +17,43 @@
  * ================================================================================
  */
 // utils/FundUpload.js
+// utils/FundUpload.js
 import multer from "multer";
 
 const storage = multer.memoryStorage();
 
-// Only accept 'media' field
-const fundUpload = multer({ storage }).fields([{ name: "media", maxCount: 5 }]);
+// File type validation (images + videos)
+const fileFilter = (req, file, cb) => {
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "image/webp",
+    "video/mp4",
+    "video/mpeg",
+    "video/quicktime", // .mov
+    "video/x-msvideo"  // .avi
+  ];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error("Only image and video files are allowed (jpg, png, mp4, mov, etc)"),
+      false
+    );
+  }
+};
+
+// Multer config
+const fundUpload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB per file
+  },
+}).fields([
+  { name: "media", maxCount: 5 },
+]);
 
 export default fundUpload;

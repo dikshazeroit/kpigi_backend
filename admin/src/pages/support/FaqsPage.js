@@ -296,7 +296,7 @@ const FaqsPage = () => {
   );
 };
 
-// export default FaqsPage;
+ export default FaqsPage;
 // import React, { useEffect, useState } from "react";
 // import {
 //   Card,
