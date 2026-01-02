@@ -29,6 +29,7 @@ import UsersCredentialsModel from "../model/UserModel.js";
 import UserDevice from "../model/UserDeviceModel.js";
 import NotificationModel from "../model/NotificationModel.js";
 import newModelObj from "../model/CommonModel.js";
+import DonationModel from "../model/DonationModel.js";
 
 let fundObj = {};
 
@@ -84,7 +85,7 @@ fundObj.createFundRequest = async function (req, res) {
       f_fk_uc_uuid: userId,
       f_title: title,
       f_purpose: purpose,
-      f_category: category,
+      f_category_name: category,
       f_amount: Number(amount),
       f_deadline: new Date(deadline),
       f_story: story,
@@ -135,27 +136,58 @@ fundObj.createFundRequest = async function (req, res) {
  * @returns {void}
  * @developer Sangeeta
  */
+
 fundObj.getFundList = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          status: false,
-          code: "FUND-L1001",
-          message: "Unauthorized access.",
-        },
-        200
-      );
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "FUND-L1001",
+        message: "Unauthorized access.",
+      }, 200);
     }
 
     const today = new Date();
 
+    // 🔹 Get active funds
     const funds = await FundModel.find({
-      f_fk_uc_uuid: userId,
-      f_deadline: { $gte: today },   // ✅ deadline not crossed
-    }).sort({ createdAt: -1 });
+      f_deadline: { $gte: today },
+    })
+      .sort({ createdAt: -1 })
+      .lean(); 
+
+    // 🔹 Add raised amount info
+    for (let fund of funds) {
+      const donationAgg = await DonationModel.aggregate([
+        {
+          $match: {
+            d_fk_f_uuid: fund.f_uuid,
+            d_status: "SUCCESS",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRaised: { $sum: "$d_amount" },
+          },
+        },
+      ]);
+
+      const raisedAmount =
+        donationAgg.length > 0 ? donationAgg[0].totalRaised : 0;
+
+      const goalAmount = fund.f_amount || 0;
+
+      fund.raised_amount = raisedAmount;
+      fund.goal_amount = goalAmount;
+      fund.progress_percent =
+        goalAmount > 0
+          ? Math.round((raisedAmount / goalAmount) * 100)
+          : 0;
+
+      fund.progress_text = `$${raisedAmount} raised of $${goalAmount} goal`;
+    }
 
     return commonHelper.successHandler(res, {
       status: true,
@@ -165,17 +197,14 @@ fundObj.getFundList = async function (req, res) {
 
   } catch (error) {
     console.error("❌ getFundList Error:", error);
-    return commonHelper.errorHandler(
-      res,
-      {
-        status: false,
-        code: "FUND-L9999",
-        message: "Internal server error.",
-      },
-      200
-    );
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "FUND-L9999",
+      message: "Internal server error.",
+    }, 200);
   }
 };
+
 
 
 /**

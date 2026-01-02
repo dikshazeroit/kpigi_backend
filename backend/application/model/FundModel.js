@@ -20,42 +20,37 @@
  */
 
 import mongoose from "mongoose";
-
 const FundSchema = new mongoose.Schema(
   {
-    // 🔑 Primary Keys
     f_uuid: { type: String, required: true },
     f_fk_uc_uuid: { type: String, required: true },
 
-    // 📝 Fund Basic Info
     f_title: { type: String, trim: true },
     f_purpose: { type: String, trim: true },
 
-    // 🔗 Category handling
-    f_category_uuid: {
+    // ✅ CATEGORY NAME ONLY
+    f_category_name: {
       type: String,
-      required: false, // references categories.category_uuid
+      required: true,
+      trim: true,
     },
 
-    // 🟡 Used only when category = "Other"
     f_other_category_name: {
       type: String,
-      default: "",
       trim: true,
+      default: "",
     },
 
     f_amount: { type: Number },
     f_deadline: { type: Date },
     f_story: { type: String },
 
-    // 📷 Media fields
-    f_media_one: { type: String },
-    f_media_two: { type: String },
-    f_media_three: { type: String },
-    f_media_four: { type: String },
-    f_media_five: { type: String },
+    f_media_one: String,
+    f_media_two: String,
+    f_media_three: String,
+    f_media_four: String,
+    f_media_five: String,
 
-    // ⚙️ Status
     f_status: {
       type: String,
       enum: ["ACTIVE", "PAUSED", "PENDING", "REJECTED", "COMPLETED"],
@@ -65,10 +60,11 @@ const FundSchema = new mongoose.Schema(
     f_pause_reason: { type: String, default: null },
   },
   {
-    versionKey: false,
     timestamps: true,
+    versionKey: false,
   }
 );
+
 
 const FundModel = mongoose.model("Fund", FundSchema);
 export default FundModel;
