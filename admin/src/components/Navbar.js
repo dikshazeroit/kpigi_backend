@@ -164,7 +164,7 @@ export default function TopNavbar() {
           {/* RIGHT SECTION */}
           <Nav className="align-items-center">
             {/* NOTIFICATIONS */}
-            <Dropdown as={Nav.Item} onToggle={markNotificationsAsRead}>
+            {/* <Dropdown as={Nav.Item} onToggle={markNotificationsAsRead}>
               <Dropdown.Toggle
                 as={Nav.Link}
                 className="text-dark icon-notifications me-lg-3"
@@ -198,7 +198,7 @@ export default function TopNavbar() {
                   </Dropdown.Item>
                 </ListGroup>
               </Dropdown.Menu>
-            </Dropdown>
+            </Dropdown> */}
 
             {/* ADMIN PROFILE */}
             <Dropdown as={Nav.Item}>
