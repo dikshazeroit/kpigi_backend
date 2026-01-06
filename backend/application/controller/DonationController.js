@@ -17,7 +17,7 @@
  * ================================================================================
  */
 
-import { v4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import DonationModel from "../model/DonationModel.js";
 import PayoutModel from "../model/PayoutModel.js";
 import commonHelper from "../../utils/Helper.js";
@@ -57,6 +57,7 @@ function calculateFee(amount) {
  */
 donationObj.createDonation = async function (req, res) {
   try {
+    /* 🔐 Get Donor */
     const donorUuid = await appHelper.getUUIDByToken(req);
     if (!donorUuid) {
       return commonHelper.errorHandler(res, {
@@ -72,65 +73,37 @@ donationObj.createDonation = async function (req, res) {
       return commonHelper.errorHandler(res, {
         status: false,
         code: "DON-E1001",
-        message: "fund_uuid and valid amount are required.",
+        message: "fund_uuid and valid amount are required",
       }, 200);
     }
 
-    /* -------------------------------------------------------
-       1. Fetch Fund
-    ------------------------------------------------------- */
+    /* 📦 Fetch Fund */
     const fund = await FundModel.findOne({ f_uuid: fund_uuid });
     if (!fund) {
       return commonHelper.errorHandler(res, {
         status: false,
         code: "DON-E1002",
-        message: "Fund not found.",
+        message: "Fund not found",
       }, 200);
     }
 
-    /* -------------------------------------------------------
-       2. Fetch Requester (Fund Owner)
-    ------------------------------------------------------- */
-    const requester = await UsersCredentialsModel.findOne({
-      uc_uuid: fund.f_fk_uc_uuid,
-    });
-
-    if (!requester || !requester.uc_stripe_account_id) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1003",
-        message: "Requester payout account not linked.",
-      }, 200);
-    }
-
-    /* -------------------------------------------------------
-       3. Fee Calculation (2.8%)
-    ------------------------------------------------------- */
+    /* 💰 Fee Calculation (2.8%) */
     const amountInCents = Math.round(Number(amount) * 100);
     const platformFee = Math.round(amountInCents * 0.028);
     const netAmount = amountInCents - platformFee;
 
-    /* -------------------------------------------------------
-       4. Create Stripe PaymentIntent (SPLIT PAYMENT)
-    ------------------------------------------------------- */
+    /* 💳 Create PaymentIntent (CLIENT STRIPE ACCOUNT) */
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: "usd",
-      application_fee_amount: platformFee,
-      transfer_data: {
-        destination: requester.uc_stripe_account_id,
-      },
       metadata: {
         fund_uuid,
         donor_uuid: donorUuid,
-        requester_uuid: requester.uc_uuid,
       },
     });
 
-    /* -------------------------------------------------------
-       5. Save Donation Record (PENDING → SUCCESS via webhook)
-    ------------------------------------------------------- */
-    const donationUuid = v4();
+    /* 🧾 Save Donation (PENDING) */
+    const donationUuid = uuidv4();
     await DonationModel.create({
       d_uuid: donationUuid,
       d_fk_uc_uuid: donorUuid,
@@ -143,9 +116,7 @@ donationObj.createDonation = async function (req, res) {
       d_status: "PENDING",
     });
 
-    /* -------------------------------------------------------
-       6. RESPONSE → Frontend will confirm payment
-    ------------------------------------------------------- */
+    /* 📤 Response */
     return commonHelper.successHandler(res, {
       status: true,
       message: "Donation initiated",
@@ -160,12 +131,12 @@ donationObj.createDonation = async function (req, res) {
       },
     });
 
-  } catch (err) {
-    console.error("❌ createDonation Stripe Error:", err);
+  } catch (error) {
+    console.error("❌ createDonation error:", error);
     return commonHelper.errorHandler(res, {
       status: false,
       code: "DON-E9999",
-      message: "Donation failed.",
+      message: "Donation failed",
     }, 200);
   }
 };

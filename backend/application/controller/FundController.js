@@ -224,7 +224,9 @@ fundObj.getFundDetails = async function (req, res) {
       return commonHelper.errorHandler(res, { status: false, code: "FUND-D1001", message: "Unauthorized access." }, 200);
     }
 
-    const fund = await FundModel.findOne({ f_uuid, f_fk_uc_uuid: userId });
+    const fund = await FundModel.findOne({ f_uuid,
+      //  f_fk_uc_uuid: userId 
+      });
     if (!fund) {
       return commonHelper.errorHandler(res, { status: false, code: "FUND-D1002", message: "Fund not found." }, 200);
     }
