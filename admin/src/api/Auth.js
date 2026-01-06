@@ -6,10 +6,10 @@ const SECRET_KEY = "my_super_secret_key";
 const loginService = {
   async execute(email, password) {
     const response = await apiClient.post('/login', { email, password });
-    console.info(response,"this============================== is response")
-   const token = response.data.payload.token;
-const name = response.data.payload.name;
-const image = response.data.payload.image;
+    console.info(response, "this============================== is response")
+    const token = response.data.payload.token;
+    const name = response.data.payload.name;
+    const image = response.data.payload.image;
 
     localStorage.setItem('name', name);
     localStorage.setItem('adminImage', image);
@@ -65,7 +65,7 @@ const tokenManager = {
 // ============================================
 // Permission MANAGEMENT COMPONENT
 // ============================================
-   
+
 export const Permissions = () => {
   const encrypted = localStorage.getItem("adminPermissions");
   if (!encrypted) return [];

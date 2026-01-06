@@ -325,7 +325,7 @@ export const setNewPassword = async (req, res, next) => {
       return successHandler(res, {
         message: "Admin details fetched successfully",
         payload: {
-          name: `${admin.au_name} ${admin.au_surname}`,
+          name: `${admin.au_name}`,
           firstName: admin.au_name,
           lastName:admin.au_surname,
           email: admin.au_email,

@@ -4,10 +4,13 @@ import { faEye, faEyeSlash, faPen } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row, Card, Form, InputGroup, Button } from "@themesberg/react-bootstrap";
 import avatar from "../assets/img/pages/avatar.jpg";
 import Swal from "sweetalert2";
-import { updateAdminProfile } from "../api/ApiServices";
+import { updateAdminProfile, getAdminProfile } from "../api/ApiServices";
+import { useHistory } from "react-router-dom";
 
 export const GeneralInfoForm = () => {
-  // STATE VARIABLES
+  const history = useHistory();
+
+  // STATES
   const [firstName, setFirstName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
@@ -23,51 +26,58 @@ export const GeneralInfoForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Load existing user data from localStorage on mount
-  // Load existing user data from localStorage on mount
+  // 🚀 LOAD ADMIN DETAILS FROM API (NOT LOCALSTORAGE)
   useEffect(() => {
-    setFirstName(localStorage.getItem("firstName") || "");
-    setSurname(localStorage.getItem("surname") || "");
-    setEmail(localStorage.getItem("email") || "");
-    setPhone(localStorage.getItem("phone") || "");
-    setAddress(localStorage.getItem("address") || "");
+    const fetchAdmin = async () => {
+      try {
+        const res = await getAdminProfile();
+        const admin = res.payload;
 
-    const savedImage = localStorage.getItem("adminImage");
-    if (savedImage) {
-      // If image already has full URL, use it
-      setProfileImg(savedImage.startsWith("http") ? savedImage : `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${savedImage}`);
-    } else {
-      setProfileImg(avatar);
-    }
+        setFirstName(admin.firstName || "");
+        setSurname(admin.lastName || "");
+        setEmail(admin.email || "");
+        setPhone(admin.phone || "");
+        setAddress(admin.address || "");
+
+        const imageUrl = admin.image
+          ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${admin.image}`
+          : avatar;
+
+        setProfileImg(imageUrl);
+      } catch (err) {
+        console.error("Error loading admin profile:", err);
+      }
+    };
+
+    fetchAdmin();
   }, []);
-
 
   // Image preview
   const handleImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setImageFile(file);
-      setProfileImg(URL.createObjectURL(file));
+      setProfileImg(URL.createObjectURL(file)); // preview
     }
   };
 
-  // Submit Handler
+  // SUBMIT HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
       return Swal.fire({
         icon: "error",
-        title: "Password mismatch",
-        text: "Passwords do not match!",
+        title: "Password Mismatch",
+        text: "Please make sure both passwords match.",
       });
     }
 
     if (phone && !/^\d{10}$/.test(phone)) {
       return Swal.fire({
         icon: "error",
-        title: "Invalid Phone Number",
-        text: "Phone number must be exactly 10 digits!",
+        title: "Invalid Phone",
+        text: "Phone number must be exactly 10 digits.",
       });
     }
 
@@ -76,57 +86,56 @@ export const GeneralInfoForm = () => {
     formData.append("surname", surname);
     formData.append("phone", phone);
     formData.append("address", address);
+
     if (password) formData.append("password", password);
     if (imageFile) formData.append("image", imageFile);
 
     try {
       const res = await updateAdminProfile(formData);
 
-      const imageUrl = res.payload.image
+      const newImageUrl = res.payload.image
         ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${res.payload.image}`
         : avatar;
 
-      // Update local storage
-      localStorage.setItem("firstName", firstName);
-      localStorage.setItem("surname", surname);
-      localStorage.setItem("phone", phone);
-      localStorage.setItem("address", address);
-      localStorage.setItem("name", res.payload.name);
-      localStorage.setItem("adminImage", imageUrl);
+      setProfileImg(newImageUrl);
 
-      setProfileImg(imageUrl);
+      // 🔥 Dispatch event for TopNavbar to update instantly
+      window.dispatchEvent(new CustomEvent("profile-updated", {
+        detail: {
+          name: res.payload.name,
+          image: newImageUrl
+        }
+      }));
 
-      // 🎉 SUCCESS POPUP
-      Swal.fire({
-        icon: "success",
-        title: "Profile Updated!",
-        text: "Your profile has been updated successfully.",
-        timer: 1800,
-        showConfirmButton: false,
-      });
+      Swal.fire
+        ({
+          icon: "success",
+          title: "Profile Updated successfully!",
+          timer: 1500, showConfirmButton: false,
+        })
+        .then(() => { history.push("/profile"); });
 
-    } catch (err) {
-      console.error(err);
-
+    } catch (error) {
+      console.error(error);
       Swal.fire({
         icon: "error",
         title: "Update Failed",
-        text: "Unable to update profile. Please try again.",
+        text: "Something went wrong while updating your profile.",
       });
     }
-  };
 
+  };
 
   return (
     <Card border="light" className="bg-white shadow-sm mb-4">
       <Card.Body>
         <h5 className="mb-4">Edit Information</h5>
 
-        {/* Profile Image */}
+        {/* PROFILE IMAGE */}
         <div className="text-center position-relative mb-4" style={{ display: "inline-block" }}>
           <img
             src={profileImg}
-            alt="Profile"
+            alt="Admin"
             className="rounded-circle"
             style={{
               width: "120px",
@@ -137,16 +146,17 @@ export const GeneralInfoForm = () => {
             }}
           />
 
+          {/* Upload button */}
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
             style={{ display: "none" }}
-            id="upload-profile-img"
+            id="upload-admin-img"
           />
 
           <label
-            htmlFor="upload-profile-img"
+            htmlFor="upload-admin-img"
             style={{
               position: "absolute",
               bottom: "10px",
@@ -162,113 +172,96 @@ export const GeneralInfoForm = () => {
           </label>
         </div>
 
-        {/* FORM START */}
+        {/* FORM */}
         <Form onSubmit={handleSubmit}>
-          {/* Name */}
           <Row>
-            <Col md={6} className="mb-3">
-              <Form.Group id="firstName">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>First Name</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter first name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter first name"
                 />
               </Form.Group>
             </Col>
 
-            <Col md={6} className="mb-3">
-              <Form.Group id="lastName">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>Last Name</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter last name"
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
+                  placeholder="Enter last name"
                 />
               </Form.Group>
             </Col>
           </Row>
 
-          {/* Email + Phone */}
           <Row>
-            <Col md={6} className="mb-3">
-              <Form.Group id="email">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  disabled
-                  value={email}
-                />
+                <Form.Control type="email" disabled value={email} />
               </Form.Group>
             </Col>
 
-            <Col md={6} className="mb-3">
-              <Form.Group id="phone">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>Phone</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter phone number"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} // digits only
-                  maxLength={10} // limit to 10 digits
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                  maxLength={10}
+                  placeholder="Enter phone number"
                 />
               </Form.Group>
             </Col>
           </Row>
 
-          {/* Address */}
-          <Row>
-            <Col className="mb-3">
-              <Form.Group id="address">
-                <Form.Label>Address</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
+          <Form.Group className="mb-3">
+            <Form.Label>Address</Form.Label>
+            <Form.Control
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Enter address"
+            />
+          </Form.Group>
 
-          {/* Password + Confirm Password */}
+          {/* PASSWORD */}
           <Row>
-            <Col md={6} className="mb-3">
-              <Form.Group id="password">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>New Password</Form.Label>
                 <InputGroup>
                   <Form.Control
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter new password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter new password"
                   />
-                  <InputGroup.Text
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <InputGroup.Text onClick={() => setShowPassword(!showPassword)} style={{ cursor: "pointer" }}>
                     <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                   </InputGroup.Text>
                 </InputGroup>
               </Form.Group>
             </Col>
 
-            <Col md={6} className="mb-3">
-              <Form.Group id="confirmPassword">
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>Confirm Password</Form.Label>
                 <InputGroup>
                   <Form.Control
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
                   />
-                  <InputGroup.Text
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <InputGroup.Text onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ cursor: "pointer" }}>
                     <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
                   </InputGroup.Text>
                 </InputGroup>
@@ -276,12 +269,9 @@ export const GeneralInfoForm = () => {
             </Col>
           </Row>
 
-          {/* Submit */}
-          <div className="mt-3">
-            <Button variant="primary" type="submit">
-              Save Changes
-            </Button>
-          </div>
+          <Button type="submit" variant="primary" className="mt-2">
+            Save Changes
+          </Button>
         </Form>
       </Card.Body>
     </Card>
