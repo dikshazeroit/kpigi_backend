@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleLeft,
@@ -14,20 +15,72 @@ import {
   Button,
   InputGroup,
 } from "@themesberg/react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { Routes } from "../../routes";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 
+// API
+import { resetPassword } from "../../api/Auth";
+
 export default function ResetPassword() {
   const history = useHistory();
+  const location = useLocation();
+
+  // Email passed from OTP page
+  const email = location.state?.email;
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-
-  const handleReset = (e) => {
+  const handleReset = async (e) => {
     e.preventDefault();
-    // Only design — no API or alert
-    history.push(Routes.Signin.path);
+
+    if (!email) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Email missing",
+        text: "Please restart the password reset process.",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return Swal.fire({
+        icon: "error",
+        title: "Passwords do not match",
+        text: "Please make sure both passwords are the same.",
+      });
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await resetPassword(email, newPassword, confirmPassword);
+
+      Swal.fire({
+        icon: "success",
+        title: "Password Reset Successful!",
+        text: "You can now log in with your new password.",
+        confirmButtonColor: "#2575fc",
+      });
+
+      setTimeout(() => {
+        history.push(Routes.Signin.path);
+      }, 1200);
+
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Reset Failed",
+        text: err?.response?.data?.message || "Something went wrong.",
+        confirmButtonColor: "#d33",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,14 +125,13 @@ export default function ResetPassword() {
               style={{ maxHeight: "200px" }}
             />
 
-            <h2 className="fw-bold display-6" style={{ color:"#f0f0f0"}}>
+            <h2 className="fw-bold display-6" style={{ color: "#f0f0f0" }}>
               Reset Your Password
             </h2>
 
             <p className="mt-2 fs-6" style={{ color: "#f0f0f0" }}>
               Set a new password to regain access to your account
             </p>
-
           </Col>
 
           {/* Right Side */}
@@ -102,6 +154,8 @@ export default function ResetPassword() {
                       required
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                     />
                     <InputGroup.Text
                       style={{ cursor: "pointer" }}
@@ -125,6 +179,8 @@ export default function ResetPassword() {
                       required
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Re-enter new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     <InputGroup.Text
                       style={{ cursor: "pointer" }}
@@ -142,6 +198,7 @@ export default function ResetPassword() {
                 {/* Submit */}
                 <Button
                   type="submit"
+                  disabled={loading}
                   className="w-100 text-white fw-bold"
                   style={{
                     background: "linear-gradient(to right, #6a11cb, #2575fc)",
@@ -150,7 +207,7 @@ export default function ResetPassword() {
                     fontSize: "1rem",
                   }}
                 >
-                  Reset Password
+                  {loading ? "Resetting..." : "Reset Password"}
                 </Button>
 
                 {/* Back to Sign In */}

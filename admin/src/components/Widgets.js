@@ -1,4 +1,4 @@
-import React, { useRef,useEffect,useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
 import { faAngular, faBootstrap, faReact, faVuejs } from "@fortawesome/free-brands-svg-icons";
@@ -9,7 +9,7 @@ import { useHistory } from "react-router-dom";
 import Profile1 from "../assets/img/team/profile-picture-3.jpg";
 import ProfileCover from "../assets/img/pages/profile-cover.jpg";
 import teamMembers from "../data/teamMembers";
-import { getAdminProfile } from "../api/ApiServices"; 
+import { getAdminProfile } from "../api/ApiServices";
 import { Routes } from "../routes";
 // ------------------ Profile Card Widget ------------------
 
@@ -29,6 +29,8 @@ export const ProfileCardWidget = () => {
     address: ""
   });
 
+  const [loading, setLoading] = useState(true);
+
   // ------------------ API CALL ------------------
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +41,8 @@ export const ProfileCardWidget = () => {
         }
       } catch (err) {
         console.error("Admin profile fetch failed:", err);
+      } finally {
+        setLoading(false); // stop loader
       }
     };
 
@@ -50,11 +54,21 @@ export const ProfileCardWidget = () => {
     if (file) console.log("Selected file:", file);
   };
 
-  // Profile image (fallback keeps SAME design)
+  // Profile image (fallback)
   const adminImageURL = admin.image
     ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${admin.image}`
     : Profile1;
 
+  // ------------------ LOADING UI ------------------
+  if (loading) {
+    return (
+      <Card border="light" className="text-center p-4 mb-4">
+        <h5>Loading Profile...</h5>
+      </Card>
+    );
+  }
+
+  // ------------------ MAIN UI ------------------
   return (
     <Card border="light" className="text-center p-0 mb-4 position-relative">
 
@@ -83,24 +97,30 @@ export const ProfileCardWidget = () => {
         onMouseEnter={(e) => e.target.style.transform = "scale(1.1)"}
         onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
       />
-      <input type="file" accept="image/*" ref={fileInputRef} style={{ display: "none" }} onChange={handleCoverChange} />
 
-      {/* SAME BODY */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleCoverChange}
+      />
+
+      {/* BODY */}
       <Card.Body className="pb-5">
 
-        {/* DYNAMIC IMAGE */}
+        {/* PROFILE IMAGE */}
         <Card.Img
           src={adminImageURL}
           alt="Profile"
           className="user-avatar large-avatar rounded-circle mx-auto mt-n7 mb-4"
         />
 
-        {/* DYNAMIC NAME */}
+        {/* NAME */}
         <Card.Title>{admin?.name || "Admin"}</Card.Title>
-
         <Card.Subtitle className="fw-normal">Admin</Card.Subtitle>
 
-        {/* DYNAMIC DETAILS */}
+        {/* DETAILS */}
         <div className="text-start px-4">
           <h5 className="fw-bold mb-3">Profile Information</h5>
 
@@ -118,7 +138,7 @@ export const ProfileCardWidget = () => {
           </p>
         </div>
 
-        {/* SAME EDIT BUTTON */}
+        {/* EDIT PROFILE BUTTON */}
         <FontAwesomeIcon
           icon={faPen}
           onClick={() => history.push(Routes.EditProfile.path)}
@@ -127,7 +147,8 @@ export const ProfileCardWidget = () => {
             color: "#555", background: "#fff", padding: "8px", borderRadius: "50%",
             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
             height: "30px", width: "30px",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px"
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "10px"
           }}
         />
       </Card.Body>
@@ -187,7 +208,7 @@ export const CircleChartWidget = ({ title, data = [] }) => {
 
 // ------------------ Bar Chart Widget ------------------
 export const BarChartWidget = ({ title, value, percentage, data = [] }) => {
-  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const series = data.map(d => d.value);
   const percentageIcon = percentage < 0 ? faAngleDown : faAngleUp;
   const percentageColor = percentage < 0 ? "text-danger" : "text-success";
@@ -243,7 +264,7 @@ export const SalesVsTargetWidget = ({ title, value, target }) => {
 export const SalesValueWidget = ({ title, value, percentage }) => {
   const percentageIcon = percentage < 0 ? faAngleDown : faAngleUp;
   const percentageColor = percentage < 0 ? "text-danger" : "text-success";
-  return ( 
+  return (
     <Card className="bg-secondary-alt shadow-sm">
       <Card.Header className="d-flex flex-row align-items-center flex-0">
         <div className="d-block">
