@@ -1,28 +1,69 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKey } from "@fortawesome/free-solid-svg-icons";
 import {
-    Col,
-    Row,
-    Form,
-    Card,
-    Button,
-    InputGroup,
+    Col, Row, Form, Card, Button, InputGroup
 } from "@themesberg/react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { Routes } from "../../routes";
-import BgImage from "../../assets/img/illustrations/Data_security_01.jpg"; // 🟢 use your OTP illustration image
+import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
+
+import { verifyOtp } from "../../api/Auth";
 
 export default function VerifyOtp() {
     const history = useHistory();
+    const location = useLocation();
+
     const [otp, setOtp] = useState("");
+    const [loading, setLoading] = useState(false);
 
+    const email = location.state?.email;
 
-
-    const handleVerify = (e) => {
+    const handleVerify = async (e) => {
         e.preventDefault();
-        // Only design — no API or alert
-        history.push(Routes.ResetPassword.path);
+
+        if (!email) {
+            Swal.fire({
+                icon: "warning",
+                title: "Email Missing!",
+                text: "Go back and enter your email again.",
+                confirmButtonColor: "#2575fc"
+            });
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const res = await verifyOtp(email, otp);
+
+            // SUCCESS POPUP
+            Swal.fire({
+                icon: "success",
+                title: "OTP Verified!",
+                text: "Your OTP has been verified successfully.",
+                confirmButtonColor: "#2575fc"
+            });
+
+            // Navigate to Reset Password
+            setTimeout(() => {
+                history.push({
+                    pathname: Routes.ResetPassword.path,
+                    state: { email },
+                });
+            }, 1200);
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Verification Failed!",
+                text: error?.response?.data?.message || "Invalid OTP, please try again.",
+                confirmButtonColor: "#d33"
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -47,16 +88,14 @@ export default function VerifyOtp() {
                     backdropFilter: "blur(10px)",
                 }}
             >
-                <Row
-                    className="g-0 d-flex flex-column flex-md-row"
-                    style={{ minHeight: "500px" }}
-                >
-                    {/* Left Side - Illustration */}
+                <Row className="g-0 d-flex flex-column flex-md-row" style={{ minHeight: "500px" }}>
+
+                    {/* Left Side */}
                     <Col
                         md={6}
                         className="d-flex flex-column align-items-center justify-content-center text-center p-4"
                         style={{
-                              background: "linear-gradient(to bottom, #2575fc, #6a11cb)",
+                            background: "linear-gradient(to bottom, #2575fc, #6a11cb)",
                             color: "white",
                         }}
                     >
@@ -74,14 +113,10 @@ export default function VerifyOtp() {
                         <p className="mt-2 fs-6" style={{ color: "#ffff" }}>
                             Enter the 6-digit OTP sent to your registered email
                         </p>
-
                     </Col>
 
-                    {/* Right Side - OTP Form */}
-                    <Col
-                        md={6}
-                        className="d-flex align-items-center justify-content-center bg-white p-4"
-                    >
+                    {/* Right Side */}
+                    <Col md={6} className="d-flex align-items-center justify-content-center bg-white p-4">
                         <div className="w-100" style={{ maxWidth: "360px" }}>
                             <h3 className="mb-4 text-center">OTP Verification</h3>
 
@@ -105,6 +140,7 @@ export default function VerifyOtp() {
 
                                 <Button
                                     type="submit"
+                                    disabled={loading}
                                     className="w-100 text-white fw-bold"
                                     style={{
                                         background: "linear-gradient(to right, #6a11cb, #2575fc)",
@@ -113,21 +149,16 @@ export default function VerifyOtp() {
                                         fontSize: "1rem",
                                     }}
                                 >
-                                    Verify OTP
+                                    {loading ? "Verifying..." : "Verify OTP"}
                                 </Button>
 
                                 <div className="text-center mt-3">
                                     <p className="small mb-1">
                                         Didn’t receive the OTP?{" "}
-                                        <Link
-                                            to="#"
-                                            className="text-primary text-decoration-none fw-bold"
-                                        >
+                                        <Link to="#" className="text-primary text-decoration-none fw-bold">
                                             Resend
                                         </Link>
                                     </p>
-
-
                                 </div>
                             </Form>
                         </div>

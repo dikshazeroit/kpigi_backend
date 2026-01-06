@@ -14,7 +14,8 @@ import {
   ListGroup,
 } from "@themesberg/react-bootstrap";
 
-import { useHistory} from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import NOTIFICATIONS_DATA from "../data/notifications";
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
@@ -35,26 +36,50 @@ export default function TopNavbar() {
   };
   const adminName = localStorage.getItem("name")?.trim() || "Admin";
 
-const adminImage = localStorage.getItem("adminImage")
-  ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${localStorage.getItem("adminImage")}`
-  : Profile3;
+  const adminImage = localStorage.getItem("adminImage")
+    ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${localStorage.getItem("adminImage")}`
+    : Profile3;
 
 
-// Debug Logs
-console.log("ADMIN NAME →", adminName);
-console.log("ADMIN IMAGE →", adminImage);
-console.log("LOCAL STORAGE name →", localStorage.getItem("name"));
-console.log("LOCAL STORAGE adminImage →", localStorage.getItem("adminImage"));
+  // Debug Logs
+  console.log("ADMIN NAME →", adminName);
+  console.log("ADMIN IMAGE →", adminImage);
+  console.log("LOCAL STORAGE name →", localStorage.getItem("name"));
+  console.log("LOCAL STORAGE adminImage →", localStorage.getItem("adminImage"));
 
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("name");
-  localStorage.removeItem("adminImage");
-  sessionStorage.clear();
+  const handleLogout = () => {
+    Swal.fire({
+      title: "Logout Confirmation",
+      text: "Are you sure you want to logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Logout",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Clear data
+        localStorage.removeItem("token");
+        localStorage.removeItem("name");
+        localStorage.removeItem("adminImage");
+        sessionStorage.clear();
 
-   window.location.href = Routes.Signin.path; 
-};
+        Swal.fire({
+          title: "Logged Out",
+          text: "You have been successfully logged out.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        setTimeout(() => {
+          window.location.href = Routes.Signin.path;
+        }, 1500);
+      }
+    });
+  };
+
 
   const NotificationItem = ({ link, sender, image, time, message, read }) => (
     <ListGroup.Item action href={link} className="border-bottom border-light">
@@ -78,7 +103,7 @@ const handleLogout = () => {
 
   return (
     <Navbar
-    
+
       expand="lg"
       className="navbar-main shadow-sm"
       style={{
@@ -180,14 +205,14 @@ const handleLogout = () => {
             <Dropdown as={Nav.Item}>
               <Dropdown.Toggle as={Nav.Link} className="pt-1 px-0">
                 <div className="media d-flex align-items-center">
-                   <Image
-      src={adminImage}
-      className="user-avatar md-avatar rounded-circle"
-      onError={(e) => (e.target.src = Profile3)}
-    />
+                  <Image
+                    src={adminImage}
+                    className="user-avatar md-avatar rounded-circle"
+                    onError={(e) => (e.target.src = Profile3)}
+                  />
                   <div className="media-body ms-2 text-dark d-none d-lg-block">
                     <span className="mb-0 font-small fw-bold">
-                     {adminName}
+                      {adminName}
                     </span>
                   </div>
                 </div>
@@ -203,15 +228,15 @@ const handleLogout = () => {
                 </Dropdown.Item>
 
                 <Dropdown.Item
-  className="fw-bold"
-  onClick={handleLogout}
->
-  <FontAwesomeIcon
-    icon={faSignOutAlt}
-    className="text-danger me-2"
-  />{" "}
-  Logout
-</Dropdown.Item>
+                  className="fw-bold"
+                  onClick={handleLogout}
+                >
+                  <FontAwesomeIcon
+                    icon={faSignOutAlt}
+                    className="text-danger me-2"
+                  />{" "}
+                  Logout
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
 

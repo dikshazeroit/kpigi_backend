@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faPen } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row, Card, Form, InputGroup, Button } from "@themesberg/react-bootstrap";
 import avatar from "../assets/img/pages/avatar.jpg";
-import { updateAdminProfile } from "../api/ApiServices"; 
+import Swal from "sweetalert2";
+import { updateAdminProfile } from "../api/ApiServices";
 
 export const GeneralInfoForm = () => {
   // STATE VARIABLES
@@ -23,22 +24,22 @@ export const GeneralInfoForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Load existing user data from localStorage on mount
- // Load existing user data from localStorage on mount
-useEffect(() => {
-  setFirstName(localStorage.getItem("firstName") || "");
-  setSurname(localStorage.getItem("surname") || "");
-  setEmail(localStorage.getItem("email") || "");
-  setPhone(localStorage.getItem("phone") || "");
-  setAddress(localStorage.getItem("address") || "");
-  
-  const savedImage = localStorage.getItem("adminImage");
-  if (savedImage) {
-    // If image already has full URL, use it
-    setProfileImg(savedImage.startsWith("http") ? savedImage : `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${savedImage}`);
-  } else {
-    setProfileImg(avatar);
-  }
-}, []);
+  // Load existing user data from localStorage on mount
+  useEffect(() => {
+    setFirstName(localStorage.getItem("firstName") || "");
+    setSurname(localStorage.getItem("surname") || "");
+    setEmail(localStorage.getItem("email") || "");
+    setPhone(localStorage.getItem("phone") || "");
+    setAddress(localStorage.getItem("address") || "");
+
+    const savedImage = localStorage.getItem("adminImage");
+    if (savedImage) {
+      // If image already has full URL, use it
+      setProfileImg(savedImage.startsWith("http") ? savedImage : `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${savedImage}`);
+    } else {
+      setProfileImg(avatar);
+    }
+  }, []);
 
 
   // Image preview
@@ -51,50 +52,69 @@ useEffect(() => {
   };
 
   // Submit Handler
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
+    if (password !== confirmPassword) {
+      return Swal.fire({
+        icon: "error",
+        title: "Password mismatch",
+        text: "Passwords do not match!",
+      });
+    }
 
-  if (phone && !/^\d{10}$/.test(phone)) {
-    alert("Phone number must be exactly 10 digits!");
-    return;
-  }
+    if (phone && !/^\d{10}$/.test(phone)) {
+      return Swal.fire({
+        icon: "error",
+        title: "Invalid Phone Number",
+        text: "Phone number must be exactly 10 digits!",
+      });
+    }
 
-  const formData = new FormData();
-  formData.append("name", firstName);
-  formData.append("surname", surname);
-  formData.append("phone", phone);
-  formData.append("address", address);
-  if (password) formData.append("password", password);
-  if (imageFile) formData.append("image", imageFile);
+    const formData = new FormData();
+    formData.append("name", firstName);
+    formData.append("surname", surname);
+    formData.append("phone", phone);
+    formData.append("address", address);
+    if (password) formData.append("password", password);
+    if (imageFile) formData.append("image", imageFile);
 
-  try {
-    const res = await updateAdminProfile(formData);
+    try {
+      const res = await updateAdminProfile(formData);
 
-    // Construct S3 URL if image exists
-    const imageUrl = res.payload.image 
-      ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${res.payload.image}` 
-      : avatar;
+      const imageUrl = res.payload.image
+        ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${res.payload.image}`
+        : avatar;
 
-    // Update Local Storage
-    localStorage.setItem("firstName", firstName);
-    localStorage.setItem("surname", surname);
-    localStorage.setItem("phone", phone);
-    localStorage.setItem("address", address);
-    localStorage.setItem("name", res.payload.name);
-    localStorage.setItem("adminImage", imageUrl);
+      // Update local storage
+      localStorage.setItem("firstName", firstName);
+      localStorage.setItem("surname", surname);
+      localStorage.setItem("phone", phone);
+      localStorage.setItem("address", address);
+      localStorage.setItem("name", res.payload.name);
+      localStorage.setItem("adminImage", imageUrl);
 
-    setProfileImg(imageUrl); // Update profile image in UI
-    alert("Profile updated successfully!");
-  } catch (err) {
-    console.error(err);
-    alert("Profile update failed!");
-  }
-};
+      setProfileImg(imageUrl);
+
+      // 🎉 SUCCESS POPUP
+      Swal.fire({
+        icon: "success",
+        title: "Profile Updated!",
+        text: "Your profile has been updated successfully.",
+        timer: 1800,
+        showConfirmButton: false,
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Unable to update profile. Please try again.",
+      });
+    }
+  };
 
 
   return (

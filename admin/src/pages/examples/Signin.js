@@ -7,6 +7,7 @@ import { Routes } from "../../routes";
 import { Alert, Collapse } from "@mui/material";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 import { isAuthenticated, loginAdmin } from "../../api/Auth";
+import Swal from "sweetalert2";
 import { getAdminWithRoleAPI } from "../../api/ApiServices";
 import CryptoJS from "crypto-js";
 
@@ -38,10 +39,29 @@ export default function Signin() {
       // Login
       await loginAdmin(email, password);
 
+      // SweetAlert Success Popup
+      Swal.fire({
+        title: "Login Successful!",
+        text: "Redirecting to Dashboard...",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Redirect after 2 seconds
+      setTimeout(() => {
         history.push(Routes.DashboardOverview.path);
+      }, 2000);
 
     } catch (error) {
       console.error(error);
+
+      Swal.fire({
+        title: "Login Failed!",
+        text: error.response?.data?.message || "Incorrect Email or Password",
+        icon: "error",
+      });
+
       setErrorMsg(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
