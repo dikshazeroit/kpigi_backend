@@ -9,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { CircleChartWidget, BarChartWidget } from "../../components/Widgets";
+import { useHistory } from "react-router-dom";
 
 import {
   getDashboardSummary,
@@ -18,6 +19,7 @@ import {
 
 const DashboardOverview = () => {
   // ✅ SAFE DEFAULT STATE
+  const history = useHistory();
   const [summary, setSummary] = useState({
     totalUsers: 0,
     totalFunds: 0,
@@ -40,7 +42,7 @@ const DashboardOverview = () => {
 
 
       // ✅ SUMMARY
-      setSummary(summaryRes.data); 
+      setSummary(summaryRes.data);
 
 
       // ✅ STATS (array from aggregation)
@@ -67,32 +69,36 @@ const DashboardOverview = () => {
     );
   }
 
- const summaryCards = [
-  {
-    icon: faUsers,
-    label: "Total Users",
-    value: summary?.totalUsers || 0,
-    bg: "#4e73df",
-  },
-  {
-    icon: faHandHoldingHeart,
-    label: "Total Fundraisers",
-    value: summary?.totalFunds || 0,
-    bg: "#1cc88a",
-  },
-  {
-    icon: faChartLine,
-    label: "Active Fundraisers",
-    value: summary?.activeFunds || 0,
-    bg: "#36b9cc",
-  },
-  {
-    icon: faDollarSign,
-    label: "Pending Payouts",
-    value: summary?.pendingPayouts || 0,
-    bg: "#f6c23e",
-  },
-];
+  const summaryCards = [
+    {
+      icon: faUsers,
+      label: "Total Users",
+      value: summary?.totalUsers || 0,
+      bg: "#4e73df",
+      route: "/tables/user-list"
+    },
+    {
+      icon: faHandHoldingHeart,
+      label: "Total Fundraisers",
+      value: summary?.totalFunds || 0,
+      bg: "#1cc88a",
+      route: "/campaigns/list"
+    },
+    {
+      icon: faChartLine,
+      label: "Active Fundraisers",
+      value: summary?.activeFunds || 0,
+      bg: "#36b9cc",
+      route: "/campaigns/list"
+    },
+    {
+      icon: faDollarSign,
+      label: "Pending Payouts",
+      value: summary?.pendingPayouts || 0,
+      bg: "#f6c23e",
+      route: "/payouts/list"
+    },
+  ];
 
 
   // ✅ BAR CHART DATA (from aggregation)
@@ -116,6 +122,12 @@ const DashboardOverview = () => {
                 borderRadius: "14px",
                 padding: "20px",
                 textAlign: "center",
+                cursor: card.route ? "pointer" : "default",
+              }}
+              onClick={() => {
+                if (card.route) {
+                  history.push(card.route); // 👈 Navigate to route
+                }
               }}
             >
               <FontAwesomeIcon icon={card.icon} size="2x" className="mb-2" />
