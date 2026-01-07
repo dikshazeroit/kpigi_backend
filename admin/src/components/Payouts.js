@@ -86,13 +86,13 @@ const PayoutManagement = () => {
   };
 
   const filteredPayouts = payouts.filter((p) =>
-  p.userName?.toLowerCase().includes(searchTerm.toLowerCase())
-);
-const totalPages = Math.ceil(filteredPayouts.length / itemsPerPage);
-const paginatedPayouts = filteredPayouts.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage
-);
+    p.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredPayouts.length / itemsPerPage);
+  const paginatedPayouts = filteredPayouts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
 
   return (
