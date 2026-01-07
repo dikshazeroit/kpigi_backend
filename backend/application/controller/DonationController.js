@@ -57,7 +57,7 @@ function calculateFee(amount) {
  */
 donationObj.createDonation = async function (req, res) {
   try {
-    /* 🔐 Get Donor */
+    /* 🔐 Get Donor UUID from Token */
     const donorUuid = await appHelper.getUUIDByToken(req);
     if (!donorUuid) {
       return commonHelper.errorHandler(res, {
@@ -67,8 +67,17 @@ donationObj.createDonation = async function (req, res) {
       }, 200);
     }
 
-    const { fund_uuid, amount, is_anonymous } = req.body;
+    /* 👤 Get User name + email from DB */
+    const user = await UsersCredentialsModel.findOne({ uc_uuid: donorUuid });
+    if (!user || !user.uc_full_name || !user.uc_email) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1003",
+        message: "User name or email not found",
+      }, 200);
+    }
 
+    const { fund_uuid, amount, is_anonymous } = req.body;
     if (!fund_uuid || !amount || Number(amount) <= 0) {
       return commonHelper.errorHandler(res, {
         status: false,
@@ -87,22 +96,24 @@ donationObj.createDonation = async function (req, res) {
       }, 200);
     }
 
-    /* 💰 Fee Calculation (2.8%) */
+    /* 💰 Fee Calculation */
     const amountInCents = Math.round(Number(amount) * 100);
     const platformFee = Math.round(amountInCents * 0.028);
     const netAmount = amountInCents - platformFee;
 
-    /* 💳 Create PaymentIntent (CLIENT STRIPE ACCOUNT) */
+    /* 💳 Correct PaymentIntent creation (NO payment_method_data here!) */
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: "usd",
+      description: `Donation to fund ${fund.f_name || fund_uuid}`,
+      payment_method_types: ["card"], // ONLY specify card type
       metadata: {
         fund_uuid,
         donor_uuid: donorUuid,
       },
     });
 
-    /* 🧾 Save Donation (PENDING) */
+    /* 🧾 Save Donation */
     const donationUuid = uuidv4();
     await DonationModel.create({
       d_uuid: donationUuid,
@@ -114,6 +125,10 @@ donationObj.createDonation = async function (req, res) {
       d_is_anonymous: !!is_anonymous,
       d_payment_intent_id: paymentIntent.id,
       d_status: "PENDING",
+      d_meta: {
+        address_mode: "STATIC_API",
+        currency: "USD",
+      },
     });
 
     /* 📤 Response */
@@ -123,11 +138,6 @@ donationObj.createDonation = async function (req, res) {
       payload: {
         client_secret: paymentIntent.client_secret,
         donation_uuid: donationUuid,
-        breakdown: {
-          donation: Number(amount),
-          fee: platformFee / 100,
-          payout: netAmount / 100,
-        },
       },
     });
 
@@ -136,10 +146,13 @@ donationObj.createDonation = async function (req, res) {
     return commonHelper.errorHandler(res, {
       status: false,
       code: "DON-E9999",
-      message: "Donation failed",
+      message: error.message || "Donation failed",
     }, 200);
   }
 };
+
+
+
 
 
 /**
