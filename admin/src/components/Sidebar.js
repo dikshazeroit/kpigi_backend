@@ -23,6 +23,7 @@ import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstra
 
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import DashboardIcon from "../assets/img/team/dashboard-svgrepo-com 1.png";
+import logo from "../assets/img/pages/Kpigi-remove.png"
 
 import { Routes } from "../routes";
 
@@ -44,13 +45,13 @@ export default function Sidebar({ userName = "Jane" }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [show]);
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("name");
-  localStorage.removeItem("adminImage");
-  sessionStorage.clear();
-  window.location.href = Routes.Signin.path; // redirect
-};
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("name");
+    localStorage.removeItem("adminImage");
+    sessionStorage.clear();
+    window.location.href = Routes.Signin.path; // redirect
+  };
 
   const NavItem = ({ title, link, icon, imageIcon, textColor = "#000", iconColor = "#000" }) => {
     const isActive = link === pathname;
@@ -127,22 +128,20 @@ const handleLogout = () => {
           <div className="sidebar-inner sidebar-bg px-4 pt-3">
             <div className="text-center mb-4">
               <Link to={Routes.DashboardOverview.path} onClick={() => setShow(false)}>
-                <span
+                <Image
+                  src={logo}
+                  alt="Kpigi Logo"
                   style={{
-                    display: 'inline-block',
-                    padding: '15px 30px',
-                    margin: '10px 0',
-                    fontSize: '50px',
-                    fontWeight: 'bold',
-                    border: '2px solid #000', 
-                    borderRadius: '8px', 
-                    backgroundColor: '#fff', 
-                    color: '#000', 
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', 
+                    width: "120px",        // adjust size
+                    height: "auto",
+                    margin: "10px 0",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    // backgroundColor: "#fff",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                    cursor: "pointer",
                   }}
-                >
-                  Kpigi
-                </span>
+                />
               </Link>
             </div>
 
@@ -158,11 +157,11 @@ const handleLogout = () => {
                 </div>
                 <div>
                   <h6>Hi, {userName}</h6>
-                 <Button
-  variant="secondary"
-  size="xs"
-  onClick={handleLogout}
->
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    onClick={handleLogout}
+                  >
 
                     <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                     Sign Out
@@ -198,21 +197,21 @@ const handleLogout = () => {
                 textColor="#1e90ff"
                 iconColor="#1e90ff"
               />
-               <NavItem
+              <NavItem
                 title="Donation Management"
                 link={Routes.DonationManagementPage.path}
                 icon={faDonate}
                 textColor="#1e90ff"
                 iconColor="#1e90ff"
               />
-               <NavItem
+              <NavItem
                 title="Payouts"
                 link={Routes.PayoutsPage.path}
                 icon={faDollarSign}
                 textColor="#ffa500"
                 iconColor="#ffa500"
               />
-               <NavItem
+              <NavItem
                 title="Categories"
                 link={Routes.CategoriesPage.path}
                 icon={faClipboardList}
@@ -226,7 +225,7 @@ const handleLogout = () => {
                 textColor="#ff69b4"
                 iconColor="#ff69b4"
               /> */}
-{/*              
+              {/*              
               <NavItem
                 title="Analytics"
                 link={Routes.AnalyticsPage.path}
@@ -271,27 +270,27 @@ const handleLogout = () => {
               />
 
               <Dropdown.Divider className="my-3" />
-<Nav.Item>
-  <Nav.Link
-    onClick={handleLogout}
-    className="sidebar-btn mb-2"
-    style={{
-      color: "#fff",
-      backgroundColor: "transparent",
-      borderRadius: "5px",
-      padding: "8px 12px",
-    }}
-  >
-    <span className="d-flex align-items-center">
-      <span className="sidebar-icon" style={{ color: "#ffffff", minWidth: "20px" }}>
-        <FontAwesomeIcon icon={faSignOutAlt} />
-      </span>
-      <span className="sidebar-text ms-2">Logout</span>
-    </span>
-  </Nav.Link>
-</Nav.Item>
+              {/* <Nav.Item>
+                <Nav.Link
+                  onClick={handleLogout}
+                  className="sidebar-btn mb-2"
+                  style={{
+                    color: "#fff",
+                    backgroundColor: "transparent",
+                    borderRadius: "5px",
+                    padding: "8px 12px",
+                  }}
+                >
+                  <span className="d-flex align-items-center">
+                    <span className="sidebar-icon" style={{ color: "#ffffff", minWidth: "20px" }}>
+                      <FontAwesomeIcon icon={faSignOutAlt} />
+                    </span>
+                    <span className="sidebar-text ms-2">Logout</span>
+                  </span>
+                </Nav.Link>
+              </Nav.Item> */}
 
-        
+
             </Nav>
           </div>
         </SimpleBar>
