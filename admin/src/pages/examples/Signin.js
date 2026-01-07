@@ -7,12 +7,9 @@ import { Routes } from "../../routes";
 import { Alert, Collapse } from "@mui/material";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 import { isAuthenticated, loginAdmin } from "../../api/Auth";
-import { getAdminWithRoleAPI } from "../../api/ApiServices";
-import CryptoJS from "crypto-js";
+import Swal from "sweetalert2";
 
 export default function Signin() {
-  // Secret key for encryption
-  const secretKey = "my_super_secret_key";
   const history = useHistory();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -35,11 +32,17 @@ export default function Signin() {
     setErrorMsg("");
 
     try {
-      // Login
       await loginAdmin(email, password);
 
-        history.push(Routes.DashboardOverview.path);
+      Swal.fire({
+        icon: "success",
+        title: "Login Successful",
+        showConfirmButton: true,
+        showConfirmButton:"ok",
+        timer: 1500,
+      });
 
+      history.push(Routes.DashboardOverview.path);
     } catch (error) {
       console.error(error);
       setErrorMsg(error.response?.data?.message || "Login failed");
@@ -183,6 +186,21 @@ export default function Signin() {
                   {loading ? "Logging in..." : "Login"}
                 </Button>
               </Form>
+
+              {/* FOOTER TEXT BELOW LOGIN BUTTON */}
+              <div className="text-center mt-3">
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#64748b",
+                    fontWeight: 600,
+                    userSelect: "none",
+                  }}
+                >
+                  Designed & Developed by{" "}
+                  <span style={{ color: "#334155" }}>ZeroIT Solutions</span>
+                </p>
+              </div>
             </div>
           </Col>
         </Row>
