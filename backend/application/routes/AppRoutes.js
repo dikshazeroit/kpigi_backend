@@ -66,6 +66,10 @@ router.post("/private/delete-account", userObj.deleteAccount);
 router.post("/private/update-payout-card", userObj.updatePayoutCard);
 router.post("/private/check-bank-details",userObj.checkBankDetails);
 router.post("/category-list",userObj.categoryList);
+router.post("/private/withdraw-request",userObj.createWithdrawalRequest);
+router.post( "/private/withdraw-history", userObj.getWithdrawalHistory);
+
+
 //****************************** 🔐 Found Routes *******************************************//
 
 router.post("/private/create-fund",fundUpload,fundObj.createFundRequest);
@@ -78,6 +82,9 @@ router.post("/private/delete-fund", fundObj.deleteFund);
 router.post("/private/donation-start", donationObj.createDonation);
 router.post("/private/donation-list", donationObj.getMyDonations);
 router.post("/private/donation-fund-donors", donationObj.getFundDonors);
+router.post("/private/received-donations", donationObj.getReceivedDonations);
+
+
 //****************************** 💰 Payout Routes *******************************************//
 router.post("/private/payout-process", payoutObj.processPayout);
 router.post("/private/payout-history", payoutObj.getPayoutHistory);
@@ -93,7 +100,7 @@ router.post("/private/notification-mark-all-read", notificationObj.markAllAsRead
 router.post("/private/notification-single-delete", notificationObj.singleDelete);
 
 //******************************************* 🛡️ Security ************************************************//
-router.post("/public/security-report", securityObj.reportSuspicious);
+router.post("/private/security-report", securityObj.reportSuspicious);
 router.post("/private/security-pause-fund", securityObj.pauseFund);
 router.post("/private/security-reports", securityObj.getReports);
 

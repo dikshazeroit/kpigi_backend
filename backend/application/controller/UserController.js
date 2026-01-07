@@ -731,4 +731,107 @@ userObj.categoryList = async function (req, res) {
   }
 };
 
+userObj.createWithdrawalRequest = async function (req, res) {
+  try {
+    const userUuid = await appHelper.getUUIDByToken(req);
+    if (!userUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized",
+      }, 200);
+    }
+
+    
+    const {
+      amount,
+      accountHolderName,
+      accountNumber,
+      ifscCode
+    } = req.body;
+
+    if (
+      !amount ||
+      amount <= 0 ||
+      !accountHolderName ||
+      !accountNumber ||
+      !ifscCode
+    ) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "All fields are required",
+      }, 200);
+    }
+
+    const user = await userModel.findOne({ uc_uuid: userUuid });
+
+    if (user.uc_balance < amount) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Insufficient wallet balance",
+      }, 200);
+    }
+
+    // 1️⃣ Deduct wallet balance
+    user.uc_balance -= amount;
+    await user.save();
+
+    // 2️⃣ Save withdrawal request
+    await WithdrawalModel.create({
+      w_uuid: uuidv4(),
+      w_fk_uc_uuid: userUuid,
+      w_amount: amount,
+      w_account_holder_name: accountHolderName,
+      w_account_number: accountNumber,
+      w_ifsc_code: ifscCode,
+    });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Withdrawal request submitted successfully",
+    });
+
+  } catch (error) {
+    console.error("❌ Withdrawal Error", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Withdrawal failed",
+    }, 200);
+  }
+};
+
+
+
+userObj.getWithdrawalHistory = async function (req, res) {
+  try {
+    const userUuid = await appHelper.getUUIDByToken(req);
+    if (!userUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized",
+      }, 200);
+    }
+
+    const history = await WithdrawalModel.find({
+      w_fk_uc_uuid: userUuid,
+    }).sort({ createdAt: -1 });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Withdrawal history fetched",
+      payload: history.map((w) => ({
+        amount: w.w_amount,
+        status: w.w_status,
+        requestDate: w.createdAt, // ✅ camelCase
+      })),
+    });
+
+  } catch (error) {
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Failed to fetch withdrawal history",
+    }, 200);
+  }
+};
+
+
 export default userObj;
