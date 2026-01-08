@@ -5,18 +5,15 @@ import { CSSTransition } from "react-transition-group";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUsers,
-  faChartLine,
   faSignOutAlt,
-  faWallet,
   faTimes,
-  faUser,
   faDollarSign,
-  faGavel,
   faLifeRing,
   faUserShield,
   faDonate,
   faFunnelDollar,
   faClipboardList,
+  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstrap";
@@ -186,7 +183,7 @@ export default function Sidebar({ userName = "Jane" }) {
               <NavItem
                 title="User Management"
                 link={Routes.BootstrapTables.path}
-                icon={faUser}
+                icon={faUsers}
                 textColor="#32cd32"
                 iconColor="#32cd32"
               />
@@ -264,7 +261,7 @@ export default function Sidebar({ userName = "Jane" }) {
               <NavItem
                 title="Terms & Conditions"
                 link={Routes.TermsAndConditions.path}
-                icon={faUserShield}
+                icon={faInfoCircle}
                 textColor="#dc143c"
                 iconColor="#dc143c"
               />

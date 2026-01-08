@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const BASE_URL = "http://localhost:3000/admin/";
- const BASE_URL = "http://3.137.82.51:3002/admin/"
+const BASE_URL = "http://3.137.82.51:3002/admin/"
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -29,7 +29,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = 'admin/login';
+      // window.location.href = 'admin/login';
     }
     return Promise.reject(error);
   }

@@ -7,8 +7,12 @@ import {
   Col,
   Pagination,
   Spinner,
+  Badge,
+  InputGroup,
 } from "@themesberg/react-bootstrap";
 import { getAllUsers } from "../api/ApiServices";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 export const PageUserTable = () => {
   const [users, setUsers] = useState([]);
@@ -28,13 +32,10 @@ export const PageUserTable = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-
-      // ✅ CORRECT FUNCTION CALL
       const res = await getAllUsers(page, limit, search);
 
       let data = res.payload || [];
 
-      // Optional frontend filters
       if (role) {
         data = data.filter(
           (u) => (u.uc_role || "").toLowerCase() === role.toLowerCase()
@@ -58,103 +59,137 @@ export const PageUserTable = () => {
     }
   };
 
-  // Load on page/search
   useEffect(() => {
     fetchUsers();
   }, [page, search]);
 
-  // Reset page on filters
   useEffect(() => {
     setPage(1);
   }, [role, start, end]);
 
   return (
-    <Card border="light" className="shadow-sm">
-      <Card.Header>
-        <h5 className="mb-0">User List</h5>
+    <Card border="light" className="shadow-sm p-3">
+      <Card.Header className="border-0 bg-white p-0 mb-4">
+        <h3 className="fw-bold mb-1 d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faUsers} />
+          User-List
+        </h3>
       </Card.Header>
 
       <Card.Body>
         {/* ================= FILTERS ================= */}
-        <Row className="mb-3">
-          <Col md={3}>
-            <Form.Label>User Role</Form.Label>
-            <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="">All</option>
-              <option value="requester">Requester</option>
-              <option value="donor">Donor</option>
-            </Form.Select>
-          </Col>
+        <div className="p-3 rounded bg-light mb-4">
+          <Row className="g-3">
+            <Col md={3}>
+              <Form.Label className="fw-semibold">User Role</Form.Label>
+              <Form.Select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="">All</option>
+                <option value="requester">Requester</option>
+                <option value="donor">Donor</option>
+              </Form.Select>
+            </Col>
 
-          <Col md={2}>
-            <Form.Label>From</Form.Label>
-            <Form.Control
-              type="date"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </Col>
+            <Col md={2}>
+              <Form.Label className="fw-semibold">From</Form.Label>
+              <Form.Control
+                type="date"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+              />
+            </Col>
 
-          <Col md={2}>
-            <Form.Label>To</Form.Label>
-            <Form.Control
-              type="date"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </Col>
+            <Col md={2}>
+              <Form.Label className="fw-semibold">To</Form.Label>
+              <Form.Control
+                type="date"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
+            </Col>
 
-          <Col md={5}>
-            <Form.Label>Search</Form.Label>
-            <Form.Control
-              placeholder="Search by name or email"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Col>
-        </Row>
+            <Col md={5}>
+              <Form.Label className="fw-semibold">Search</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <FontAwesomeIcon icon={faSearch} />
+                </InputGroup.Text>
+                <Form.Control
+                  placeholder="Search by name or email"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+          </Row>
+        </div>
 
         {/* ================= TABLE ================= */}
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" />
+            <div className="text-muted fw-semibold">
+              Loading data, please wait...
+            </div>
           </div>
         ) : (
-          <Table hover responsive>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>User Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Date Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length > 0 ? (
-                users.map((u, index) => (
-                  <tr key={u._id}>
-                    <td>{(page - 1) * limit + index + 1}</td>
-                    <td>{u.uc_full_name}</td>
-                    <td>{u.uc_email}</td>
-                    <td className="text-capitalize">{u.uc_role || "N/A"}</td>
-                    <td>{u.uc_created_at?.substring(0, 10)}</td>
-                  </tr>
-                ))
-              ) : (
+          <div className="table-responsive">
+            <Table hover bordered className="align-middle">
+              <thead className="bg-light">
                 <tr>
-                  <td colSpan="5" className="text-center py-3">
-                    No Users Found
-                  </td>
+                  <th>Sr.No.</th>
+                  <th>User Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Date Created</th>
                 </tr>
-              )}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {users.length > 0 ? (
+                  users.map((u, index) => (
+                    <tr key={u._id} className="table-row-hover">
+                      <td>{(page - 1) * limit + index + 1}</td>
+                      <td className="fw-semibold">{u.uc_full_name}</td>
+                      <td>{u.uc_email}</td>
+
+                      <td>
+                        <Badge
+                          bg={
+                            u.uc_role === "donor"
+                              ? "success"
+                              : u.uc_role === "requester"
+                                ? "info"
+                                : "secondary"
+                          }
+                        >
+                          {u.uc_role || "N/A"}
+                        </Badge>
+                      </td>
+
+                      <td>{u.uc_created_at?.substring(0, 10)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">
+                      <div className="text-muted">
+                        <strong>No Users Found</strong>
+                        <br />
+                        Try adjusting your filters or search keywords.
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
         )}
 
+        {/* ================= PAGINATION ================= */}
         {totalPages > 1 && (
-          <Pagination className="justify-content-end">
-
+          <Pagination className="justify-content-end mt-3">
             <Pagination.Prev
               disabled={page === 1}
               onClick={() => setPage(page - 1)}

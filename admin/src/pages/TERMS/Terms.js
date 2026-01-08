@@ -23,7 +23,15 @@ export default function TermsPage() {
         </div>
       </div>
 
-      <TermsAndConditions />
+
+      {/* === MAIN CONTENT AREA (SPACING FIXED) === */}
+      <div className="container-fluid px-0">  {/* FULL WIDTH */}
+        <div className="card shadow-sm p-3 border-0 rounded-3">
+          <TermsAndConditions />
+        </div>
+
+      </div>
+
     </>
   );
 }

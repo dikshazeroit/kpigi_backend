@@ -11,7 +11,7 @@ import {
   FormControl,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrashAlt, faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faDollarSign } from "@fortawesome/free-solid-svg-icons";
 import {
   getAllPayouts,
   approvePayout,
@@ -97,11 +97,30 @@ const PayoutManagement = () => {
 
   return (
     <div className="p-3">
-      <Card className="mb-4 p-3 shadow-sm">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <h5 className="mb-0 fw-bold">Manage Payouts</h5>
+      <Card className="mb-4 shadow-sm">
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-2">
+            <FontAwesomeIcon
+              icon={faDollarSign}
+              style={{
+                fontSize: "1.8rem",   // Bigger icon
+                verticalAlign: "middle" // Align with text
+              }}
+            />
+            <h5
+              className="mb-0 fw-bold"
+              style={{
+                fontSize: "1.5rem",
+                lineHeight: "1.8rem" // Align with icon
+              }}
+            >
+              Manage Payouts
+            </h5>
+          </div>
+
           <InputGroup style={{ width: "250px" }}>
             <FormControl
+              type="text"
               placeholder="Search by user name..."
               value={searchTerm}
               onChange={(e) => {
@@ -110,14 +129,19 @@ const PayoutManagement = () => {
               }}
             />
           </InputGroup>
-        </div>
+        </Card.Header>
       </Card>
+
+
+
 
       <Card className="p-3 shadow-sm">
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
-            <p className="mt-2">Loading payouts...</p>
+            <div className="text-muted fw-semibold">
+              Loading payouts....
+            </div>
           </div>
         ) : (
           <>

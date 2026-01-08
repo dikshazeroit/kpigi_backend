@@ -8,6 +8,11 @@ import {
   Row,
   Col,
 } from "@themesberg/react-bootstrap";
+import {
+  faUserShield
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 
 const supportInfo = {
   companyName: "Ajolink",
@@ -55,71 +60,76 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="container py-5">
-      {/* Header Row */}
-      <Row className="align-items-center mb-4">
-        <Col md={8}>
-          <h1 className="mb-3">Privacy Policy — {supportInfo.companyName}</h1>
-        </Col>
-        <Col md={4} className="text-md-end">
+    <div>
+      <Card border="light" className="shadow-sm mb-4">
+        {/* Header Row */}
+        <div className="d-flex justify-content-between align-items-center p-3 border-bottom ">
+          <h4 className="mb-0">
+            <FontAwesomeIcon
+              icon={faUserShield}
+              className="me-2 "
+            />
+            Privacy Policy — {supportInfo.companyName}
+          </h4>
           <Button variant="primary" onClick={handleAdd}>
             Manage Privacy Policy
           </Button>
-        </Col>
-      </Row>
+        </div>
 
-      {/* Full Policy Display */}
-      <Card className="p-4 shadow-sm mb-5">
-        {policies.map((p, idx) => (
-          <div key={p.id} className="mb-4">
-            <h4>{idx + 1}. {p.section}</h4>
-            <p>{p.content}</p>
-          </div>
-        ))}
 
-        <h4>Contact Us</h4>
-        <ul>
-          <li>📧 <strong>Email:</strong> <a href={`mailto:${supportInfo.email}`}>{supportInfo.email}</a></li>
-          <li>📞 <strong>Phone:</strong> {supportInfo.phone}</li>
-          <li>📍 <strong>Address:</strong> {supportInfo.address}</li>
-        </ul>
+        {/* Full Policy Display */}
+        <Card className="p-4 shadow-sm mb-5 mt-5">
+          {policies.map((p, idx) => (
+            <div key={p.id} className="mb-4">
+              <h4>{idx + 1}. {p.section}</h4>
+              <p>{p.content}</p>
+            </div>
+          ))}
 
-        <p className="mt-4 text-muted small">
-          Last updated: {new Date().toLocaleDateString()}
-        </p>
-      </Card>
+          <h4>Contact Us</h4>
+          <ul>
+            <li>📧 <strong>Email:</strong> <a href={`mailto:${supportInfo.email}`}>{supportInfo.email}</a></li>
+            <li>📞 <strong>Phone:</strong> {supportInfo.phone}</li>
+            <li>📍 <strong>Address:</strong> {supportInfo.address}</li>
+          </ul>
 
-      {/* Table Management */}
-      <Card className="p-3 shadow-sm mb-5">
-        <h4>Manage Privacy Policy Sections</h4>
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Section</th>
-              <th>Content</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {policies.map((p, idx) => (
-              <tr key={p.id}>
-                <td>{idx + 1}</td>
-                <td>{p.section}</td>
-                <td>{p.content}</td>
-                <td>
-                  <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(p)}>Edit</Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(p.id)}>Delete</Button>
-                </td>
-              </tr>
-            ))}
-            {policies.length === 0 && (
+          <p className="mt-4 text-muted small">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
+        </Card>
+
+        {/* Table Management */}
+        <Card className="p-3 shadow-sm mb-5">
+          <h4>Manage Privacy Policy Sections</h4>
+          <Table striped bordered hover responsive>
+            <thead>
               <tr>
-                <td colSpan="4" className="text-center">No sections found.</td>
+                <th>#</th>
+                <th>Section</th>
+                <th>Content</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {policies.map((p, idx) => (
+                <tr key={p.id}>
+                  <td>{idx + 1}</td>
+                  <td>{p.section}</td>
+                  <td>{p.content}</td>
+                  <td>
+                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(p)}>Edit</Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(p.id)}>Delete</Button>
+                  </td>
+                </tr>
+              ))}
+              {policies.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="text-center">No sections found.</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Card>
       </Card>
 
       {/* Modal for Add/Edit */}

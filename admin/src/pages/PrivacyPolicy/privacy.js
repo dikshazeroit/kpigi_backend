@@ -23,7 +23,12 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      <PrivacyPolicy />
+      {/* === MAIN CONTENT AREA (SPACING FIXED) === */}
+      <div className="container-fluid px-0">  {/* FULL WIDTH */}
+        <div className="card shadow-sm p-3 border-0 rounded-3">
+          <PrivacyPolicy />
+        </div>
+      </div>
     </>
   );
 }
