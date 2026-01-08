@@ -17,7 +17,7 @@
  * ================================================================================
  */
 
-import { v4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import DonationModel from "../model/DonationModel.js";
 import PayoutModel from "../model/PayoutModel.js";
 import commonHelper from "../../utils/Helper.js";
@@ -57,6 +57,7 @@ function calculateFee(amount) {
  */
 donationObj.createDonation = async function (req, res) {
   try {
+    /* 🔐 Get Donor UUID from Token */
     const donorUuid = await appHelper.getUUIDByToken(req);
     if (!donorUuid) {
       return commonHelper.errorHandler(res, {
@@ -66,71 +67,83 @@ donationObj.createDonation = async function (req, res) {
       }, 200);
     }
 
-    const { fund_uuid, amount, is_anonymous } = req.body;
+    /* 👤 Get User */
+    const user = await UsersCredentialsModel.findOne({ uc_uuid: donorUuid });
+    if (!user || !user.uc_full_name || !user.uc_email) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "DON-E1003",
+        message: "User name or email not found",
+      }, 200);
+    }
 
+    const { fund_uuid, amount, is_anonymous } = req.body;
     if (!fund_uuid || !amount || Number(amount) <= 0) {
       return commonHelper.errorHandler(res, {
         status: false,
         code: "DON-E1001",
-        message: "fund_uuid and valid amount are required.",
+        message: "fund_uuid and valid amount are required",
       }, 200);
     }
 
-    /* -------------------------------------------------------
-       1. Fetch Fund
-    ------------------------------------------------------- */
+    /* 📦 Fetch Fund */
     const fund = await FundModel.findOne({ f_uuid: fund_uuid });
     if (!fund) {
       return commonHelper.errorHandler(res, {
         status: false,
         code: "DON-E1002",
-        message: "Fund not found.",
+        message: "Fund not found",
       }, 200);
     }
 
-    /* -------------------------------------------------------
-       2. Fetch Requester (Fund Owner)
-    ------------------------------------------------------- */
-    const requester = await UsersCredentialsModel.findOne({
-      uc_uuid: fund.f_fk_uc_uuid,
-    });
-
-    if (!requester || !requester.uc_stripe_account_id) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1003",
-        message: "Requester payout account not linked.",
-      }, 200);
-    }
-
-    /* -------------------------------------------------------
-       3. Fee Calculation (2.8%)
-    ------------------------------------------------------- */
+    /* 💰 Amount calc */
     const amountInCents = Math.round(Number(amount) * 100);
     const platformFee = Math.round(amountInCents * 0.028);
     const netAmount = amountInCents - platformFee;
 
-    /* -------------------------------------------------------
-       4. Create Stripe PaymentIntent (SPLIT PAYMENT)
-    ------------------------------------------------------- */
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents,
-      currency: "usd",
-      application_fee_amount: platformFee,
-      transfer_data: {
-        destination: requester.uc_stripe_account_id,
-      },
-      metadata: {
-        fund_uuid,
-        donor_uuid: donorUuid,
-        requester_uuid: requester.uc_uuid,
+    /* 🧍‍♂️ 1️⃣ CREATE STRIPE CUSTOMER (MANDATORY – INDIA) */
+    const customer = await stripe.customers.create({
+      name: user.uc_full_name,
+      email: user.uc_email,
+      address: {
+        line1: "221B Baker Street",
+        line2: "Near Metro Station",
+        city: "Mumbai",
+        state: "MH",
+        postal_code: "400001",
+        country: "IN", // ⚠️ MUST BE IN
       },
     });
 
-    /* -------------------------------------------------------
-       5. Save Donation Record (PENDING → SUCCESS via webhook)
-    ------------------------------------------------------- */
-    const donationUuid = v4();
+    /* 🧾 Donation UUID */
+    const donationUuid = uuidv4();
+
+    /* 💳 2️⃣ PAYMENT INTENT WITH CUSTOMER + SHIPPING */
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: "usd",
+      customer: customer.id,
+      automatic_payment_methods: { enabled: true },
+      description: "Donation for charitable initiative",
+      shipping: {
+        name: user.uc_full_name,
+        address: {
+          line1: "221B Baker Street",
+          city: "Mumbai",
+          state: "MH",
+          postal_code: "400001",
+          country: "IN",
+        },
+      },
+      metadata: {
+        donation_uuid: donationUuid,
+        fund_uuid,
+        donor_uuid: donorUuid,
+        export_reason: "charitable donation",
+      },
+    });
+
+    /* 🧾 Save Donation */
     await DonationModel.create({
       d_uuid: donationUuid,
       d_fk_uc_uuid: donorUuid,
@@ -141,34 +154,35 @@ donationObj.createDonation = async function (req, res) {
       d_is_anonymous: !!is_anonymous,
       d_payment_intent_id: paymentIntent.id,
       d_status: "PENDING",
+      d_meta: {
+        address_mode: "STATIC_API",
+        currency: "USD",
+        stripe_customer_id: customer.id,
+      },
     });
 
-    /* -------------------------------------------------------
-       6. RESPONSE → Frontend will confirm payment
-    ------------------------------------------------------- */
+    /* 📤 Response */
     return commonHelper.successHandler(res, {
       status: true,
       message: "Donation initiated",
       payload: {
         client_secret: paymentIntent.client_secret,
         donation_uuid: donationUuid,
-        breakdown: {
-          donation: Number(amount),
-          fee: platformFee / 100,
-          payout: netAmount / 100,
-        },
       },
     });
 
-  } catch (err) {
-    console.error("❌ createDonation Stripe Error:", err);
+  } catch (error) {
+    console.error("❌ createDonation error:", error);
     return commonHelper.errorHandler(res, {
       status: false,
       code: "DON-E9999",
-      message: "Donation failed.",
+      message: error.message || "Donation failed",
     }, 200);
   }
 };
+
+
+
 
 
 /**
@@ -180,23 +194,78 @@ donationObj.createDonation = async function (req, res) {
  */
 donationObj.getMyDonations = async function (req, res) {
   try {
-    const userId = await appHelper.getUUIDByToken(req);
+    const userUuid = await appHelper.getUUIDByToken(req);
 
-    const list = await DonationModel.find({ d_fk_uc_uuid: userId }).sort({ createdAt: -1 });
+    if (!userUuid) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, message: "Unauthorized" },
+        200
+      );
+    }
+
+    // 1️⃣ User donations
+    const donations = await DonationModel.find({
+      d_fk_uc_uuid: userUuid,
+    }).sort({ createdAt: -1 });
+
+    // 2️⃣ Build response
+    const history = await Promise.all(
+      donations.map(async (d) => {
+        // Fund details
+        const fund = await FundModel.findOne({ f_uuid: d.d_fk_f_uuid });
+
+        // Fund owner (recipient)
+        let owner = null;
+        if (fund?.f_fk_uc_uuid) {
+          const user = await UsersCredentialsModel.findOne({
+            uc_uuid: fund.f_fk_uc_uuid,
+          });
+
+          owner = user
+            ? {
+                user_uuid: user.uc_uuid,
+                name: user.uc_full_name,
+                email: user.uc_email,
+                profile_photo: user.uc_profile_photo,
+              }
+            : null;
+        }
+
+        return {
+          donation_uuid: d.d_uuid,
+          donated_amount: d.d_amount,
+          transaction_status: d.d_status,
+          transaction_date: d.createdAt,
+          fund: fund
+            ? {
+                f_uuid: fund.f_uuid,
+                title: fund.f_title,
+                category: fund.f_category_name,
+                target_amount: fund.f_amount,
+              }
+            : null,
+          recipient: owner,
+        };
+      })
+    );
 
     return commonHelper.successHandler(res, {
       status: true,
-      message: "Donation list fetched.",
-      payload: list,
+      message: "Donation history fetched",
+      payload: history,
     });
-  } catch (e) {
+  } catch (error) {
+    console.error("❌ getMyDonations Error:", error);
     return commonHelper.errorHandler(
       res,
-      { status: false, code: "DON-L9999", message: "Internal error." },
+      { status: false, message: "Internal server error" },
       200
     );
   }
 };
+
+
 
 /**
  * Fetch all donors for a specific fund.
@@ -207,27 +276,179 @@ donationObj.getMyDonations = async function (req, res) {
  */
 donationObj.getFundDonors = async function (req, res) {
   try {
+    const userId = await appHelper.getUUIDByToken(req);
     const { fund_uuid } = req.body;
 
-    const donations = await DonationModel.find({ d_fk_f_uuid: fund_uuid, d_status: "SUCCESS" });
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, message: "Unauthorized" },
+        200
+      );
+    }
 
-    const list = donations.map(item => ({
-      donation_uuid: item.d_uuid,
-      amount: item.d_amount,
-      is_anonymous: item.d_is_anonymous,
-      donor_uuid: item.d_is_anonymous ? null : item.d_fk_uc_uuid,
-      createdAt: item.createdAt
-    }));
+    if (!fund_uuid) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, message: "fund_uuid is required" },
+        200
+      );
+    }
+
+    // 1️⃣ Fund details
+    const fund = await FundModel.findOne({ f_uuid: fund_uuid });
+    if (!fund) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, message: "Fund not found" },
+        200
+      );
+    }
+
+    // 2️⃣ Donations of this fund
+    const donations = await DonationModel.find({
+      d_fk_f_uuid: fund_uuid,
+      d_status: "SUCCESS",
+    }).sort({ createdAt: -1 });
+
+    // 3️⃣ Build response
+    const donationList = await Promise.all(
+      donations.map(async (d) => {
+        let donor = null;
+
+        if (!d.d_is_anonymous && d.d_fk_uc_uuid) {
+          const user = await UsersCredentialsModel.findOne({
+            uc_uuid: d.d_fk_uc_uuid,
+          });
+
+          donor = user
+            ? {
+                user_uuid: user.uc_uuid,
+                name: user.uc_full_name,
+                email: user.uc_email,
+                profile_photo: user.uc_profile_photo,
+              }
+            : null;
+        }
+
+        return {
+          donation_uuid: d.d_uuid,
+          donated_amount: d.d_amount,
+          transaction_reference: d.d_payment_intent_id,
+          transaction_date: d.createdAt,
+          donor: d.d_is_anonymous ? "Anonymous" : donor,
+        };
+      })
+    );
 
     return commonHelper.successHandler(res, {
       status: true,
-      message: "Donors fetched.",
-      payload: list,
+      message: "Fund donation list fetched",
+      payload: {
+        fund: {
+          f_uuid: fund.f_uuid,
+          title: fund.f_title,
+          purpose: fund.f_purpose,
+          category: fund.f_category_name,
+          target_amount: fund.f_amount,
+          status: fund.f_status,
+        },
+        donations: donationList,
+      },
     });
-  } catch (err) {
+  } catch (error) {
+    console.error("❌ getFundDonors Error:", error);
     return commonHelper.errorHandler(
       res,
-      { status: false, code: "DON-F9999", message: "Internal error." },
+      { status: false, message: "Internal server error" },
+      200
+    );
+  }
+};
+
+
+donationObj.getReceivedDonations = async function (req, res) {
+  try {
+    // 1️⃣ Fund owner UUID from token
+    const ownerUuid = await appHelper.getUUIDByToken(req);
+    console.log(ownerUuid,"ooooooooooooooooooooooooooooo")
+
+    if (!ownerUuid) {
+      return commonHelper.errorHandler(
+        res,
+        { status: false, message: "Unauthorized" },
+        200
+      );
+    }
+
+    // 2️⃣ Owner ke saare funds
+    const funds = await FundModel.find({ f_fk_uc_uuid: ownerUuid });
+
+    if (!funds.length) {
+      return commonHelper.successHandler(res, {
+        status: true,
+        message: "No donations received yet",
+        payload: [],
+      });
+    }
+
+    const fundUuids = funds.map((f) => f.f_uuid);
+
+    // 3️⃣ Un funds par aayi saari donations
+    const donations = await DonationModel.find({
+      d_fk_f_uuid: { $in: fundUuids },
+      d_status: "SUCCESS",
+    }).sort({ createdAt: -1 });
+
+    // 4️⃣ Response build
+    const response = await Promise.all(
+      donations.map(async (d) => {
+        const fund = funds.find((f) => f.f_uuid === d.d_fk_f_uuid);
+
+        let donor = null;
+        if (!d.d_is_anonymous && d.d_fk_uc_uuid) {
+          const user = await UsersCredentialsModel.findOne({
+            uc_uuid: d.d_fk_uc_uuid,
+          });
+
+          donor = user
+            ? {
+                user_uuid: user.uc_uuid,
+                name: user.uc_full_name,
+                email: user.uc_email,
+                profile_photo: user.uc_profile_photo,
+              }
+            : null;
+        }
+
+        return {
+          donation_uuid: d.d_uuid,
+          donated_amount: d.d_amount,
+          transaction_reference: d.d_payment_intent_id,
+          transaction_status: d.d_status,
+          transaction_date: d.createdAt,
+          fund: fund
+            ? {
+                f_uuid: fund.f_uuid,
+                title: fund.f_title,
+                category: fund.f_category_name,
+              }
+            : null,
+          donor: d.d_is_anonymous ? "Anonymous" : donor,
+        };
+      })
+    );
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Received donations fetched",
+      payload: response,
+    });
+  } catch (error) {
+    console.error("❌ getReceivedDonations Error:", error);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, message: "Internal server error" },
       200
     );
   }

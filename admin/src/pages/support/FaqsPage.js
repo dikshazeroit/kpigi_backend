@@ -11,6 +11,7 @@ import {
   Breadcrumb,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Swal from "sweetalert2";
 import {
   faPlus,
   faEdit,
@@ -72,23 +73,55 @@ const FaqsPage = () => {
   // ================= Submit =================
   const handleSubmit = async () => {
     if (!form.f_question.trim() || !form.f_answer.trim()) {
-      return alert("Question and Answer both required");
-    }
-
-    if (editData) {
-      await updateFaq({
-        f_uuid: editData.f_uuid,
-        ...form,
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Fields",
+        text: "Both Question and Answer are required.",
       });
-    } else {
-      await createFaq(form);
     }
 
-    setShowModal(false);
-    setEditData(null);
-    setForm({ f_question: "", f_answer: "" });
-    fetchFaqs();
+    try {
+      if (editData) {
+        await updateFaq({
+          f_uuid: editData.f_uuid,
+          ...form,
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "FAQ Updated",
+          text: "The FAQ has been updated successfully.",
+          timer: 1800,
+          showConfirmButton: false,
+        });
+
+      } else {
+        await createFaq(form);
+
+        Swal.fire({
+          icon: "success",
+          title: "FAQ Added",
+          text: "New FAQ added successfully.",
+          timer: 1800,
+          showConfirmButton: false,
+        });
+      }
+
+      setShowModal(false);
+      setEditData(null);
+      setForm({ f_question: "", f_answer: "" });
+      fetchFaqs();
+
+    } catch (error) {
+      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong. Please try again.",
+      });
+    }
   };
+
 
   // ================= Status Toggle =================
   const handleStatus = async (faq) => {
@@ -101,9 +134,40 @@ const FaqsPage = () => {
 
   // ================= Delete =================
   const handleDelete = (faq) => {
-    setDeleteData(faq);
-    setShowDeleteModal(true);
+    Swal.fire({
+      title: "Delete FAQ?",
+      text: `Are you sure you want to delete: "${faq.f_question}"`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteFaq(faq.f_uuid);
+
+          Swal.fire({
+            icon: "success",
+            title: "Deleted",
+            text: "FAQ has been deleted successfully.",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+
+          fetchFaqs();
+
+        } catch (err) {
+          console.error(err);
+          Swal.fire({
+            icon: "error",
+            title: "Delete Failed",
+            text: "Could not delete FAQ.",
+          });
+        }
+      }
+    });
   };
+
 
   const confirmDelete = async () => {
     await deleteFaq(deleteData.f_uuid);
@@ -296,7 +360,7 @@ const FaqsPage = () => {
   );
 };
 
- export default FaqsPage;
+export default FaqsPage;
 // import React, { useEffect, useState } from "react";
 // import {
 //   Card,

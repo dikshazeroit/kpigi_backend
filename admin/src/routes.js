@@ -12,10 +12,10 @@ export const Routes = {
 
   // Menu pages
   CampaignManagementPage: { path: "/campaigns/list" },
-  DonationManagementPage: {path:"/donations/list"},
+  DonationManagementPage: { path: "/donations/list" },
   WalletPage: { path: "/wallet/list" },
   PayoutsPage: { path: "/payouts/list" },
-  CategoriesPage:{path: "/category/list"},
+  CategoriesPage: { path: "/category/list" },
   AnalyticsPage: { path: "/analytics" },
   DisputesWrapper: { path: "/disputes/list" },
   Help: { path: "/support/help" },

@@ -19,15 +19,15 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Preloader from "../components/Preloader";
 
-import Accordion from "./components/Accordion";
-import Alerts from "./components/Alerts";
-import Badges from "./components/Badges";
-import Breadcrumbs from "./components/Breadcrumbs";
-import Buttons from "./components/Buttons";
-import Forms from "./components/Forms";
-import Navs from "./components/Navs";
-import Navbars from "./components/Navbars";
-import Tables from "./components/Tables";
+// import Accordion from "./components/Accordion";
+// import Alerts from "./components/Alerts";
+// import Badges from "./components/Badges";
+// import Breadcrumbs from "./components/Breadcrumbs";
+// import Buttons from "./components/Buttons";
+// import Forms from "./components/Forms";
+// import Navs from "./components/Navs";
+// import Navbars from "./components/Navbars";
+// import Tables from "./components/Tables";
 
 // Menu Pages
 import CampaignManagementPage from "./CampaignManagement/CampaignManagement";
@@ -41,6 +41,7 @@ import HelpWrapper from "./Helps/helps";
 import FaqsPage from "./support/FaqsPage";
 import PrivacyPage from "./PrivacyPolicy/privacy";
 import TermsPage from "./TERMS/Terms";
+import ProtectedRoute from "./examples/ProtectedRoute";
 
 
 // ====================
@@ -81,7 +82,7 @@ const RouteWithSidebar = ({ component: Component, ...rest }) => {
       {...rest}
       render={(props) => (
         <>
-          <Preloader show={!loaded} />
+          {/* <Preloader show={!loaded} /> */}
 
           <Sidebar />
 
@@ -103,6 +104,7 @@ const RouteWithSidebar = ({ component: Component, ...rest }) => {
 export default function AppRoutes() {
   return (
     <Switch>
+
       {/* DEFAULT REDIRECT */}
       <Redirect exact from="/" to={Routes.Signin.path} />
 
@@ -113,37 +115,82 @@ export default function AppRoutes() {
       <RouteWithLoader exact path={Routes.VerifyOtp.path} component={VerifyOtp} />
       <RouteWithLoader exact path={Routes.ResetPassword.path} component={ResetPassword} />
 
-      {/* SIDEBAR ROUTES */}
-      <RouteWithSidebar exact path={Routes.DashboardOverview.path} component={DashboardOverview} />
-
-      <RouteWithSidebar exact path={Routes.Profile.path} component={Profile} />
-      <RouteWithSidebar exact path={Routes.EditProfile.path} component={EditProfile} />
-
-      <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />
-
-      {/* MENU PAGES */}
-      <RouteWithSidebar exact path={Routes.CampaignManagementPage.path} component={CampaignManagementPage} />
-      <RouteWithSidebar exact path={Routes.DonationManagementPage.path} component={DonationManagementPage} />
-      <RouteWithSidebar exact path={Routes.WalletPage.path} component={WalletPage} />
-      <RouteWithSidebar exact path={Routes.PayoutsPage.path} component={PayoutsPage} />
-      <RouteWithSidebar exact path={Routes.CategoriesPage.path} component={CategoriesPage} />
-      <RouteWithSidebar exact path={Routes.AnalyticsPage.path} component={AnalyticsPage} />
-      <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={Disputes} />
-      <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
-      <RouteWithSidebar exact path={Routes.FaqsPage.path} component={FaqsPage} />
+      {/* PUBLIC PAGES */}
       <RouteWithSidebar exact path={Routes.PrivacyPolicy.path} component={PrivacyPage} />
       <RouteWithSidebar exact path={Routes.TermsAndConditions.path} component={TermsPage} />
 
-      {/* COMPONENTS */}
-      <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />
-      <RouteWithSidebar exact path={Routes.Alerts.path} component={Alerts} />
-      <RouteWithSidebar exact path={Routes.Badges.path} component={Badges} />
-      <RouteWithSidebar exact path={Routes.Breadcrumbs.path} component={Breadcrumbs} />
-      <RouteWithSidebar exact path={Routes.Buttons.path} component={Buttons} />
-      <RouteWithSidebar exact path={Routes.Forms.path} component={Forms} />
-      <RouteWithSidebar exact path={Routes.Navs.path} component={Navs} />
-      <RouteWithSidebar exact path={Routes.Navbars.path} component={Navbars} />
-      <RouteWithSidebar exact path={Routes.Tables.path} component={Tables} />
+      {/* PROTECTED + SIDEBAR ROUTES */}
+
+      <ProtectedRoute
+        exact
+        path={Routes.DashboardOverview.path}
+        component={() => <RouteWithSidebar component={DashboardOverview} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.Profile.path}
+        component={() => <RouteWithSidebar component={Profile} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.EditProfile.path}
+        component={() => <RouteWithSidebar component={EditProfile} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.BootstrapTables.path}
+        component={() => <RouteWithSidebar component={BootstrapTables} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.CampaignManagementPage.path}
+        component={() => <RouteWithSidebar component={CampaignManagementPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.DonationManagementPage.path}
+        component={() => <RouteWithSidebar component={DonationManagementPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.WalletPage.path}
+        component={() => <RouteWithSidebar component={WalletPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.PayoutsPage.path}
+        component={() => <RouteWithSidebar component={PayoutsPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.CategoriesPage.path}
+        component={() => <RouteWithSidebar component={CategoriesPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.AnalyticsPage.path}
+        component={() => <RouteWithSidebar component={AnalyticsPage} />}
+      />
+
+      <ProtectedRoute
+        exact
+        path={Routes.FaqsPage.path}
+        component={() => <RouteWithSidebar component={FaqsPage} />}
+      />
+      {/* Non-protected sidebar routes */}
+      <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={Disputes} />
+      <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
+
     </Switch>
   );
 }
+

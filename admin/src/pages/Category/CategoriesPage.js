@@ -10,6 +10,7 @@ import {
   InputGroup,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Swal from "sweetalert2";
 import {
   faPlus,
   faEdit,
@@ -63,19 +64,53 @@ const CategoriesPage = () => {
   }, [search, categories]);
 
   const handleSubmit = async () => {
-    if (!form.c_name.trim()) return alert("Category name required");
-
-    if (editData) {
-      await updateCategory({ c_uuid: editData.c_uuid, ...form });
-    } else {
-      await createCategory(form);
+    if (!form.c_name.trim()) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Category name required",
+        text: "Please enter a category name.",
+      });
     }
 
-    setShowModal(false);
-    setEditData(null);
-    setForm({ c_name: "", c_description: "" });
-    fetchCategories();
+    try {
+      if (editData) {
+        await updateCategory({ c_uuid: editData.c_uuid, ...form });
+
+        Swal.fire({
+          icon: "success",
+          title: "Category Updated",
+          text: `"${form.c_name}" has been updated successfully.`,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+
+      } else {
+        await createCategory(form);
+
+        Swal.fire({
+          icon: "success",
+          title: "Category Added",
+          text: "New category created successfully!",
+          timer: 1800,
+          showConfirmButton: false,
+        });
+      }
+
+      setShowModal(false);
+      setEditData(null);
+      setForm({ c_name: "", c_description: "" });
+      fetchCategories();
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Unable to save category.",
+      });
+    }
   };
+
 
   const handleStatus = async (cat) => {
     await toggleCategoryStatus({
@@ -87,40 +122,71 @@ const CategoriesPage = () => {
 
   const handleDelete = async (cat) => {
     if (cat.c_is_default) {
-      alert("Default category cannot be deleted");
-      return;
+      return Swal.fire({
+        icon: "info",
+        title: "Not Allowed",
+        text: "Default category cannot be deleted.",
+      });
     }
 
-    if (window.confirm(`Delete "${cat.c_name}" category?`)) {
-      await deleteCategory(cat.c_uuid);
-      fetchCategories();
+    const result = await Swal.fire({
+      title: `Delete "${cat.c_name}"?`,
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteCategory(cat.c_uuid);
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted",
+          text: `"${cat.c_name}" has been deleted.`,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+
+        fetchCategories();
+
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          icon: "error",
+          title: "Delete Failed",
+          text: "Unable to delete category.",
+        });
+      }
     }
   };
 
   return (
     <Card border="light" className="shadow-sm">
       {/* HEADER */}
-     {/* HEADER */}
-<div className="d-flex justify-content-between align-items-center page-header mb-4">
-  <Breadcrumb className="breadcrumb-dark breadcrumb-transparent">
-    <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-      <FontAwesomeIcon icon={faHome} /> Home
-    </Breadcrumb.Item>
-    <Breadcrumb.Item active>Category Management</Breadcrumb.Item>
-  </Breadcrumb>
+      {/* HEADER */}
+      <div className="d-flex justify-content-between align-items-center page-header mb-4">
+        <Breadcrumb className="breadcrumb-dark breadcrumb-transparent">
+          <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
+            <FontAwesomeIcon icon={faHome} /> Home
+          </Breadcrumb.Item>
+          <Breadcrumb.Item active>Category Management</Breadcrumb.Item>
+        </Breadcrumb>
 
-  <Button
-    variant="primary"
-    onClick={() => {
-      setEditData(null);
-      setForm({ c_name: "", c_description: "" });
-      setShowModal(true);
-    }}
-  >
-    <FontAwesomeIcon icon={faPlus} className="me-2" />
-    Add Category
-  </Button>
-</div>
+        <Button
+          variant="primary"
+          onClick={() => {
+            setEditData(null);
+            setForm({ c_name: "", c_description: "" });
+            setShowModal(true);
+          }}
+        >
+          <FontAwesomeIcon icon={faPlus} className="me-2" />
+          Add Category
+        </Button>
+      </div>
 
 
       {/* SEARCH */}

@@ -12,59 +12,73 @@
  *     obtained from Zero IT Solutions.
  * --------------------------------------------------------------------------------
  * 🧑‍💻 Written By  : Sangeeta <sangeeta.zeroit@gmail.com>
- * 📅 Created On    : Dec 2025
- * 📝 Description   : Fund model
- * ✏️ Modified By   :
+ * 📅 Created On   : Dec 2025
+ * 📝 Description : Withdrawal request model
  * ================================================================================
- * MAIN MODULE HEADING: Zero IT Solutions - Fund Module
  */
 
 import mongoose from "mongoose";
-const FundSchema = new mongoose.Schema(
+
+const WithdrawalSchema = new mongoose.Schema(
   {
-    f_uuid: { type: String, required: true },
-    f_fk_uc_uuid: { type: String, required: true },
+    // 🔑 Primary ID
+    w_uuid: {
+      type: String,
+      required: true,
+      unique: true,
+    },
 
-    f_title: { type: String, trim: true },
-    f_purpose: { type: String, trim: true },
+    // 👤 User (Fund Owner)
+    w_fk_uc_uuid: {
+      type: String,
+      required: true,
+      index: true,
+    },
 
-    // ✅ CATEGORY NAME ONLY
-    f_category_name: {
+    // 💰 Withdrawal Amount
+    w_amount: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    // 🏦 Bank Details
+    w_account_holder_name: {
       type: String,
       required: true,
       trim: true,
     },
 
-    f_other_category_name: {
+    w_account_number: {
       type: String,
+      required: true,
       trim: true,
-      default: "",
     },
 
-    f_amount: { type: Number },
-    f_deadline: { type: Date },
-    f_story: { type: String },
-
-    f_media_one: String,
-    f_media_two: String,
-    f_media_three: String,
-    f_media_four: String,
-    f_media_five: String,
-
-    f_status: {
+    w_ifsc_code: {
       type: String,
-      enum: ["ACTIVE", "PAUSED", "PENDING", "REJECTED", "COMPLETED"],
-      default: "PENDING",
+      required: true,
+      trim: true,
     },
 
-    f_pause_reason: { type: String, default: null },
+    // 📌 Withdrawal Status
+    w_status: {
+      type: String,
+      enum: ["PROCESSING", "COMPLETED", "REJECTED"],
+      default: "PROCESSING",
+    },
+
+    // 📝 Optional Admin Note
+    w_admin_note: {
+      type: String,
+      default: null,
+    },
   },
   {
-    timestamps: true,
+    timestamps: true, // createdAt, updatedAt
     versionKey: false,
   }
 );
 
-
-const FundModel = mongoose.model("Fund", FundSchema);
-export default FundModel;
+const WithdrawalModel = mongoose.model("Withdrawal", WithdrawalSchema);
+export default WithdrawalModel;

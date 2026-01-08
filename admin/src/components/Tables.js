@@ -154,7 +154,7 @@ export const PageUserTable = () => {
 
         {totalPages > 1 && (
           <Pagination className="justify-content-end">
-            {/* PREV */}
+
             <Pagination.Prev
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
@@ -162,16 +162,16 @@ export const PageUserTable = () => {
 
             {(() => {
               const visiblePages = 5;
-              let start = Math.max(1, page - Math.floor(visiblePages / 2));
-              let end = start + visiblePages - 1;
+              let startPage = Math.max(1, page - Math.floor(visiblePages / 2));
+              let endPage = startPage + visiblePages - 1;
 
-              if (end > totalPages) {
-                end = totalPages;
-                start = Math.max(1, end - visiblePages + 1);
+              if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - visiblePages + 1);
               }
 
               const pages = [];
-              for (let i = start; i <= end; i++) {
+              for (let i = startPage; i <= endPage; i++) {
                 pages.push(
                   <Pagination.Item
                     key={i}
@@ -185,55 +185,12 @@ export const PageUserTable = () => {
               return pages;
             })()}
 
-            {/* NEXT */}
             <Pagination.Next
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
             />
           </Pagination>
         )}
-
-        {/* ================= PAGINATION ================= */}
-        {/* {totalPages > 1 && ( */}
-          {/* <Pagination className="justify-content-end">
-            {/* PREV */}
-            <Pagination.Prev
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            />
-
-            {(() => {
-              const visiblePages = 5;
-              let start = Math.max(1, page - Math.floor(visiblePages / 2));
-              let end = start + visiblePages - 1;
-
-              if (end > totalPages) {
-                end = totalPages;
-                start = Math.max(1, end - visiblePages + 1);
-              }
-
-              const pages = [];
-              for (let i = start; i <= end; i++) {
-                pages.push(
-                  <Pagination.Item
-                    key={i}
-                    active={page === i}
-                    onClick={() => setPage(i)}
-                  >
-                    {i}
-                  </Pagination.Item>
-                );
-              }
-              return pages;
-            })()}
-
-            {/* NEXT */}
-            <Pagination.Next
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-            />
-          {/* </Pagination> */} 
-        {/* // )} */}
       </Card.Body>
     </Card>
   );

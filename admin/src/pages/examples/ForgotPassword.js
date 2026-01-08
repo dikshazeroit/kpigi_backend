@@ -1,13 +1,25 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { Col, Row, Form, Card, Button, InputGroup, Spinner } from "@themesberg/react-bootstrap";
+import {
+  Col,
+  Row,
+  Form,
+  Card,
+  Button,
+  InputGroup,
+  Spinner,
+} from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 
+// Import your API service
+import { forgotPassword } from "../../api/Auth";
+
 export default function ForgotPassword() {
-  const history = useHistory(); // useHistory for React Router v5
+  const history = useHistory();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,12 +29,39 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call API
+      const res = await forgotPassword(email);
+
+      console.log("FORGOT PASSWORD RESPONSE:", res);
+
       setSubmitted(true);
+
+      // Show success popup
+      Swal.fire({
+        title: "Email Sent!",
+        text: `A password reset OTP has been sent to ${email}`,
+        icon: "success",
+        confirmButtonColor: "#2575fc",
+      });
+
+      // Redirect to verify OTP page with email
+      setTimeout(() => {
+        history.push({
+          pathname: "/verify-otp",
+          state: { email },
+        });
+      }, 1300);
+
     } catch (err) {
       console.error(err);
-      alert("Something went wrong. Please try again.");
+
+      Swal.fire({
+        title: "Error!",
+        text: err?.response?.data?.message || "Something went wrong.",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
+
     } finally {
       setLoading(false);
     }
@@ -50,7 +89,10 @@ export default function ForgotPassword() {
           backdropFilter: "blur(10px)",
         }}
       >
-        <Row className="g-0 d-flex flex-column flex-md-row" style={{ minHeight: "500px" }}>
+        <Row
+          className="g-0 d-flex flex-column flex-md-row"
+          style={{ minHeight: "500px" }}
+        >
           {/* Left Side */}
           <Col
             md={6}
@@ -70,12 +112,15 @@ export default function ForgotPassword() {
               Forgot Password?
             </h2>
             <p className="mt-2 fs-6" style={{ color: "#fff" }}>
-              Enter your registered email to reset your password
+              Enter your registered email to receive the reset link
             </p>
           </Col>
 
           {/* Right Side */}
-          <Col md={6} className="d-flex align-items-center justify-content-center bg-white p-4">
+          <Col
+            md={6}
+            className="d-flex align-items-center justify-content-center bg-white p-4"
+          >
             <div className="w-100" style={{ maxWidth: "360px" }}>
               {!submitted ? (
                 <>
@@ -92,7 +137,6 @@ export default function ForgotPassword() {
                           type="email"
                           placeholder="admin@example.com"
                           required
-                          aria-label="Email address for password recovery"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                         />
@@ -110,7 +154,9 @@ export default function ForgotPassword() {
                       }}
                       disabled={loading}
                     >
-                      {loading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
+                      {loading ? (
+                        <Spinner animation="border" size="sm" className="me-2" />
+                      ) : null}
                       Send Reset Link
                     </Button>
 
@@ -129,8 +175,11 @@ export default function ForgotPassword() {
                 <div className="text-center">
                   <h5>Check your email!</h5>
                   <p>
-                    We’ve sent a password reset link to <strong>{email}</strong>
+                    A password reset link has been sent to:
+                    <br />
+                    <strong>{email}</strong>
                   </p>
+
                   <Button
                     onClick={() => history.push(Routes.Signin.path)}
                     className="mt-3"

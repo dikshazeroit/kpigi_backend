@@ -9,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { CircleChartWidget, BarChartWidget } from "../../components/Widgets";
+import { useHistory } from "react-router-dom";
 
 import {
   getDashboardSummary,
@@ -17,7 +18,7 @@ import {
 } from "../../api/ApiServices";
 
 const DashboardOverview = () => {
-  // ✅ SAFE DEFAULT STATE
+  const history = useHistory();
   const [summary, setSummary] = useState({
     totalUsers: 0,
     totalFunds: 0,
@@ -36,17 +37,8 @@ const DashboardOverview = () => {
         getDashboardStats(),
         getRecentActivities(),
       ]);
-      console.log("SUMMARY FROM API →", summary);
-
-
-      // ✅ SUMMARY
-      setSummary(summaryRes.data); 
-
-
-      // ✅ STATS (array from aggregation)
+      setSummary(summaryRes.data);
       setDonationStats(statsRes?.data?.data || []);
-
-      // ✅ RECENT FUNDS AS ACTIVITIES
       setActivities(activityRes?.data?.data || []);
     } catch (err) {
       console.error("Dashboard load failed", err);
@@ -67,80 +59,81 @@ const DashboardOverview = () => {
     );
   }
 
- const summaryCards = [
-  {
-    icon: faUsers,
-    label: "Total Users",
-    value: summary?.totalUsers || 0,
-    bg: "#4e73df",
-  },
-  {
-    icon: faHandHoldingHeart,
-    label: "Total Fundraisers",
-    value: summary?.totalFunds || 0,
-    bg: "#1cc88a",
-  },
-  {
-    icon: faChartLine,
-    label: "Active Fundraisers",
-    value: summary?.activeFunds || 0,
-    bg: "#36b9cc",
-  },
-  {
-    icon: faDollarSign,
-    label: "Pending Payouts",
-    value: summary?.pendingPayouts || 0,
-    bg: "#f6c23e",
-  },
-];
+  const summaryCards = [
+    { icon: faUsers, label: "Total Users", value: summary.totalUsers, bg: "#2e59d9", textColor: "#ffffff", route: "/tables/user-list" },
+    { icon: faHandHoldingHeart, label: "Total Fundraisers", value: summary.totalFunds, bg: "#17a673", textColor: "#ffffff", route: "/campaigns/list" },
+    { icon: faChartLine, label: "Active Fundraisers", value: summary.activeFunds, bg: "#2c9faf", textColor: "#ffffff", route: "/campaigns/list" },
+    { icon: faDollarSign, label: "Pending Payouts", value: summary.pendingPayouts, bg: "#dda20a", textColor: "#ffffff", route: "/payouts/list" },
+  ];
 
-
-  // ✅ BAR CHART DATA (from aggregation)
   const barChartData = donationStats.map((item, index) => ({
     id: index + 1,
     label: `Day ${item._id}`,
     value: item.total,
   }));
 
+
+  const cardStyle = (bg, color) => ({
+    background: bg,
+    color: color,
+    borderRadius: "14px",
+    padding: "20px",
+    textAlign: "center",
+    cursor: "pointer",
+    marginTop: "20px",
+    transition: "transform 0.2s, box-shadow 0.2s",
+  });
+
+  const cardHoverStyle = {
+    transform: "translateY(-5px)",
+    boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+  };
+
   return (
     <div className="dashboard-wrapper" style={{ padding: "30px" }}>
+      {/* Inline <style> for hover */}
+      <style>{`
+        .dashboard-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+      `}</style>
+
       {/* SUMMARY CARDS */}
       <Row className="mb-4 g-3">
         {summaryCards.map((card, idx) => (
           <Col key={idx} xs={12} sm={6} md={3}>
             <Card
-              className="shadow-sm"
+              className="shadow-sm dashboard-card"
               style={{
                 background: card.bg,
-                color: "#fff",
+                color: card.textColor, 
                 borderRadius: "14px",
                 padding: "20px",
                 textAlign: "center",
+                cursor: card.route ? "pointer" : "default",
+                marginTop: "20px",
               }}
+              onClick={() => card.route && history.push(card.route)}
             >
-              <FontAwesomeIcon icon={card.icon} size="2x" className="mb-2" />
-              <h6 className="mb-1">{card.label}</h6>
-              <h4 className="fw-bold">{card.value}</h4>
+              <FontAwesomeIcon icon={card.icon} size="2x" className="mb-2" style={{ color: card.textColor }} />
+              <h6 className="mb-1" style={{ color: card.textColor }}>{card.label}</h6>
+              <h4 className="fw-bold" style={{ color: card.textColor }}>{card.value}</h4>
             </Card>
           </Col>
         ))}
       </Row>
 
-      {/* CHART */}
+      {/* BAR CHART */}
       <Row className="mb-4 g-3">
         <Col lg={12}>
           <Card className="shadow-sm p-3 rounded-4">
-            <BarChartWidget
-              title="Donations Overview"
-              value=""
-              percentage={0}
-              data={barChartData}
-            />
+            <BarChartWidget title="Donations Overview" value="" percentage={0} data={barChartData} />
           </Card>
         </Col>
       </Row>
 
-      {/* RECENT ACTIVITIES (FUNDS) */}
+      {/* RECENT ACTIVITIES */}
       <Row>
         <Col>
           <Card className="shadow-sm rounded-4">
@@ -159,18 +152,14 @@ const DashboardOverview = () => {
                 <tbody>
                   {activities.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="text-center">
-                        No records found
-                      </td>
+                      <td colSpan="3" className="text-center">No records found</td>
                     </tr>
                   ) : (
                     activities.map((fund) => (
                       <tr key={fund._id}>
                         <td>{fund.f_title}</td>
                         <td>
-                          <Badge bg={fund.f_status === "ACTIVE" ? "success" : "secondary"}>
-                            {fund.f_status}
-                          </Badge>
+                          <Badge bg={fund.f_status === "ACTIVE" ? "success" : "secondary"}>{fund.f_status}</Badge>
                         </td>
                         <td>{new Date(fund.createdAt).toLocaleString()}</td>
                       </tr>
