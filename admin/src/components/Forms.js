@@ -6,6 +6,8 @@ import avatar from "../assets/img/pages/avatar.jpg";
 import Swal from "sweetalert2";
 import { updateAdminProfile, getAdminProfile } from "../api/ApiServices";
 import { useHistory } from "react-router-dom";
+import { FaAddressCard } from "react-icons/fa";
+
 
 export const GeneralInfoForm = () => {
   const history = useHistory();
@@ -99,7 +101,7 @@ export const GeneralInfoForm = () => {
 
       setProfileImg(newImageUrl);
 
-      // 🔥 Dispatch event for TopNavbar to update instantly
+      //  Dispatch event for TopNavbar to update instantly
       window.dispatchEvent(new CustomEvent("profile-updated", {
         detail: {
           name: res.payload.name,
@@ -129,14 +131,17 @@ export const GeneralInfoForm = () => {
   return (
     <Card border="light" className="bg-white shadow-sm mb-4">
       <Card.Body>
-        <h5 className="mb-4">Administrator Profile Information</h5>
+       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+  <FaAddressCard size={24} color="#1e293b" />
+  <span>Administrator Profile Information</span>
+</div>
 
         <div
           className="mb-4"
           style={{
             display: "flex",
-            justifyContent: "center", // horizontally center
-            alignItems: "center",     // vertically center if needed
+            justifyContent: "center",
+            alignItems: "center",    
             position: "relative",
           }}
         >

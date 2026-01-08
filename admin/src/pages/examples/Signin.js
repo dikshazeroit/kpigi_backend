@@ -4,18 +4,16 @@ import { faEnvelope, faUnlockAlt, faEye, faEyeSlash } from "@fortawesome/free-so
 import { Col, Row, Form, Card, Button, FormCheck, InputGroup } from "@themesberg/react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { Routes } from "../../routes";
-import { Alert, Collapse } from "@mui/material";
+import { Alert } from "@mui/material";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 import { isAuthenticated, loginAdmin } from "../../api/Auth";
 import Swal from "sweetalert2";
-import { getAdminWithRoleAPI } from "../../api/ApiServices";
-import CryptoJS from "crypto-js";
+import logo from "../../assets/img/pages/Kpigi-remove.png";
 
 export default function Signin() {
   const history = useHistory();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,27 +34,18 @@ export default function Signin() {
     try {
       await loginAdmin(email, password);
 
+      // SweetAlert success
       Swal.fire({
         icon: "success",
         title: "Login Successful",
         showConfirmButton: true,
-        showConfirmButton:"ok",
         timer: 1500,
       });
 
-      // SweetAlert Success Popup
-      Swal.fire({
-        title: "Login Successful!",
-        text: "Redirecting to Dashboard...",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      // Redirect after 2 seconds
+      // Redirect after 1.5 seconds
       setTimeout(() => {
-      history.push(Routes.DashboardOverview.path);
-      }, 2000);
+        history.push(Routes.DashboardOverview.path);
+      }, 1500);
     } catch (error) {
       console.error(error);
 
@@ -115,26 +104,26 @@ export default function Signin() {
                 filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))",
               }}
             />
-            <h2 className="fw-bold display-6 mb-2" style={{ color: "white" }}>
-              Welcome Back!
-            </h2>
+            <h2 className="fw-bold display-6 mb-2">Welcome Back!</h2>
             <p className="fs-6 mb-0">
               Login to your <strong>Kpigi Admin Dashboard</strong>
             </p>
           </Col>
 
           {/* Right Login Form */}
-          <Col md={6} className="d-flex align-items-center justify-content-center bg-white p-5">
+          <Col md={6} className="d-flex align-items-center justify-content-center bg-White p-5">
             <div className="w-100" style={{ maxWidth: "380px" }}>
-              <h3 className="fw-bold text-center mb-4" style={{ fontSize: "1.9rem" }}>
-                Admin Login
-              </h3>
-
-              <Collapse in={showAlert}>
-                <Alert severity="success" style={{ marginBottom: "1rem" }}>
-                  Login successful! Redirecting...
-                </Alert>
-              </Collapse>
+              {/* Logo + Heading */}
+              <div className="text-center mb-4">
+                <img
+                  src={logo}
+                  alt="Kpigi Logo"
+                  style={{ height: "60px", objectFit: "contain", marginBottom: "12px",backgroundColor:"blue" }}
+                />
+                <h3 className="fw-bold" style={{ fontSize: "1.9rem" }}>
+                  Admin Login Portal
+                </h3>
+              </div>
 
               {errorMsg && (
                 <Alert severity="error" className="mb-3">
@@ -208,7 +197,7 @@ export default function Signin() {
                 </Button>
               </Form>
 
-              {/* FOOTER TEXT BELOW LOGIN BUTTON */}
+              {/* Footer */}
               <div className="text-center mt-3">
                 <p
                   style={{

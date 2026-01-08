@@ -129,78 +129,92 @@ export default function TopNavbar() {
       style={{ padding: "10px 20px" }}
     >
       <Container fluid className="px-0">
-        <div className="d-flex justify-content-end align-items-center w-100 gap-3">
-          
+        <div className="d-flex justify-content-between align-items-center w-100">
 
-          {/* WELCOME / SEARCH BOX */}
-          <div
+          {/* DASHBOARD */}
+          <h6
+            className="mb-0 fw-bold text-dark"
             style={{
-              backgroundColor: "#fff",
-              padding: "8px 16px",
-              display: "flex",
-              top: "5px",
-              alignItems: "center",
-              borderRadius: "6px",
-              border: "1px solid #ddd",
-              height: "40px",
-              fontSize: "14px",
+              fontSize: "18px",
+              letterSpacing: "0.5px",
               whiteSpace: "nowrap",
             }}
           >
-            <span
-              role="img"
-              aria-label="search"
-              style={{ fontSize: "16px", marginRight: "8px" }}
+            DASHBOARD
+          </h6>
+
+          {/* RIGHT SIDE (SEARCH + PROFILE) */}
+          <div className="d-flex align-items-center gap-3">
+
+            {/* WELCOME / SEARCH BOX */}
+            <div
+              style={{
+                backgroundColor: "#fff",
+                padding: "8px 16px",
+                display: "flex",
+                alignItems: "center",
+                borderRadius: "6px",
+                border: "1px solid #ddd",
+                height: "40px",
+                fontSize: "14px",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
             >
-              🔍
-            </span>
-            <span>
-              Hello, Welcome <strong>{adminName}</strong> –{" "}
-              <span style={{ color: "#64748b" }}>
-
-                this is your Kpigi Admin Panel
+              <span
+                role="img"
+                aria-label="search"
+                style={{ fontSize: "16px", marginRight: "8px" }}
+              >
+                🔍
               </span>
-            </span>
+              <span>
+                Hello, Welcome <strong>{adminName}</strong> –{" "}
+                <span style={{ color: "#64748b" }}>
+                  this is your Kpigi Admin Panel
+                </span>
+              </span>
+            </div>
+
+            {/* PROFILE */}
+            <Nav className="align-items-center">
+              <Dropdown as={Nav.Item}>
+                <Dropdown.Toggle as={Nav.Link} className="p-0">
+                  <div className="d-flex align-items-center">
+                    <Image
+                      src={adminImage}
+                      className="user-avatar md-avatar rounded-circle"
+                      onError={(e) => (e.target.src = Profile3)}
+                    />
+                    <span className="ms-2 fw-bold text-black d-none d-lg-block">
+                      {adminName}
+                    </span>
+                  </div>
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="user-dropdown dropdown-menu-end mt-2">
+                  <Dropdown.Item
+                    className="fw-bold"
+                    onClick={() => history.push("/profile")}
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} className="me-2" />
+                    My Profile
+                  </Dropdown.Item>
+                  <Dropdown.Item className="fw-bold" onClick={handleLogout}>
+                    <FontAwesomeIcon
+                      icon={faSignOutAlt}
+                      className="text-danger me-2"
+                    />
+                    Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Nav>
+
           </div>
-          
-
-          {/* PROFILE */}
-          <Nav className="align-items-center">
-            <Dropdown as={Nav.Item}>
-              <Dropdown.Toggle as={Nav.Link} className="p-0">
-                <div className="d-flex align-items-center">
-                  <Image
-                    src={adminImage}
-                    className="user-avatar md-avatar rounded-circle"
-                    onError={(e) => (e.target.src = Profile3)}
-                  />
-                  <span className="ms-2 fw-bold text-black d-none d-lg-block gap-2">
-                    {adminName}
-                  </span>
-                </div>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="user-dropdown dropdown-menu-end mt-2">
-                <Dropdown.Item
-                  className="fw-bold"
-                  onClick={() => history.push("/profile")}
-                >
-                  <FontAwesomeIcon icon={faUserCircle} className="me-2" />
-                  My Profile
-                </Dropdown.Item>
-                <Dropdown.Item className="fw-bold" onClick={handleLogout}>
-                  <FontAwesomeIcon
-                    icon={faSignOutAlt}
-                    className="text-danger me-2"
-                  />
-                  Logout
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Nav>
-
         </div>
       </Container>
+
     </Navbar>
   );
 
