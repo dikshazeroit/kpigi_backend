@@ -142,6 +142,11 @@ uc_country_name: {
       type: String,
       default: "",
     },
+    uc_balance: {
+  type: Number,
+  default: 0
+}
+,
 
     uc_active: {
       type: String,

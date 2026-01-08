@@ -6,6 +6,8 @@ import avatar from "../assets/img/pages/avatar.jpg";
 import Swal from "sweetalert2";
 import { updateAdminProfile, getAdminProfile } from "../api/ApiServices";
 import { useHistory } from "react-router-dom";
+import { FaAddressCard } from "react-icons/fa";
+
 
 export const GeneralInfoForm = () => {
   const history = useHistory();
@@ -99,7 +101,7 @@ export const GeneralInfoForm = () => {
 
       setProfileImg(newImageUrl);
 
-      // 🔥 Dispatch event for TopNavbar to update instantly
+      //  Dispatch event for TopNavbar to update instantly
       window.dispatchEvent(new CustomEvent("profile-updated", {
         detail: {
           name: res.payload.name,
@@ -129,10 +131,20 @@ export const GeneralInfoForm = () => {
   return (
     <Card border="light" className="bg-white shadow-sm mb-4">
       <Card.Body>
-        <h5 className="mb-4">Edit Information</h5>
+       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+  <FaAddressCard size={24} color="#1e293b" />
+  <span>Administrator Profile Information</span>
+</div>
 
-        {/* PROFILE IMAGE */}
-        <div className="text-center position-relative mb-4" style={{ display: "inline-block" }}>
+        <div
+          className="mb-4"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",    
+            position: "relative",
+          }}
+        >
           <img
             src={profileImg}
             alt="Admin"
@@ -159,8 +171,8 @@ export const GeneralInfoForm = () => {
             htmlFor="upload-admin-img"
             style={{
               position: "absolute",
-              bottom: "10px",
-              right: "0",
+              bottom: "0",
+              right: "calc(50% - 60px)", // adjust relative to image width
               background: "#fff",
               borderRadius: "50%",
               padding: "6px",
@@ -269,9 +281,31 @@ export const GeneralInfoForm = () => {
             </Col>
           </Row>
 
-          <Button type="submit" variant="primary" className="mt-2">
-            Save Changes
-          </Button>
+          <div className="d-flex justify-content-end mt-3">
+            <Button
+              style={{
+                backgroundColor: "#262B40",
+                color: "#ffffff",
+                border: "none",
+              }}
+              className="me-2"
+              onClick={() => history.push("/profile")}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              style={{
+                backgroundColor: "#262B40",
+                color: "#ffffff",
+                border: "none",
+              }}
+            >
+              Save Changes
+            </Button>
+          </div>
+
         </Form>
       </Card.Body>
     </Card>
