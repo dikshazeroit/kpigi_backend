@@ -190,42 +190,31 @@ export const PageUserTable = () => {
         {/* ================= PAGINATION ================= */}
         {totalPages > 1 && (
           <Pagination className="justify-content-end mt-3">
+            {/* Prev button */}
             <Pagination.Prev
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-            />
+            >
+              Prev
+            </Pagination.Prev>
 
-            {(() => {
-              const visiblePages = 5;
-              let startPage = Math.max(1, page - Math.floor(visiblePages / 2));
-              let endPage = startPage + visiblePages - 1;
+            {/* Current Page */}
+            <Pagination.Item active>
+              {page}
+            </Pagination.Item>
 
-              if (endPage > totalPages) {
-                endPage = totalPages;
-                startPage = Math.max(1, endPage - visiblePages + 1);
-              }
-
-              const pages = [];
-              for (let i = startPage; i <= endPage; i++) {
-                pages.push(
-                  <Pagination.Item
-                    key={i}
-                    active={page === i}
-                    onClick={() => setPage(i)}
-                  >
-                    {i}
-                  </Pagination.Item>
-                );
-              }
-              return pages;
-            })()}
-
+            {/* Next button */}
             <Pagination.Next
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
-            />
+            >
+              Next
+            </Pagination.Next>
           </Pagination>
         )}
+
+
+
       </Card.Body>
     </Card>
   );
