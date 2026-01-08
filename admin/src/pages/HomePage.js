@@ -30,11 +30,11 @@ import Preloader from "../components/Preloader";
 // import Tables from "./components/Tables";
 
 // Menu Pages
-import CampaignManagementPage from "./CampaignManagement/CampaignManagement";
-import DonationManagementPage from "./donation/DonationManagement";
+import CampaingnManagementPage from "./campaingn/CampaingnManagementPage";
+import DonationManagementPage from "./donation/DonationManagementPage";
 import WalletPage from "./wallet/wallet";
 import PayoutsPage from "./payouts/payouts";
-import CategoriesPage from "./Category/CategoriesPage"
+import CategoriesPage from "./category/CategoriesPage";
 import AnalyticsPage from "./Analytics/AnalyticsManagement";
 import Disputes from "./diputes/Disputes";
 import HelpWrapper from "./Helps/helps";
@@ -42,6 +42,7 @@ import FaqsPage from "./support/FaqsPage";
 import PrivacyPage from "./PrivacyPolicy/privacy";
 import TermsPage from "./TERMS/Terms";
 import ProtectedRoute from "./examples/ProtectedRoute";
+
 
 
 // ====================
@@ -148,7 +149,7 @@ export default function AppRoutes() {
       <ProtectedRoute
         exact
         path={Routes.CampaignManagementPage.path}
-        component={() => <RouteWithSidebar component={CampaignManagementPage} />}
+        component={() => <RouteWithSidebar component={CampaingnManagementPage} />}
       />
 
       <ProtectedRoute

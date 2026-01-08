@@ -16,13 +16,7 @@ const Profile = () => {
             listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
           >
             <Breadcrumb.Item></Breadcrumb.Item>
-
-            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-              <FontAwesomeIcon icon={faHome} />
-            </Breadcrumb.Item>
-
-            <Breadcrumb.Item>Profile</Breadcrumb.Item>
-            <Breadcrumb.Item active>User Profile</Breadcrumb.Item>
+            
           </Breadcrumb>
         </div>
       </div>

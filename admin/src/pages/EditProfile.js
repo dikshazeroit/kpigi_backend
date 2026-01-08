@@ -12,14 +12,13 @@ const EditProfile = () => {
       <div className="d-xl-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
         <div className="d-block mb-4 mb-xl-0">
           <Breadcrumb
-            className="d-none d-md-inline-block"
-            listProps={{ className: "breadcrumb-dark breadcrumb-transparent" }}
+            className="d-flex align-items-center flex-nowrap"
+            listProps={{
+              className:
+                "breadcrumb-dark breadcrumb-transparent mb-0 d-flex align-items-center",
+            }}
           >
-            <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/dashboard" }}>
-              <FontAwesomeIcon icon={faHome} />
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>Profile</Breadcrumb.Item>
-            <Breadcrumb.Item active>Edit Profile</Breadcrumb.Item>
+
           </Breadcrumb>
         </div>
       </div>

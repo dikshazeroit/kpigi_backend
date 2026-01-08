@@ -1,4 +1,4 @@
-import CategoriesPage from "./pages/Category/CategoriesPage";
+// import CategoriesPage from "./pages/Category/CategoriesPage";
 
 export const Routes = {
   DashboardOverview: { path: "/Dashboard" },

@@ -34,7 +34,11 @@ export default function TopNavbar() {
         const res = await getAdminProfile();
         const admin = res.payload;
 
-        setAdminName(admin.name || "Admin");
+        // Use au_name and au_surname if available, fallback to admin.name if needed
+        const fullName =
+          (admin.au_name || admin.name ? `${admin.au_name || ""} ${admin.au_surname || ""}`.trim() : "") || admin.name || "Admin";
+
+        setAdminName(fullName);
 
         const imageUrl = admin.image
           ? `https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/${admin.image}`
@@ -52,7 +56,7 @@ export default function TopNavbar() {
     fetchAdmin();
   }, []);
 
-
+  // Listen for external profile update events
   useEffect(() => {
     const handleProfileUpdate = (e) => {
       const { name, image } = e.detail;
@@ -61,7 +65,6 @@ export default function TopNavbar() {
     };
 
     window.addEventListener("profile-updated", handleProfileUpdate);
-
     return () => window.removeEventListener("profile-updated", handleProfileUpdate);
   }, []);
 
@@ -84,7 +87,6 @@ export default function TopNavbar() {
       confirmButtonText: "Yes, Logout",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Clear token/session
         localStorage.removeItem("token");
         sessionStorage.clear();
 
@@ -124,112 +126,96 @@ export default function TopNavbar() {
     <Navbar
       expand="lg"
       className="navbar-main shadow-sm"
-      style={{ paddingTop: "10px", position: "relative", top: 0 }}
+      style={{ padding: "10px 20px" }}
     >
       <Container fluid className="px-0">
         <div className="d-flex justify-content-between align-items-center w-100">
-          {/* SEARCH / WELCOME */}
-          <div className="d-flex align-items-center">
+
+          {/* DASHBOARD */}
+          <h6
+            className="mb-0 fw-bold text-dark"
+            style={{
+              fontSize: "18px",
+              letterSpacing: "0.5px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            DASHBOARD
+          </h6>
+
+          {/* RIGHT SIDE (SEARCH + PROFILE) */}
+          <div className="d-flex align-items-center gap-3">
+
+            {/* WELCOME / SEARCH BOX */}
             <div
               style={{
                 backgroundColor: "#fff",
-                padding: "10px 16px",
+                padding: "8px 16px",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "6px",
                 border: "1px solid #ddd",
-                minWidth: "340px",
                 height: "40px",
                 fontSize: "14px",
-                color: "#000",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               <span
                 role="img"
                 aria-label="search"
-                className="me-2"
-                style={{ fontSize: "18px" }}
+                style={{ fontSize: "16px", marginRight: "8px" }}
               >
                 🔍
               </span>
-              <h6 style={{ margin: 0, color: "#000" }}>
-                Hello, <strong>Welcome Admin this is your</strong> –{" "}
-                <span style={{ color: "rgb(27, 44, 193)" }}>
-                  Kpigi Admin Panel
+              <span>
+                Hello, Welcome <strong>{adminName}</strong> –{" "}
+                <span style={{ color: "#64748b" }}>
+                  this is your Kpigi Admin Panel
                 </span>
-              </h6>
+              </span>
             </div>
-          </div>
 
-          {/* RIGHT SECTION */}
-          <Nav className="align-items-center">
-            {/* NOTIFICATIONS */}
-            {/* <Dropdown as={Nav.Item} onToggle={markNotificationsAsRead}>
-              <Dropdown.Toggle
-                as={Nav.Link}
-                className="text-dark icon-notifications me-lg-3"
-              >
-                <span className="icon icon-sm">
-                  <img
-                    src={notificationImg}
-                    alt="Notification"
-                    style={{ width: "24px", height: "24px", objectFit: "contain" }}
-                    className="bell-shake"
-                  />
-                  {!areNotificationsRead && (
-                    <span className="icon-badge rounded-circle unread-notifications" />
-                  )}
-                </span>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dashboard-dropdown notifications-dropdown dropdown-menu-lg dropdown-menu-center mt-2 py-0">
-                <ListGroup className="list-group-flush">
-                  <Nav.Link
-                    href="#"
-                    className="text-center text-primary fw-bold border-bottom border-light py-3"
-                  >
-                    Notifications
-                  </Nav.Link>
-                  {notifications.map((n) => (
-                    <NotificationItem key={n.id} {...n} />
-                  ))}
-                  <Dropdown.Item className="text-center text-primary fw-bold py-3">
-                    View all
-                  </Dropdown.Item>
-                </ListGroup>
-              </Dropdown.Menu>
-            </Dropdown> */}
-
-            {/* ADMIN PROFILE */}
-            <Dropdown as={Nav.Item}>
-              <Dropdown.Toggle as={Nav.Link} className="pt-1 px-0">
-                <div className="media d-flex align-items-center">
-                  <Image
-                    src={adminImage}
-                    className="user-avatar md-avatar rounded-circle"
-                    onError={(e) => (e.target.src = Profile3)}
-                  />
-                  <div className="media-body ms-2 text-dark d-none d-lg-block">
-                    <span className="mb-0 font-small fw-bold">{adminName}</span>
+            {/* PROFILE */}
+            <Nav className="align-items-center">
+              <Dropdown as={Nav.Item}>
+                <Dropdown.Toggle as={Nav.Link} className="p-0">
+                  <div className="d-flex align-items-center">
+                    <Image
+                      src={adminImage}
+                      className="user-avatar md-avatar rounded-circle"
+                      onError={(e) => (e.target.src = Profile3)}
+                    />
+                    <span className="ms-2 fw-bold text-black d-none d-lg-block">
+                      {adminName}
+                    </span>
                   </div>
-                </div>
-              </Dropdown.Toggle>
+                </Dropdown.Toggle>
 
-              <Dropdown.Menu className="user-dropdown dropdown-menu-right mt-2">
-                <Dropdown.Item
-                  className="fw-bold"
-                  onClick={() => history.push("/profile")}
-                >
-                  <FontAwesomeIcon icon={faUserCircle} className="me-2" /> My Profile
-                </Dropdown.Item>
-                <Dropdown.Item className="fw-bold" onClick={handleLogout}>
-                  <FontAwesomeIcon icon={faSignOutAlt} className="text-danger me-2" /> Logout
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Nav>
+                <Dropdown.Menu className="user-dropdown dropdown-menu-end mt-2">
+                  <Dropdown.Item
+                    className="fw-bold"
+                    onClick={() => history.push("/profile")}
+                  >
+                    <FontAwesomeIcon icon={faUserCircle} className="me-2" />
+                    My Profile
+                  </Dropdown.Item>
+                  <Dropdown.Item className="fw-bold" onClick={handleLogout}>
+                    <FontAwesomeIcon
+                      icon={faSignOutAlt}
+                      className="text-danger me-2"
+                    />
+                    Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Nav>
+
+          </div>
         </div>
       </Container>
+
     </Navbar>
   );
+
 }

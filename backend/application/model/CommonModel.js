@@ -24,6 +24,7 @@ import serviceAccount from "../../config/firebaseAdminSDK.json" assert { type: "
 import UserDevice from "./UserDeviceModel.js"; 
 import notificationModel from "./NotificationModel.js";
 
+
 // Initialize Firebase Admin SDK only once
 if (!admin.apps.length) {
   admin.initializeApp({
