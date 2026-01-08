@@ -29,6 +29,7 @@ import combinedUpload from "../../middleware/CombinedUploadMiddleware.js";
 import fundUpload from "../../middleware/FundUpload.js";
 import notificationObj from "../controller/NotificationController.js";
 import securityObj from "../controller/SecurityController.js";
+import faqObj from "../controller/FaqController.js";
 
 const router = express.Router();
 
@@ -80,9 +81,10 @@ router.post("/private/delete-fund", fundObj.deleteFund);
 
 //****************************** 💰 Donation Routes *******************************************//
 router.post("/private/donation-start", donationObj.createDonation);
-router.post("/private/donation-list", donationObj.getMyDonations);
+router.post("/private/donation-history-list", donationObj.getMyDonations);
 router.post("/private/donation-fund-donors", donationObj.getFundDonors);
 router.post("/private/received-donations", donationObj.getReceivedDonations);
+router.post("/private/donation-add-message", donationObj.addDonationMessage);
 
 
 //****************************** 💰 Payout Routes *******************************************//
@@ -104,5 +106,10 @@ router.post("/private/security-report", securityObj.reportSuspicious);
 router.post("/private/security-pause-fund", securityObj.pauseFund);
 router.post("/private/security-reports", securityObj.getReports);
 
+//******************************************* 🛡️ FAQ ************************************************//
+router.post("/private/faq-list", faqObj.getFaqList);
+router.post("/private/faq-details", faqObj.getFaqDetails);
+router.get("/private/get-privacy-policy",faqObj.getPrivacyPolicies);
+router.get("/private/get-terms-conditions", faqObj.getTermsConditions);
 
 export default router;

@@ -29,6 +29,12 @@ const DonationSchema = new mongoose.Schema({
   d_platform_fee: { type: Number, default: 0 },
   d_amount_to_owner: { type: Number, default: 0 },
   d_is_anonymous: { type: Boolean, default: false },
+    d_message: { 
+    type: String, 
+    default: "", 
+    trim: true 
+  },
+
   d_payment_intent_id: { type: String, required: true }, // ✅ ADD THIS
   d_status: { type: String, default: "PENDING" },
   d_meta: { type: Object, default: {} },

@@ -221,22 +221,64 @@ fundObj.getFundDetails = async function (req, res) {
     const { f_uuid } = req.body;
 
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-D1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-D1001", message: "Unauthorized access." },
+        200
+      );
     }
 
-    const fund = await FundModel.findOne({ f_uuid,
-      //  f_fk_uc_uuid: userId 
-      });
+    // 1️⃣ Fund fetch
+    const fund = await FundModel.findOne({ f_uuid }).lean();
     if (!fund) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-D1002", message: "Fund not found." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-D1002", message: "Fund not found." },
+        200
+      );
     }
 
-    return commonHelper.successHandler(res, { status: true, message: "Fund details fetched.", payload: fund });
+    // 2️⃣ Creator fetch
+    const creator = await UsersCredentialsModel.findOne(
+      { uc_uuid: fund.f_fk_uc_uuid },
+      {
+        uc_full_name: 1,
+        uc_email: 1,
+        uc_phone: 1,
+        uc_country_name: 1,
+        uc_profile_photo: 1,
+        uc_bio: 1,
+        _id: 0
+      }
+    ).lean();
+
+    // 3️⃣ Merge (FLAT)
+    const responsePayload = {
+      ...fund,
+      creator_name: creator?.uc_full_name || "",
+      creator_email: creator?.uc_email || "",
+      creator_phone: creator?.uc_phone || "",
+      creator_country_name: creator?.uc_country_name || "",
+      creator_profile_photo: creator?.uc_profile_photo || "",
+      creator_bio: creator?.uc_bio || ""
+    };
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Fund details fetched.",
+      payload: responsePayload
+    });
+
   } catch (error) {
     console.error("❌ getFundDetails Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-D9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "FUND-D9999", message: "Internal server error." },
+      200
+    );
   }
 };
+
 
 /**
  * Update a specific fund.

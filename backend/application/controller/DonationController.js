@@ -195,7 +195,6 @@ donationObj.createDonation = async function (req, res) {
 donationObj.getMyDonations = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
-
     if (!userUuid) {
       return commonHelper.errorHandler(
         res,
@@ -204,57 +203,69 @@ donationObj.getMyDonations = async function (req, res) {
       );
     }
 
-    // 1️⃣ User donations
+    // 1️⃣ Get user donations
     const donations = await DonationModel.find({
       d_fk_uc_uuid: userUuid,
-    }).sort({ createdAt: -1 });
+      d_status: "SUCCESS"
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    // 2️⃣ Build response
-    const history = await Promise.all(
-      donations.map(async (d) => {
-        // Fund details
-        const fund = await FundModel.findOne({ f_uuid: d.d_fk_f_uuid });
+    if (!donations.length) {
+      return commonHelper.successHandler(res, {
+        status: true,
+        message: "Donation history fetched",
+        payload: []
+      });
+    }
 
-        // Fund owner (recipient)
-        let owner = null;
-        if (fund?.f_fk_uc_uuid) {
-          const user = await UsersCredentialsModel.findOne({
-            uc_uuid: fund.f_fk_uc_uuid,
-          });
+    // 2️⃣ Collect fund UUIDs
+    const fundUuids = donations.map(d => d.d_fk_f_uuid);
 
-          owner = user
-            ? {
-                user_uuid: user.uc_uuid,
-                name: user.uc_full_name,
-                email: user.uc_email,
-                profile_photo: user.uc_profile_photo,
-              }
-            : null;
-        }
+    // 3️⃣ Fetch funds
+    const funds = await FundModel.find(
+      { f_uuid: { $in: fundUuids } },
+      { f_uuid: 1, f_title: 1, f_fk_uc_uuid: 1 }
+    ).lean();
 
-        return {
-          donation_uuid: d.d_uuid,
-          donated_amount: d.d_amount,
-          transaction_status: d.d_status,
-          transaction_date: d.createdAt,
-          fund: fund
-            ? {
-                f_uuid: fund.f_uuid,
-                title: fund.f_title,
-                category: fund.f_category_name,
-                target_amount: fund.f_amount,
-              }
-            : null,
-          recipient: owner,
-        };
-      })
-    );
+    const fundMap = {};
+    funds.forEach(f => {
+      fundMap[f.f_uuid] = f;
+    });
+
+    // 4️⃣ Collect recipient UUIDs
+    const recipientUuids = funds.map(f => f.f_fk_uc_uuid);
+
+    const recipients = await UsersCredentialsModel.find(
+      { uc_uuid: { $in: recipientUuids } },
+      { uc_uuid: 1, uc_full_name: 1 }
+    ).lean();
+
+    const recipientMap = {};
+    recipients.forEach(u => {
+      recipientMap[u.uc_uuid] = u.uc_full_name;
+    });
+
+    // 5️⃣ FINAL UI RESPONSE (FLAT)
+    const history = donations.map(d => {
+      const fund = fundMap[d.d_fk_f_uuid] || {};
+
+      return {
+        donationUuid: d.d_uuid,
+        amount: d.d_amount,
+        status: "Donated",
+        fundTitle: fund.f_title || "",
+        toUserName: recipientMap[fund.f_fk_uc_uuid] || "",
+        donatedAt: d.createdAt
+      };
+    });
 
     return commonHelper.successHandler(res, {
       status: true,
       message: "Donation history fetched",
-      payload: history,
+      payload: history
     });
+
   } catch (error) {
     console.error("❌ getMyDonations Error:", error);
     return commonHelper.errorHandler(
@@ -451,6 +462,56 @@ donationObj.getReceivedDonations = async function (req, res) {
       { status: false, message: "Internal server error" },
       200
     );
+  }
+};
+
+donationObj.addDonationMessage = async function (req, res) {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+    if (!userId) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized"
+      }, 200);
+    }
+
+   
+    const { donationUuid, message } = req.body;
+
+    if (!donationUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "donationUuid is required"
+      }, 200);
+    }
+
+    const donation = await DonationModel.findOne({
+      d_uuid: donationUuid,        
+      d_fk_uc_uuid: userId,
+      d_status: "SUCCESS"
+    });
+
+    if (!donation) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Donation not found or not completed"
+      }, 200);
+    }
+
+    donation.d_message = message?.trim() || "";
+    await donation.save();
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Message added successfully"
+    });
+
+  } catch (error) {
+    console.error("❌ addDonationMessage error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Something went wrong"
+    }, 200);
   }
 };
 
