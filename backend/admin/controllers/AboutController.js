@@ -92,6 +92,7 @@ export const getPrivacyPolicys = async (req, res, next) => {
         payload: {},
       });
     }
+
     return successHandler(res, {
       status: true,
       message: "About information fetched successfully",
@@ -99,6 +100,7 @@ export const getPrivacyPolicys = async (req, res, next) => {
         privacyPolicy: appInfo?.ai_privacy_policy || "",
         termsConditions: appInfo?.ai_terms_conditions || "",
         email: appInfo?.ai_contact_email || "",
+        phone: appInfo?.ai_contact_phone || "",       
         address: appInfo?.ai_contact_address || "",
         createdAt: appInfo?.created_at || "",
         updatedAt: appInfo?.ai_updated_at || "",
@@ -109,4 +111,3 @@ export const getPrivacyPolicys = async (req, res, next) => {
     next(error);
   }
 };
-
