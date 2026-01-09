@@ -31,10 +31,8 @@ import { getAppInfo, saveAppInfo } from "../../services/AboutServices.js";
 
 export const savePrivacyPolicy = async (req, res, next) => {
   try {
-    const { data, email, contact_address, type } = req.body;
+    const { data, email, contact_address, type, phone } = req.body;
 
-
-    // Improved validation
     if (!type) {
       return res.status(400).json({ status: false, message: "Type is required" });
     }
@@ -43,32 +41,37 @@ export const savePrivacyPolicy = async (req, res, next) => {
       return res.status(400).json({ status: false, message: "Data is required for this type" });
     }
 
-    if (type === "2" && (!email || !contact_address)) {
-      return res.status(400).json({ 
-        status: false, 
-        message: "Email and contact address are required for contact info" 
+    if (type === "2" && (!email || !contact_address || !phone)) {
+      return res.status(400).json({
+        status: false,
+        message: "Email, contact address, and phone are required for contact info",
       });
     }
 
     const InsertedData = {
-      ai_privacy_policy: type === "0" ? data : "",
-      ai_terms_conditions: type === "1" ? data : "",
-      ai_contact_email: type === "2" ? email : "",
-      ai_contact_address: type === "2" ? contact_address : "",
+      ...(type === "0" && { ai_privacy_policy: data }),
+      ...(type === "1" && { ai_terms_conditions: data }),
+      ...(type === "2" && {
+        ai_contact_email: email,
+        ai_contact_address: contact_address,
+        ai_contact_phone: phone,
+      }),
     };
 
     const admin = await saveAppInfo(InsertedData);
 
-    return successHandler(res, {
+    return res.status(200).json({
       status: true,
       message: "Privacy policy saved successfully",
       payload: admin,
     });
+
   } catch (error) {
     console.error("SavePrivacyPolicy error:", error);
     next(error);
   }
 };
+
 
 /**
  *
