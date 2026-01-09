@@ -18,7 +18,7 @@
  * ================================================================================
  * MAIN MODULE HEADING: Zero IT Solutions - User Module
  */
-
+import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -28,6 +28,7 @@ import userModel from "../model/UserModel.js";
 import categoryModel from "../model/CategoryModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
+import WithdrawalModel from "../model/WithdrawalModel.js";
 
 let userObj = {};
 /**
@@ -741,17 +742,13 @@ userObj.createWithdrawalRequest = async function (req, res) {
       }, 200);
     }
 
-    
-    const {
-      amount,
-      accountHolderName,
-      accountNumber,
-      ifscCode
-    } = req.body;
+    let { amount, accountHolderName, accountNumber, ifscCode } = req.body;
+    const withdrawAmount = Number(amount);
 
+    // ✅ Validation
     if (
-      !amount ||
-      amount <= 0 ||
+      !withdrawAmount ||
+      withdrawAmount <= 0 ||
       !accountHolderName ||
       !accountNumber ||
       !ifscCode
@@ -762,27 +759,45 @@ userObj.createWithdrawalRequest = async function (req, res) {
       }, 200);
     }
 
+    // ✅ User check
     const user = await userModel.findOne({ uc_uuid: userUuid });
+    if (!user) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "User not found",
+      }, 200);
+    }
 
-    if (user.uc_balance < amount) {
+    // ✅ Balance check only (no deduction)
+    if (user.uc_balance < withdrawAmount) {
       return commonHelper.errorHandler(res, {
         status: false,
         message: "Insufficient wallet balance",
       }, 200);
     }
 
-    // 1️⃣ Deduct wallet balance
-    user.uc_balance -= amount;
-    await user.save();
+    // 🚫 Prevent multiple pending withdrawals
+    const pendingRequest = await WithdrawalModel.findOne({
+      w_fk_uc_uuid: userUuid,
+      w_status: "PENDING",
+    });
 
-    // 2️⃣ Save withdrawal request
+    if (pendingRequest) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "You already have a pending withdrawal request",
+      }, 200);
+    }
+
+    // ✅ Create withdrawal request
     await WithdrawalModel.create({
       w_uuid: uuidv4(),
       w_fk_uc_uuid: userUuid,
-      w_amount: amount,
+      w_amount: withdrawAmount,
       w_account_holder_name: accountHolderName,
       w_account_number: accountNumber,
       w_ifsc_code: ifscCode,
+      w_status: "PENDING",
     });
 
     return commonHelper.successHandler(res, {
@@ -791,10 +806,11 @@ userObj.createWithdrawalRequest = async function (req, res) {
     });
 
   } catch (error) {
-    console.error("❌ Withdrawal Error", error);
+    console.error("❌ Withdrawal Error:", error.message);
+
     return commonHelper.errorHandler(res, {
       status: false,
-      message: "Withdrawal failed",
+      message: error.message || "Withdrawal failed",
     }, 200);
   }
 };
@@ -829,6 +845,45 @@ userObj.getWithdrawalHistory = async function (req, res) {
     return commonHelper.errorHandler(res, {
       status: false,
       message: "Failed to fetch withdrawal history",
+    }, 200);
+  }
+};
+userObj.getUserBalance = async function (req, res) {
+  try {
+    const userUuid = await appHelper.getUUIDByToken(req);
+    if (!userUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized",
+      }, 200);
+    }
+
+    const user = await userModel.findOne(
+      { uc_uuid: userUuid },
+      { uc_balance: 1 }
+    ).lean();
+
+    if (!user) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "User not found",
+      }, 200);
+    }
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "User balance fetched successfully",
+      payload: {
+        balance: user.uc_balance || 0,
+      },
+    });
+
+  } catch (error) {
+    console.error("❌ getUserBalance Error:", error);
+
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Failed to fetch balance",
     }, 200);
   }
 };

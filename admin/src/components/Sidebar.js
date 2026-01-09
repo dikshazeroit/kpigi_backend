@@ -202,7 +202,7 @@ export default function Sidebar({ userName = "Jane" }) {
                 iconColor="#1e90ff"
               />
               <NavItem
-                title="Payouts"
+                title="Payouts Requests"
                 link={Routes.PayoutsPage.path}
                 icon={faDollarSign}
                 textColor="#ffa500"
