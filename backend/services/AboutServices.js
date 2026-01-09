@@ -18,7 +18,7 @@
  *
  */
 
-import AppInfoModel from "../admin/models/About.js";
+import AppInfoModel from "../application/model/AppInfoModel.js";
 
 export const saveAppInfo = async (data) => {
   try {

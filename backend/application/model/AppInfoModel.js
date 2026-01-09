@@ -51,6 +51,7 @@ const appInfoSchema = new Schema(
     ai_contact_phone: {
       type: String,
       trim: true,
+      default: "",
     },
 
   },
