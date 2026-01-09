@@ -69,6 +69,8 @@ router.post("/private/check-bank-details",userObj.checkBankDetails);
 router.post("/category-list",userObj.categoryList);
 router.post("/private/withdraw-request",userObj.createWithdrawalRequest);
 router.post( "/private/withdraw-history", userObj.getWithdrawalHistory);
+router.post( "/private/get-user-balance", userObj.getUserBalance);
+
 
 
 //****************************** 🔐 Found Routes *******************************************//
@@ -81,12 +83,11 @@ router.post("/private/delete-fund", fundObj.deleteFund);
 
 //****************************** 💰 Donation Routes *******************************************//
 router.post("/private/donation-start", donationObj.createDonation);
-router.post("/private/donation-history-list", donationObj.getMyDonations);
+router.post("/private/donation-history-list", donationObj.getDonationsHistory);
 router.post("/private/donation-fund-donors", donationObj.getFundDonors);
 router.post("/private/received-donations", donationObj.getReceivedDonations);
-router.post("/private/donation-add-meszsage", donationObj.addDonationMessage);
-
-
+router.post("/private/donation-add-message", donationObj.addDonationMessage);
+router.post("/private/my-donations-dashboard",donationObj.getMyDonationsDashboard);
 //****************************** 💰 Payout Routes *******************************************//
 router.post("/private/payout-process", payoutObj.processPayout);
 router.post("/private/payout-history", payoutObj.getPayoutHistory);
