@@ -177,6 +177,13 @@ faqObj.getPrivacyPolicies = async function (req, res) {
     });
   }
 };
+/**
+ * ================================================================================
+ * 📌 API: Get Privacy Policies
+ * 🔒 Authentication : Required (User must be logged in)
+ * Developed by: Sangeeta
+ * ================================================================================
+ */
 
 // Terms & Conditions API
 faqObj.getTermsConditions = async function (req, res) {
