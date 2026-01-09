@@ -40,6 +40,7 @@ const AppContentManagement = () => {
     email: "",
     phone: "",
     address: "",
+    
   });
  
   /* Fetch data */
@@ -75,14 +76,26 @@ const AppContentManagement = () => {
     alert("Terms & Conditions saved");
   };
  
-  const saveContact = async () => {
-    await saveAppContent({
+ const saveContact = async () => {
+  try {
+    const payload = {
       type: "2",
       email: contact.email,
+      phone: contact.phone,           // <-- add this
       contact_address: contact.address,
-    });
+    };
+    console.log('Sending payload:', payload);
+
+    await saveAppContent(payload);
     alert("Contact details saved");
-  };
+  } catch (error) {
+    console.error('Error saving contact:', error.message);
+    if (error.response) {
+      console.error('Server response:', error.response.data);
+    }
+  }
+};
+
  
  
   return (

@@ -835,7 +835,6 @@ export const getUserReligionDistribution = async () => {
     throw error;
   }
 };
-
 export const saveAppContent = async (payload) => {
   try {
     const response = await apiClient.post(`private/savePrivacyPolicy`, payload);
@@ -845,7 +844,6 @@ export const saveAppContent = async (payload) => {
     throw error;
   }
 };
-
 
 export const getPrivacyPolicys = async () => {
   try {
