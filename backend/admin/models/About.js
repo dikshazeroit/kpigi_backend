@@ -88,5 +88,5 @@ appInfoSchema.pre(["updateOne", "findOneAndUpdate", "updateMany"], function (nex
   next();
 });
 
-const AppInfoModel = mongoose.model("app_info", appInfoSchema);
+const AppInfoModel = mongoose.model("about", appInfoSchema);
 export default AppInfoModel;

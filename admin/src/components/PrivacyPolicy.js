@@ -12,7 +12,7 @@ import "react-quill/dist/quill.snow.css";
 
 import { getPrivacyPolicys, saveAppContent } from "../api/ApiServices";
 
-/* 🔹 Toolbar exactly like screenshot */
+/* Quill toolbar */
 const quillModules = {
   toolbar: [
     ["bold", "italic", "underline"],
@@ -39,51 +39,71 @@ const AppContentManagement = () => {
   const [contact, setContact] = useState({
     email: "",
     phone: "",
-    address: "",
+    contact_address: "", // must match backend
   });
 
-  /* Fetch data */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getPrivacyPolicys();
-        const payload = res?.payload || {};
+  /* Fetch existing data */
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await getPrivacyPolicys();
+      const payload = res?.payload || {};
 
-        setPrivacyPolicy(payload.privacyPolicy || "");
-        setTermsConditions(payload.termsConditions || "");
-        setContact({
-          email: payload.email || "",
-          phone: payload.phone || "",
-          address: payload.address || "",
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    };
+      setPrivacyPolicy(payload.privacyPolicy || "");
+      setTermsConditions(payload.termsConditions || "");
 
-    fetchData();
-  }, []);
+      // Map API response keys to state
+      setContact({
+        email: payload.email || "",
+        phone: payload.phone || "",
+        contact_address: payload.address || "", 
+      });
+    } catch (err) {
+      console.error("Error fetching app content:", err);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   /* Save handlers */
   const savePrivacy = async () => {
-    await saveAppContent({ type: "0", data: privacyPolicy });
-    alert("Privacy Policy saved");
+    try {
+      await saveAppContent({ type: "0", data: privacyPolicy });
+      alert("Privacy Policy saved");
+    } catch (err) {
+      console.error("Error saving privacy policy:", err);
+    }
   };
 
   const saveTerms = async () => {
-    await saveAppContent({ type: "1", data: termsConditions });
-    alert("Terms & Conditions saved");
+    try {
+      await saveAppContent({ type: "1", data: termsConditions });
+      alert("Terms & Conditions saved");
+    } catch (err) {
+      console.error("Error saving terms & conditions:", err);
+    }
   };
 
   const saveContact = async () => {
-    await saveAppContent({
-      type: "2",
-      email: contact.email,
-      contact_address: contact.address,
-    });
-    alert("Contact details saved");
-  };
+    try {
+      const payload = {
+        type: "2",
+        email: contact.email,
+        phone: contact.phone, // include phone
+        contact_address: contact.contact_address,
+      };
 
+      console.log("Saving contact:", payload);
+
+      await saveAppContent(payload);
+      alert("Contact details saved");
+    } catch (err) {
+      console.error("Error saving contact:", err);
+      if (err.response) console.error("Server response:", err.response.data);
+    }
+  };
 
   return (
     <Card border="light" className="shadow-sm p-4">
@@ -91,7 +111,7 @@ const AppContentManagement = () => {
       <div className="mb-4">
         <h4 className="mb-1">App Content Management</h4>
         <small className="text-muted">
-          Manage privacy policy, terms & conditions and contact details
+          Manage privacy policy, terms & conditions, and contact details
         </small>
       </div>
 
@@ -186,9 +206,9 @@ const AppContentManagement = () => {
                 <Form.Control
                   as="textarea"
                   rows={4}
-                  value={contact.address}
+                  value={contact.contact_address}
                   onChange={(e) =>
-                    setContact({ ...contact, address: e.target.value })
+                    setContact({ ...contact, contact_address: e.target.value })
                   }
                 />
               </Form.Group>

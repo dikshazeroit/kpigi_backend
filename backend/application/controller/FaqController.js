@@ -21,8 +21,7 @@ import { v4 as uuidv4 } from "uuid";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
 import FaqModel from "../../admin/models/Faq.js";
-import PrivacyPolicyModel from "../../admin/models/PrivacyAndPolicy.js";
-import TermsConditionModel  from "../../admin/models/TermsAndConditions.js";
+import AppInfoModel from "../model/AppInfoModel.js";
 
 let faqObj = {};
 
@@ -145,45 +144,80 @@ faqObj.getFaqDetails = async function (req, res) {
  * ================================================================================
  */
 
+// Privacy Policy API
 faqObj.getPrivacyPolicies = async function (req, res) {
   try {
-    
-    // EXCLUDE _id
-    const privacyPolicies = await PrivacyPolicyModel.find({}, { _id: 0 }).sort({
-      createdAt: -1,
-    });
+    const appInfo = await AppInfoModel.findOne({}).sort({ created_at: -1 });
+
+    if (!appInfo) {
+      return commonHelper.errorHandler(res, {
+        code: "PP-404",
+        message: "Privacy policy not found",
+      });
+    }
 
     return commonHelper.successHandler(res, {
-      message: "Privacy policies fetched successfully",
-      payload: privacyPolicies,
+      message: "Privacy policy fetched successfully",
+      payload: {
+        _id: appInfo._id,
+        ai_deleted: appInfo.ai_deleted,
+        ai_privacy_policy: appInfo.ai_privacy_policy,
+        ai_updated_at: appInfo.ai_updated_at,
+        ai_uuid: appInfo.ai_uuid,
+        created_at: appInfo.created_at,
+        ai_contact_address: appInfo.ai_contact_address,
+        ai_contact_email: appInfo.ai_contact_email,
+      },
     });
   } catch (error) {
+    console.error("Error fetching privacy policy:", error);
     return commonHelper.errorHandler(res, {
       code: "PP-999",
       message: "Internal Server Error",
     });
   }
 };
+/**
+ * ================================================================================
+ * 📌 API: Get Privacy Policies
+ * 🔒 Authentication : Required (User must be logged in)
+ * Developed by: Sangeeta
+ * ================================================================================
+ */
 
+// Terms & Conditions API
 faqObj.getTermsConditions = async function (req, res) {
   try {
-        // EXCLUDE _id
-    const termsConditions = await TermsConditionModel.find({}, { _id: 0 }).sort(
-      {
-        createdAt: -1,
-      }
-    );
+    const appInfo = await AppInfoModel.findOne({}).sort({ created_at: -1 });
+
+    if (!appInfo) {
+      return commonHelper.errorHandler(res, {
+        code: "TC-404",
+        message: "Terms & Conditions not found",
+      });
+    }
 
     return commonHelper.successHandler(res, {
       message: "Terms & Conditions fetched successfully",
-      payload: termsConditions,
+      payload: {
+        _id: appInfo._id,
+        ai_deleted: appInfo.ai_deleted,
+        ai_terms_conditions: appInfo.ai_terms_conditions,
+        ai_updated_at: appInfo.ai_updated_at,
+        ai_uuid: appInfo.ai_uuid,
+        created_at: appInfo.created_at,
+        ai_contact_address: appInfo.ai_contact_address,
+        ai_contact_email: appInfo.ai_contact_email,
+      },
     });
   } catch (error) {
+    console.error("Error fetching terms & conditions:", error);
     return commonHelper.errorHandler(res, {
       code: "TC-999",
       message: "Internal Server Error",
     });
   }
 };
+
 
 export default faqObj;
