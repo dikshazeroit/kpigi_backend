@@ -857,3 +857,50 @@ export const getPrivacyPolicys = async () => {
     throw error;
   }
 };
+
+
+
+
+export const getAllwithdrawal = async () => {
+  try {
+    const response = await apiClient.get("/private/getAllwithdrawal");
+    return response.data;
+
+  } catch (error) {
+    console.error("Error fetching new matches:", error);
+    throw error;
+  }
+};
+
+export const approveWithdrawal = async (w_uuid) => {
+  console.log("API approveWithdrawal w_uuid:", w_uuid);
+
+  if (!w_uuid || typeof w_uuid !== "string") {
+    throw new Error("Invalid w_uuid passed to approveWithdrawal");
+  }
+
+  const response = await apiClient.post(
+    "/private/approveWithdrawal",
+    { w_uuid }
+  );
+
+  return response.data;
+};
+
+
+
+
+
+export const rejectWithdrawal = async (w_uuid, reason = "") => {
+  console.log("API → rejectWithdrawal payload:", { w_uuid, reason });
+
+  if (!w_uuid) throw new Error("w_uuid is required");
+
+  const res = await apiClient.post("/private/rejectWithdrawal", {
+    w_uuid,
+    reason,
+  });
+
+  console.log("API → rejectWithdrawal response:", res.data);
+  return res.data;
+};
