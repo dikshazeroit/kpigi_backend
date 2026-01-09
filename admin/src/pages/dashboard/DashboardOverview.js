@@ -38,8 +38,8 @@ const DashboardOverview = () => {
         getRecentActivities(),
       ]);
       setSummary(summaryRes.data);
-      setDonationStats(statsRes?.data?.data || []);
-      setActivities(activityRes?.data?.data || []);
+      setDonationStats(statsRes?.data || []);
+      setActivities(activityRes?.data || []);
     } catch (err) {
       console.error("Dashboard load failed", err);
     } finally {
@@ -60,10 +60,38 @@ const DashboardOverview = () => {
   }
 
   const summaryCards = [
-    { icon: faUsers, label: "Total Users", value: summary.totalUsers, bg: "#2e59d9", textColor: "#ffffff", route: "/tables/user-list" },
-    { icon: faHandHoldingHeart, label: "Total Fundraisers", value: summary.totalFunds, bg: "#17a673", textColor: "#ffffff", route: "/campaigns/list" },
-    { icon: faChartLine, label: "Active Fundraisers", value: summary.activeFunds, bg: "#2c9faf", textColor: "#ffffff", route: "/campaigns/list" },
-    { icon: faDollarSign, label: "Pending Payouts", value: summary.pendingPayouts, bg: "#dda20a", textColor: "#ffffff", route: "/payouts/list" },
+    {
+      icon: faUsers,
+      label: "Total Users",
+      value: summary.totalUsers,
+      bg: "#2e59d9",
+      textColor: "#ffffff",
+      route: "/tables/user-list"
+    },
+    {
+      icon: faHandHoldingHeart,
+      label: "Total Fundraisers",
+      value: summary.totalFunds,
+      bg: "#17a673",
+      textColor: "#ffffff",
+      route: "/campaigns/list"
+    },
+    {
+      icon: faChartLine,
+      label: "Active Fundraisers",
+      value: summary.activeFunds,
+      bg: "#2c9faf",
+      textColor: "#ffffff",
+      route: "/campaigns/list"
+    },
+    {
+      icon: faDollarSign,
+      label: "Pending Payouts",
+      value: summary.pendingPayouts,
+      bg: "#dda20a",
+      textColor: "#ffffff",
+      route: "/payouts/list"
+    },
   ];
 
   const barChartData = donationStats.map((item, index) => ({
@@ -107,7 +135,7 @@ const DashboardOverview = () => {
               className="shadow-sm dashboard-card"
               style={{
                 background: card.bg,
-                color: card.textColor, 
+                color: card.textColor,
                 borderRadius: "14px",
                 padding: "20px",
                 textAlign: "center",
@@ -128,7 +156,7 @@ const DashboardOverview = () => {
       <Row className="mb-4 g-3">
         <Col lg={12}>
           <Card className="shadow-sm p-3 rounded-4">
-            <BarChartWidget title="Donations Overview" value="" percentage={0} data={barChartData} />
+            <BarChartWidget title="Donations Overview" value="" data={barChartData} />
           </Card>
         </Col>
       </Row>
