@@ -230,70 +230,59 @@ export default function Campaign() {
                             </tbody>
                         </Table>
                     )}
-                    {/* ================= PAGINATION ================= */}
-                    {totalPages > 1 && (
-                        <Pagination className="justify-content-center mt-3">
-                            {/* Prev button */}
-                            <Pagination.Prev
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            >
-                                Prev
-                            </Pagination.Prev>
+                   {/* ================= PAGINATION ================= */}
+{totalPages > 1 && (
+    <Pagination className="justify-content-center mt-3 flex-wrap">
 
-                            {/* First page */}
-                            <Pagination.Item
-                                active={currentPage === 1}
-                                onClick={() => setCurrentPage(1)}
-                            >
-                                1
-                            </Pagination.Item>
+        {/* First Page */}
+        {currentPage > 2 && totalPages > 5 && (
+            <Pagination.Item onClick={() => setCurrentPage(1)}>1</Pagination.Item>
+        )}
 
-                            {/* Ellipsis if current page is far from first */}
-                            {currentPage > 3 && totalPages > 5 && <Pagination.Ellipsis disabled />}
+        {/* Ellipsis before current pages */}
+        {currentPage > 3 && totalPages > 5 && <Pagination.Ellipsis disabled />}
 
-                            {/* Middle pages */}
-                            {(() => {
-                                const pages = [];
-                                const startPage = Math.max(2, currentPage - 1);
-                                const endPage = Math.min(totalPages - 1, currentPage + 1);
+        {/* Middle pages (current ±1) */}
+        {(() => {
+            const pages = [];
+            const startPage = Math.max(1, currentPage - 1);
+            const endPage = Math.min(totalPages, currentPage + 1);
 
-                                for (let i = startPage; i <= endPage; i++) {
-                                    pages.push(
-                                        <Pagination.Item
-                                            key={i}
-                                            active={currentPage === i}
-                                            onClick={() => setCurrentPage(i)}
-                                        >
-                                            {i}
-                                        </Pagination.Item>
-                                    );
-                                }
-                                return pages;
-                            })()}
+            for (let i = startPage; i <= endPage; i++) {
+                pages.push(
+                    <Pagination.Item
+                        key={i}
+                        active={currentPage === i}
+                        onClick={() => setCurrentPage(i)}
+                    >
+                        {i}
+                    </Pagination.Item>
+                );
+            }
+            return pages;
+        })()}
 
-                            {/* Ellipsis if current page is far from last */}
-                            {currentPage < totalPages - 2 && totalPages > 5 && <Pagination.Ellipsis disabled />}
+        {/* Ellipsis after current pages */}
+        {currentPage < totalPages - 2 && totalPages > 5 && <Pagination.Ellipsis disabled />}
 
-                            {/* Last page */}
-                            {totalPages > 1 && (
-                                <Pagination.Item
-                                    active={currentPage === totalPages}
-                                    onClick={() => setCurrentPage(totalPages)}
-                                >
-                                    {totalPages}
-                                </Pagination.Item>
-                            )}
+        {/* Last Page */}
+        {currentPage < totalPages - 1 && totalPages > 4 && (
+            <Pagination.Item onClick={() => setCurrentPage(totalPages)}>
+                {totalPages}
+            </Pagination.Item>
+        )}
 
-                            {/* Next button */}
-                            <Pagination.Next
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            >
-                                Next
-                            </Pagination.Next>
-                        </Pagination>
-                    )}
+        {/* Previous / Next Buttons */}
+        <Pagination.Prev
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        />
+        <Pagination.Next
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+        />
+    </Pagination>
+)}
 
 
                 </Card.Body>

@@ -33,6 +33,7 @@ import {
 
 import{getDashboardSummary,getDashboardStats,getRecentActivities} from "../controllers/DashboardController.js";
 import {createFaq, getAllFaqs, getFaqById, updateFaq, deleteFaq, toggleFaqStatus} from "../controllers/FaqController.js";
+import{savePrivacyPolicy,getPrivacyPolicys}from "../controllers/AboutController.js"
 
 const router = express.Router();
 
@@ -118,6 +119,11 @@ router.post("/private/faq-create", adminAuth, createFaq);
 router.post("/private/faq-update", adminAuth, updateFaq);
 router.delete("/private/faq-delete/:id", adminAuth, deleteFaq);
 router.post("/private/faq-toggle-status", adminAuth, toggleFaqStatus);
+
+
+//****************************************Aboute Route******************************************** *//
+router.post("/private/savePrivacyPolicy", savePrivacyPolicy);
+router.get("/private/getPrivacyPolicys",getPrivacyPolicys)
 
 
 

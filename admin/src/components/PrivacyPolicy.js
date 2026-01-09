@@ -1,42 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Button,
   Table,
   Modal,
   Form,
-  Row,
-  Col,
 } from "@themesberg/react-bootstrap";
-import {
-  faUserShield
-} from "@fortawesome/free-solid-svg-icons";
+import { faUserShield } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-
-const supportInfo = {
-  companyName: "Ajolink",
-  email: "support@ajolink.com",
-  phone: "+91 98765 43210",
-  address: "123 Business Street, Bengaluru, India",
-};
-
-// Initial Privacy Policy sections
-const initialPolicies = [
-  { id: 1, section: "Information We Collect", content: "We collect personal details such as your name, email, phone number, payment information, and KYC documents to verify your identity and process transactions securely. We may also collect usage data to improve our services." },
-  { id: 2, section: "How We Use Your Information", content: "Provide and improve our services, verify your identity (KYC compliance), facilitate secure transactions, and send updates or notifications." },
-  { id: 3, section: "Data Security", content: "We implement industry-standard security measures to protect your data from unauthorized access, alteration, disclosure, or destruction." },
-];
+import { saveAppContent, getPrivacyPolicys } from "../api/ApiServices";
 
 const PrivacyPolicy = () => {
-  const [policies, setPolicies] = useState(initialPolicies);
+  const [policies, setPolicies] = useState([]);
+  const [supportInfo, setSupportInfo] = useState({
+    companyName: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentPolicy, setCurrentPolicy] = useState({ section: "", content: "" });
+  const [currentPolicy, setCurrentPolicy] = useState({ section: "", content: "", id: null });
+
+  // Fetch support info and privacy policy from backend on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getPrivacyPolicys();
+        console.log("API response:", data);
+
+        // Set support info dynamically
+        const payload = data?.payload || {};
+        setSupportInfo({
+          companyName: payload.companyName || "Ajolink",
+          email: payload.email || "support@ajolink.com",
+          phone: payload.phone || "+91 98765 43210",
+          address: payload.address || "123 Business Street, Bengaluru, India",
+        });
+
+        // Get privacy policy text
+        const policyText = payload.ai_privacy_policy || payload.privacyPolicy || "";
+        if (policyText) {
+          const sections = policyText.split("\n\n").map((text, index) => {
+            const lines = text.split("\n");
+            const firstLine = lines[0] || "";
+            const content = lines.slice(1).join("\n");
+
+            return {
+              id: index + 1,
+              section: firstLine.replace(/^\d+\.\s*/, ""),
+              content,
+            };
+          });
+          setPolicies(sections);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAdd = () => {
     setEditMode(false);
-    setCurrentPolicy({ section: "", content: "" });
+    setCurrentPolicy({ section: "", content: "", id: null });
     setShowModal(true);
   };
 
@@ -46,45 +74,76 @@ const PrivacyPolicy = () => {
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (editMode) {
-      setPolicies(policies.map((p) => (p.id === currentPolicy.id ? currentPolicy : p)));
-    } else {
-      setPolicies([...policies, { ...currentPolicy, id: policies.length + 1 }]);
-    }
-    setShowModal(false);
+  const handleDelete = (id) => {
+    const updated = policies.filter((p) => p.id !== id);
+    setPolicies(updated);
   };
 
-  const handleDelete = (id) => {
-    setPolicies(policies.filter((p) => p.id !== id));
+  const handleSave = async () => {
+    if (!currentPolicy.section || !currentPolicy.content) {
+      alert("Section and content are required");
+      return;
+    }
+
+    let updatedPolicies;
+    if (editMode) {
+      updatedPolicies = policies.map((p) =>
+        p.id === currentPolicy.id ? currentPolicy : p
+      );
+    } else {
+      updatedPolicies = [...policies, { ...currentPolicy, id: policies.length + 1 }];
+    }
+
+    setPolicies(updatedPolicies);
+
+    const fullPolicyText = updatedPolicies
+      .map((p, idx) => `${idx + 1}. ${p.section}\n${p.content}`)
+      .join("\n\n");
+
+    const payload = {
+      type: "0", // 0 = privacy policy
+      data: fullPolicyText,
+    };
+
+    try {
+      const response = await saveAppContent(payload);
+      if (response?.status) {
+        alert("Privacy Policy saved successfully");
+      } else {
+        alert("Failed to save privacy policy");
+      }
+    } catch (error) {
+      console.error("Error saving policy:", error);
+      alert("Error saving policy");
+    }
+
+    setShowModal(false);
   };
 
   return (
     <div>
       <Card border="light" className="shadow-sm mb-4">
-        {/* Header Row */}
-        <div className="d-flex justify-content-between align-items-center p-3 border-bottom ">
+        <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
           <h4 className="mb-0">
-            <FontAwesomeIcon
-              icon={faUserShield}
-              className="me-2 "
-            />
+            <FontAwesomeIcon icon={faUserShield} className="me-2" />
             Privacy Policy — {supportInfo.companyName}
           </h4>
           <Button variant="primary" onClick={handleAdd}>
-            Manage Privacy Policy
+            Save
           </Button>
         </div>
 
-
-        {/* Full Policy Display */}
         <Card className="p-4 shadow-sm mb-5 mt-5">
-          {policies.map((p, idx) => (
-            <div key={p.id} className="mb-4">
-              <h4>{idx + 1}. {p.section}</h4>
-              <p>{p.content}</p>
-            </div>
-          ))}
+          {policies.length > 0 ? (
+            policies.map((p, idx) => (
+              <div key={p.id} className="mb-4">
+                <h4>{idx + 1}. {p.section}</h4>
+                <p>{p.content}</p>
+              </div>
+            ))
+          ) : (
+            <p>No privacy policy sections found.</p>
+          )}
 
           <h4>Contact Us</h4>
           <ul>
@@ -98,7 +157,6 @@ const PrivacyPolicy = () => {
           </p>
         </Card>
 
-        {/* Table Management */}
         <Card className="p-3 shadow-sm mb-5">
           <h4>Manage Privacy Policy Sections</h4>
           <Table striped bordered hover responsive>
@@ -132,7 +190,7 @@ const PrivacyPolicy = () => {
         </Card>
       </Card>
 
-      {/* Modal for Add/Edit */}
+      Modal for Add/Edit Section
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>{editMode ? "Edit Section" : "Add Section"}</Modal.Title>
@@ -164,10 +222,9 @@ const PrivacyPolicy = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Footer */}
       <div className="text-center mt-5">
         <small className="text-muted">
-          © {new Date().getFullYear()} {supportInfo.companyName}. All rights reserved.
+           {new Date().getFullYear()} {supportInfo.companyName}. All rights reserved.
         </small>
       </div>
     </div>
