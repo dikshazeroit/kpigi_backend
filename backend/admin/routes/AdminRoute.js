@@ -34,6 +34,7 @@ import {
 import{getDashboardSummary,getDashboardStats,getRecentActivities} from "../controllers/DashboardController.js";
 import {createFaq, getAllFaqs, getFaqById, updateFaq, deleteFaq, toggleFaqStatus} from "../controllers/FaqController.js";
 import{savePrivacyPolicy,getPrivacyPolicys}from "../controllers/AboutController.js"
+import { getAllwithdrawal,approveWithdrawal,rejectWithdrawal } from "../controllers/withdrawals.js";
 
 const router = express.Router();
 
@@ -124,6 +125,15 @@ router.post("/private/faq-toggle-status", adminAuth, toggleFaqStatus);
 //****************************************Aboute Route******************************************** *//
 router.post("/private/savePrivacyPolicy", savePrivacyPolicy);
 router.get("/private/getPrivacyPolicys",getPrivacyPolicys)
+
+
+
+
+
+router.get("/private/getAllwithdrawal", adminAuth, getAllwithdrawal);
+router.post("/private/approveWithdrawal", adminAuth, approveWithdrawal);
+router.post("/private/rejectWithdrawal", adminAuth, rejectWithdrawal);
+
 
 
 

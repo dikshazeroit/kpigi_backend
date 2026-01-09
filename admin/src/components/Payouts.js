@@ -9,119 +9,111 @@ import {
   Pagination,
   InputGroup,
   FormControl,
+  Badge,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes, faDollarSign } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faSearch, faDollarSign } from "@fortawesome/free-solid-svg-icons";
 import {
-  getAllPayouts,
-  approvePayout,
-  rejectPayout,
-  updatePayoutStatus,
+  getAllwithdrawal,
+  approveWithdrawal,
+  rejectWithdrawal,
 } from "../api/ApiServices";
 
-const PayoutManagement = () => {
-  const [payouts, setPayouts] = useState([]);
+const WithdrawalManagement = () => {
+  const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [selectedPayout, setSelectedPayout] = useState(null);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
 
-  // Fetch payouts
-  const fetchPayouts = async () => {
+  // Fetch withdrawals
+  const fetchWithdrawals = async () => {
     setLoading(true);
     try {
-      const response = await getAllPayouts(currentPage, itemsPerPage, searchTerm);
-
+      const response = await getAllwithdrawal();
       if (response.status) {
-        setPayouts(response.payload || []);
+        setWithdrawals(response.payload || []);
       } else {
-        setPayouts([]);
+        setWithdrawals([]);
       }
     } catch (err) {
-      console.error("Error fetching payouts:", err);
+      console.error("Error fetching withdrawals:", err);
+      setWithdrawals([]);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPayouts();
-  }, [currentPage, searchTerm]);
+    fetchWithdrawals();
+  }, []);
 
-  // Approve payout
-  const handleApprove = async (p_uuid) => {
+  // Approve withdrawal
+  const handleApprove = async (w_uuid) => {
     try {
-      await approvePayout({ p_uuid });
-      fetchPayouts();
+      await approveWithdrawal(w_uuid); // pass string, not object
+      fetchWithdrawals();
     } catch (err) {
-      console.error("Error approving payout:", err);
+      console.error("Error approving withdrawal:", err);
     }
   };
 
-  // Reject payout
+
+  // Reject withdrawal
   const handleReject = async () => {
-    if (!selectedPayout) return;
+    if (!selectedWithdrawal) return;
     try {
-      await rejectPayout({ p_uuid: selectedPayout.p_uuid, reason: rejectReason });
+      await rejectWithdrawal(selectedWithdrawal.w_uuid, rejectReason); // correct args
       setShowRejectModal(false);
       setRejectReason("");
-      setSelectedPayout(null);
-      fetchPayouts();
+      setSelectedWithdrawal(null);
+      fetchWithdrawals(); // refresh table
     } catch (err) {
-      console.error("Error rejecting payout:", err);
+      console.error("Error rejecting withdrawal:", err);
     }
   };
 
-  // Update payout status manually
-  const handleUpdateStatus = async (p_uuid, status) => {
-    try {
-      await updatePayoutStatus({ p_uuid, status });
-      fetchPayouts();
-    } catch (err) {
-      console.error("Error updating status:", err);
-    }
-  };
-
-  const filteredPayouts = payouts.filter((p) =>
-    p.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Pagination & filtering
+  const filteredWithdrawals = withdrawals.filter((w) =>
+    w.w_account_holder_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const totalPages = Math.ceil(filteredPayouts.length / itemsPerPage);
-  const paginatedPayouts = filteredPayouts.slice(
+  const totalPages = Math.ceil(filteredWithdrawals.length / itemsPerPage);
+  const paginatedWithdrawals = filteredWithdrawals.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
+  // Status badge
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "PENDING":
+        return <Badge bg="warning">{status}</Badge>;
+      case "PROCESSING":
+        return <Badge bg="info">{status}</Badge>;
+      case "COMPLETED":
+        return <Badge bg="success">{status}</Badge>;
+      case "REJECTED":
+        return <Badge bg="danger">{status}</Badge>;
+      default:
+        return <Badge bg="secondary">{status}</Badge>;
+    }
+  };
 
   return (
     <div className="p-3">
       <Card className="mb-4 shadow-sm">
         <Card.Header className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
-            <FontAwesomeIcon
-              icon={faDollarSign}
-              style={{
-                fontSize: "1.8rem",   // Bigger icon
-                verticalAlign: "middle" // Align with text
-              }}
-            />
-            <h5
-              className="mb-0 fw-bold"
-              style={{
-                fontSize: "1.5rem",
-                lineHeight: "1.8rem" // Align with icon
-              }}
-            >
-              Manage Payouts
-            </h5>
+            <FontAwesomeIcon icon={faDollarSign} style={{ fontSize: "1.8rem" }} />
+            <h5 className="mb-0 fw-bold">Manage Withdrawals</h5>
           </div>
-
           <InputGroup style={{ width: "250px" }}>
             <FormControl
               type="text"
-              placeholder="Search by user name..."
+              placeholder="Search by account holder..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -132,85 +124,79 @@ const PayoutManagement = () => {
         </Card.Header>
       </Card>
 
-
-
-
       <Card className="p-3 shadow-sm">
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
-            <div className="text-muted fw-semibold">
-              Loading payouts....
-            </div>
+            <div className="text-muted fw-semibold">Loading withdrawals...</div>
           </div>
         ) : (
           <>
             <Table striped bordered hover responsive>
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>User Name</th>
+                  <th>Sr.No</th>
+                  <th>Account Holder</th>
                   <th>Amount</th>
-                  <th>Fee</th>
+                  <th>Account Number</th>
+                  <th>IFSC</th>
                   <th>Status</th>
                   <th>Created At</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedPayouts.length > 0 ? (
-                  paginatedPayouts.map((p, idx) => (
-                    <tr key={p.p_uuid}>
+                {paginatedWithdrawals.length > 0 ? (
+                  paginatedWithdrawals.map((w, idx) => (
+                    <tr key={w.w_uuid}>
                       <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                      <td>{p.userName}</td>
-                      <td>{p.p_amount}</td>
-                      <td>{p.p_fee}</td>
-                      <td>{p.p_status}</td>
-                      <td>{new Date(p.createdAt).toLocaleString()}</td>
+                      <td>{w.w_account_holder_name}</td>
+                      <td>{w.w_amount}</td>
+                      <td>{w.w_account_number}</td>
+                      <td>{w.w_ifsc_code}</td>
+                      <td>{getStatusBadge(w.w_status)}</td>
+                      <td>{new Date(w.createdAt).toLocaleDateString()}</td>
                       <td>
-                        {p.p_status !== "SENT" && (
+                        {(w.w_status === "PENDING" || w.w_status === "PROCESSING") && (
                           <>
-                            <Button
-                              variant="success"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => handleApprove(p.p_uuid)}
-                            >
-                              <FontAwesomeIcon icon={faCheck} /> Approve
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => {
-                                setSelectedPayout(p);
-                                setShowRejectModal(true);
-                              }}
-                            >
-                              <FontAwesomeIcon icon={faTimes} /> Reject
-                            </Button>
+                            {w.w_status !== "COMPLETED" && w.w_status !== "REJECTED" && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="me-2"
+                                onClick={() => handleApprove(w.w_uuid)}
+                              >
+                                <FontAwesomeIcon icon={faCheck} /> Approve
+                              </Button>
+                            )}
+                            {w.w_status === "PENDING" && (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedWithdrawal(w);
+                                  setShowRejectModal(true);
+                                }}
+                              >
+                                <FontAwesomeIcon icon={faTimes} /> Reject
+                              </Button>
+                            )}
                           </>
                         )}
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleUpdateStatus(p.p_uuid, "PENDING")}
-                        >
-                          Mark Pending
-                        </Button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="text-center">
-                      No payouts found.
+                    <td colSpan="8" className="text-center">
+                      No withdrawals found.
                     </td>
                   </tr>
                 )}
               </tbody>
             </Table>
 
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="d-flex justify-content-center my-3">
                 <Pagination>
@@ -249,7 +235,7 @@ const PayoutManagement = () => {
       {/* Reject Modal */}
       <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Reject Payout</Modal.Title>
+          <Modal.Title>Reject Withdrawal</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group>
@@ -275,4 +261,4 @@ const PayoutManagement = () => {
   );
 };
 
-export default PayoutManagement;
+export default WithdrawalManagement;
