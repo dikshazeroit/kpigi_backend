@@ -192,7 +192,7 @@ donationObj.createDonation = async function (req, res) {
  * @param {object} res - Express response object
  * @returns {void}
  */
-donationObj.getMyDonations = async function (req, res) {
+donationObj.getDonationsHistory = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
     if (!userUuid) {
@@ -252,6 +252,7 @@ donationObj.getMyDonations = async function (req, res) {
 
       return {
         donationUuid: d.d_uuid,
+        fundRequestId: d.d_fk_f_uuid,   // ✅ ADDED
         amount: d.d_amount,
         status: "Donated",
         fundTitle: fund.f_title || "",
@@ -267,7 +268,7 @@ donationObj.getMyDonations = async function (req, res) {
     });
 
   } catch (error) {
-    console.error("❌ getMyDonations Error:", error);
+    console.error("❌ getDonationsHistory Error:", error);
     return commonHelper.errorHandler(
       res,
       { status: false, message: "Internal server error" },
@@ -275,6 +276,7 @@ donationObj.getMyDonations = async function (req, res) {
     );
   }
 };
+
 
 
 
@@ -514,5 +516,127 @@ donationObj.addDonationMessage = async function (req, res) {
     }, 200);
   }
 };
+
+donationObj.getMyDonationsDashboard = async function (req, res) {
+  try {
+    // 🔐 Auth
+    const userUuid = await appHelper.getUUIDByToken(req);
+    if (!userUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized access"
+      }, 200);
+    }
+
+    // 1️⃣ Get funds created by user (with title)
+    const funds = await FundModel.find(
+      { f_fk_uc_uuid: userUuid },
+      { f_uuid: 1, f_title: 1 }
+    ).lean();
+
+    const fundUuids = funds.map(f => f.f_uuid);
+
+    // Fund map (uuid → fund)
+    const fundMap = {};
+    funds.forEach(f => {
+      fundMap[f.f_uuid] = f;
+    });
+
+    if (!fundUuids.length) {
+      return commonHelper.successHandler(res, {
+        status: true,
+        message: "No donations found",
+        payload: {
+          summary: {
+            total_amount: 0,
+            total_donors: 0,
+            donor_avatars: []
+          },
+          recent_transactions: []
+        }
+      });
+    }
+
+    // 2️⃣ Get donations on these funds
+    const donations = await DonationModel.find({
+      d_fk_f_uuid: { $in: fundUuids },
+      d_status: "SUCCESS"
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // 3️⃣ Unique donor UUIDs
+    const donorUuids = [...new Set(donations.map(d => d.d_fk_uc_uuid))];
+
+    // 4️⃣ Fetch donor users
+    const donors = await UsersCredentialsModel.find(
+      { uc_uuid: { $in: donorUuids } },
+      { uc_uuid: 1, uc_full_name: 1, uc_profile_photo: 1 }
+    ).lean();
+
+    // 5️⃣ Donor map
+    const donorMap = {};
+    donors.forEach(u => {
+      donorMap[u.uc_uuid] = u;
+    });
+
+    // 6️⃣ Summary
+    const totalAmount = donations.reduce(
+      (sum, d) => sum + (d.d_amount || 0),
+      0
+    );
+
+    const donorAvatars = donors
+      .filter(d => d.uc_profile_photo)
+      .slice(0, 5)
+      .map(d => d.uc_profile_photo);
+
+    // 7️⃣ Recent transactions (WITH FUND INFO ✅)
+    const recentTransactions = donations.slice(0, 10).map(d => {
+      const donor = donorMap[d.d_fk_uc_uuid];
+      const fund = fundMap[d.d_fk_f_uuid];
+
+      return {
+        donation_uuid: d.d_uuid,
+
+        // 👤 Donor
+        donor_name: donor?.uc_full_name || "Anonymous",
+        donor_profile: donor?.uc_profile_photo || "",
+
+        // 💰 Donation
+        amount: d.d_amount,
+        message: d.d_message || "",
+        transaction_date: d.createdAt,
+
+        // 🎯 Fund / Request info
+        fund_uuid: fund?.f_uuid || "",
+        fund_title: fund?.f_title || "Unknown Fund"
+      };
+    });
+
+    // 8️⃣ Response
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "My donations dashboard fetched",
+      payload: {
+        summary: {
+          total_amount: totalAmount,
+          total_donors: donorUuids.length,
+          donor_avatars: donorAvatars
+        },
+        recent_transactions: recentTransactions
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ getMyDonationsDashboard Error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Internal server error"
+    }, 200);
+  }
+};
+
+
 
 export default donationObj;

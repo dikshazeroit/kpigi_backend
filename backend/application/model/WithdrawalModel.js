@@ -62,11 +62,12 @@ const WithdrawalSchema = new mongoose.Schema(
     },
 
     // 📌 Withdrawal Status
-    w_status: {
-      type: String,
-      enum: ["PROCESSING", "COMPLETED", "REJECTED"],
-      default: "PROCESSING",
-    },
+   w_status: {
+  type: String,
+  enum: ["PENDING", "PROCESSING", "COMPLETED", "REJECTED"],
+  default: "PENDING",
+},
+
 
     // 📝 Optional Admin Note
     w_admin_note: {

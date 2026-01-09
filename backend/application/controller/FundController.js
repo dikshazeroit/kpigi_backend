@@ -155,9 +155,9 @@ fundObj.getFundList = async function (req, res) {
       f_deadline: { $gte: today },
     })
       .sort({ createdAt: -1 })
-      .lean(); 
+      .lean();
 
-    // 🔹 Add raised amount info
+    // 🔹 Add raised amount + donor count
     for (let fund of funds) {
       const donationAgg = await DonationModel.aggregate([
         {
@@ -170,6 +170,7 @@ fundObj.getFundList = async function (req, res) {
           $group: {
             _id: null,
             totalRaised: { $sum: "$d_amount" },
+            donors: { $addToSet: "$d_fk_uc_uuid" }, // 👈 unique donors
           },
         },
       ]);
@@ -177,10 +178,15 @@ fundObj.getFundList = async function (req, res) {
       const raisedAmount =
         donationAgg.length > 0 ? donationAgg[0].totalRaised : 0;
 
+      const donorCount =
+        donationAgg.length > 0 ? donationAgg[0].donors.length : 0;
+
       const goalAmount = fund.f_amount || 0;
 
       fund.raised_amount = raisedAmount;
       fund.goal_amount = goalAmount;
+      fund.donor_count = donorCount;
+
       fund.progress_percent =
         goalAmount > 0
           ? Math.round((raisedAmount / goalAmount) * 100)
@@ -204,6 +210,7 @@ fundObj.getFundList = async function (req, res) {
     }, 200);
   }
 };
+
 
 
 
