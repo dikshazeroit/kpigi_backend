@@ -79,7 +79,7 @@ export const savePrivacyPolicy = async (req, res, next) => {
  * @updatedBy :
  */
 
-export const getPrivacyPolicy = async (req, res, next) => {
+export const getPrivacyPolicys = async (req, res, next) => {
   try {
     const appInfo = await getAppInfo();
     if (!appInfo) {

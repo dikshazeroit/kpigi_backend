@@ -836,12 +836,24 @@ export const getUserReligionDistribution = async () => {
   }
 };
 
+export const saveAppContent = async (payload) => {
+  try {
+    const response = await apiClient.post(`private/savePrivacyPolicy`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error saving privacy policy:", error);
+    throw error;
+  }
+};
 
 
+export const getPrivacyPolicys = async () => {
+  try {
+    const response = await apiClient.get("/private/getPrivacyPolicys");
+    return response.data;
 
-
-
-
-
-
-
+  } catch (error) {
+    console.error("Error fetching new matches:", error);
+    throw error;
+  }
+};

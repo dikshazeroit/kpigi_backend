@@ -1,87 +1,125 @@
+import React, { useEffect, useState } from "react";
+import { Card, Spinner, Button, Form } from "@themesberg/react-bootstrap";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
-import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-const supportInfo = {
-  companyName: "Ajolink",
-  email: "support@ajolink.com",
-  phone: "+91 98765 43210",
-  address: "123 Business Street, Bengaluru, India",
-};
+import { getPrivacyPolicys, saveAppContent } from "../api/ApiServices";
+import Swal from "sweetalert2";
 
 const TermsAndConditions = () => {
+  const [supportInfo, setSupportInfo] = useState({
+    companyName: "Ajolink",
+    email: "support@ajolink.com",
+    phone: "+91 98765 43210",
+    address: "123 Business Street, Bengaluru, India",
+  });
+  const [termsText, setTermsText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch Terms & Conditions from API
+  useEffect(() => {
+    const fetchTerms = async () => {
+      try {
+        setLoading(true);
+        const response = await getPrivacyPolicys(); // Assuming API returns terms & conditions
+        const payload = response?.payload || {};
+
+        setSupportInfo({
+          companyName: payload.companyName || "Ajolink",
+          email: payload.email || "support@ajolink.com",
+          phone: payload.phone || "+91 98765 43210",
+          address: payload.address || "123 Business Street, Bengaluru, India",
+        });
+
+        setTermsText(payload.terms_and_conditions || payload.terms || "");
+      } catch (err) {
+        console.error("Failed to fetch terms:", err);
+        setTermsText("");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTerms();
+  }, []);
+
+  // Save Terms & Conditions to API
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const payload = {
+        type: "1", // 1 = Terms & Conditions
+        data: termsText,
+      };
+      const response = await saveAppContent(payload);
+
+      if (response?.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "Terms & Conditions have been saved successfully.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed!",
+          text: response?.message || "Failed to save Terms & Conditions.",
+        });
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while saving Terms & Conditions.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner animation="border" role="status" />
+        <span className="ms-3">Loading Terms & Conditions...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-5">
-      {/* Page Title and Description */}
-      <h4 className="mb-3 text-left">
-        <FontAwesomeIcon
-          icon={faInfoCircle}
-          className="me-2 "
-        />Terms & Conditions — {supportInfo.companyName}</h4>
-      <p className="text-muted mb-5 text-left">
-        Welcome to {supportInfo.companyName}! These Terms & Conditions govern your access
-        to and use of our platform, services, and features. By using our platform, you
-        agree to comply with these terms. Please read them carefully before proceeding.
-      </p>
+      {/* Page Title */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="text-left">
+          <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
+          Terms & Conditions — {supportInfo.companyName}
+        </h4>
+        <Button variant="primary" onClick={handleSave} disabled={saving}>
+          {saving ? "Saving..." : "💾 Save"}
+        </Button>
+      </div>
 
-      {/* Terms Sections */}
-      <div className="card p-4 shadow-sm mb-4">
-        <h4>1. Acceptance of Terms</h4>
-        <p>
-          By accessing or using our services, you acknowledge that you have read,
-          understood, and agreed to these Terms & Conditions. If you do not agree,
-          please refrain from using our services.
-        </p>
+      {/* Editable Terms Text */}
+      <Card className="p-4 shadow-sm mb-4">
+        <Form>
+          <Form.Group>
+            <Form.Control
+              as="textarea"
+              rows={20}
+              value={termsText}
+              onChange={(e) => setTermsText(e.target.value)}
+              placeholder="Enter Terms & Conditions here..."
+            />
+          </Form.Group>
+        </Form>
+      </Card>
 
-        <h4>2. Use of Services</h4>
-        <p>
-          You agree to use the platform only for lawful purposes. You shall not engage
-          in activities that could harm, disrupt, or compromise the integrity of our
-          platform or other users.
-        </p>
-
-        <h4>3. Account Responsibilities</h4>
-        <p>
-          You are responsible for maintaining the confidentiality of your account
-          credentials. Any actions taken using your account are deemed to be performed
-          by you. Notify us immediately of unauthorized access or suspicious activity.
-        </p>
-
-        <h4>4. Payments and Transactions</h4>
-        <p>
-          All payments and transactions processed on {supportInfo.companyName} must
-          comply with applicable financial regulations. We reserve the right to suspend
-          or terminate accounts involved in fraudulent activity.
-        </p>
-
-        <h4>5. Intellectual Property</h4>
-        <p>
-          All content, trademarks, and assets on this platform are the intellectual
-          property of {supportInfo.companyName}. Unauthorized copying, modification,
-          or distribution is prohibited.
-        </p>
-
-        <h4>6. Limitation of Liability</h4>
-        <p>
-          {supportInfo.companyName} shall not be liable for any indirect, incidental,
-          or consequential damages arising from your use of the platform. We make no
-          warranties beyond those expressly stated.
-        </p>
-
-        <h4>7. Termination</h4>
-        <p>
-          We may suspend or terminate your account if you violate these terms or
-          engage in unlawful activity. You may terminate your account at any time
-          by contacting support.
-        </p>
-
-        <h4>8. Governing Law</h4>
-        <p>
-          These Terms & Conditions are governed by the laws of India. Any disputes
-          shall be subject to the exclusive jurisdiction of the courts in Bengaluru.
-        </p>
-
-        <h4>9. Contact Us</h4>
+      {/* Contact Info */}
+      <Card className="p-4 shadow-sm mb-4">
+        <h4>Contact Us</h4>
         <ul>
           <li>
             📧 <strong>Email:</strong>{" "}
@@ -94,11 +132,10 @@ const TermsAndConditions = () => {
             📍 <strong>Address:</strong> {supportInfo.address}
           </li>
         </ul>
-
         <p className="mt-4 text-muted small">
           Last updated: {new Date().toLocaleDateString()}
         </p>
-      </div>
+      </Card>
 
       {/* Footer */}
       <div className="text-center mt-5">
