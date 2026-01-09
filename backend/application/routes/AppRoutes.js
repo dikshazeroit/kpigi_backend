@@ -84,7 +84,7 @@ router.post("/private/donation-start", donationObj.createDonation);
 router.post("/private/donation-history-list", donationObj.getMyDonations);
 router.post("/private/donation-fund-donors", donationObj.getFundDonors);
 router.post("/private/received-donations", donationObj.getReceivedDonations);
-router.post("/private/donation-add-message", donationObj.addDonationMessage);
+router.post("/private/donation-add-meszsage", donationObj.addDonationMessage);
 
 
 //****************************** 💰 Payout Routes *******************************************//
