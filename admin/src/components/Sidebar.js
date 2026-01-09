@@ -252,19 +252,19 @@ export default function Sidebar({ userName = "Jane" }) {
                 iconColor="#00ced1"
               />
               <NavItem
-                title="Privacy Policy"
+                title="About Management"
                 link={Routes.PrivacyPolicy.path}
                 icon={faUserShield}
                 textColor="#dc143c"
                 iconColor="#dc143c"
               />
-              <NavItem
+              {/* <NavItem
                 title="Terms & Conditions"
                 link={Routes.TermsAndConditions.path}
                 icon={faInfoCircle}
                 textColor="#dc143c"
                 iconColor="#dc143c"
-              />
+              /> */}
 
               <Dropdown.Divider className="my-3" />
               {/* <Nav.Item>

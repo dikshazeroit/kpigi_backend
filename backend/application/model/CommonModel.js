@@ -20,8 +20,8 @@
  */
 
 import admin from "firebase-admin";
-import serviceAccount from "../../config/firebaseAdminSDK.json" assert { type: "json" };
-import UserDevice from "./UserDeviceModel.js"; 
+import serviceAccount from "../../config/FirebaseAdminSDK.json" assert { type: "json" };
+import UserDevice from "./UserDeviceModel.js";
 import notificationModel from "./NotificationModel.js";
 
 
@@ -76,68 +76,69 @@ newModelObj.sendNotificationToAllUsers = async (title, body, data = {}) => {
     const response = await admin.messaging().sendEachForMulticast(message);
     //console.log(`✅ Notification sent: ${response.successCount} success, ${response.failureCount} failed`);
 
-    for (const device of devices) {newModelObj.sendNotificationToAllUsers = async ({ title, body, data = {} }) => {
-  try {
-    const devices = await UserDevice.find({}, 'ud_device_fcmToken ud_fk_uc_uuid');
-    const tokens = [...new Set(devices.map(device => device.ud_device_fcmToken).filter(Boolean))];
-
-    if (!tokens.length) {
-      console.log("❌ No tokens found in database.");
-      return false;
-    }
-
-    // Ensure title and body are strings and not undefined/null
-   const safeTitle = typeof title === "string" ? title : JSON.stringify(title ?? "Notification");
-const safeBody = typeof body === "string" ? body : JSON.stringify(body ?? "You have a new notification");
-
-
-    const message = {
-      notification: {
-        title: safeTitle,
-        body: safeBody,
-      },
-      data,
-      tokens,
-    };
-
-    const response = await admin.messaging().sendEachForMulticast(message);
-    console.log(`✅ Notification sent: ${response.successCount} success, ${response.failureCount} failed`);
-
-    // Log failed tokens
-    response.responses.forEach((resp, idx) => {
-      if (!resp.success) {
-        console.warn(`❌ Failed to send to token: ${tokens[idx]}\nError: ${resp.error.message}`);
-      }
-    });
-
-    // Save notifications in DB
     for (const device of devices) {
-      if (device.ud_device_fcmToken && device.ud_fk_uc_uuid) {
-        const notificationData = {
-          userId: device.ud_fk_uc_uuid,
-          title: safeTitle,
-          body: safeBody,
-        };
-        console.warn("notificationData------------", notificationData);
-        await notificationModel.add(notificationData);
-      } else {
-        console.warn("⚠️ Missing required device fields", device);
-      }
-    }
+      newModelObj.sendNotificationToAllUsers = async ({ title, body, data = {} }) => {
+        try {
+          const devices = await UserDevice.find({}, 'ud_device_fcmToken ud_fk_uc_uuid');
+          const tokens = [...new Set(devices.map(device => device.ud_device_fcmToken).filter(Boolean))];
 
-    return true;
-  } catch (err) {
-    console.error("❌ Error sending notification:", err);
-    return false;
-  }
-};
+          if (!tokens.length) {
+            console.log("❌ No tokens found in database.");
+            return false;
+          }
+
+          // Ensure title and body are strings and not undefined/null
+          const safeTitle = typeof title === "string" ? title : JSON.stringify(title ?? "Notification");
+          const safeBody = typeof body === "string" ? body : JSON.stringify(body ?? "You have a new notification");
+
+
+          const message = {
+            notification: {
+              title: safeTitle,
+              body: safeBody,
+            },
+            data,
+            tokens,
+          };
+
+          const response = await admin.messaging().sendEachForMulticast(message);
+          console.log(`✅ Notification sent: ${response.successCount} success, ${response.failureCount} failed`);
+
+          // Log failed tokens
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              console.warn(`❌ Failed to send to token: ${tokens[idx]}\nError: ${resp.error.message}`);
+            }
+          });
+
+          // Save notifications in DB
+          for (const device of devices) {
+            if (device.ud_device_fcmToken && device.ud_fk_uc_uuid) {
+              const notificationData = {
+                userId: device.ud_fk_uc_uuid,
+                title: safeTitle,
+                body: safeBody,
+              };
+              console.warn("notificationData------------", notificationData);
+              await notificationModel.add(notificationData);
+            } else {
+              console.warn("⚠️ Missing required device fields", device);
+            }
+          }
+
+          return true;
+        } catch (err) {
+          console.error("❌ Error sending notification:", err);
+          return false;
+        }
+      };
       if (device.ud_device_fcmToken && device.ud_fk_uc_uuid) {
         const notificationData = {
           userId: device.ud_fk_uc_uuid,
           title: safeTitle,
           body: safeBody,
         };
-       // console.warn("notificationData------------", notificationData);
+        // console.warn("notificationData------------", notificationData);
         await notificationModel.add(notificationData);
       }
     }
