@@ -48,6 +48,11 @@ const appInfoSchema = new Schema(
       type: String,
       default: "0",
     },
+    ai_contact_phone: {
+      type: String,
+      trim: true,
+    },
+
   },
   {
     versionKey: false,
