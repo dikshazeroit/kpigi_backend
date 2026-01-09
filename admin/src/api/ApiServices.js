@@ -1,146 +1,146 @@
-  import apiClient from './ApiClient.js';
+import apiClient from './ApiClient.js';
 
 
-  // ============================================
-  // ADMIN PROFILE APIS
-  // ============================================
+// ============================================
+// ADMIN PROFILE APIS
+// ============================================
 
-  export const getAdminProfile = async () => {
-    try {
-      const response = await apiClient.get('private/details');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching admin profile:', error);
-      throw error;
-    }
-  };
+export const getAdminProfile = async () => {
+  try {
+    const response = await apiClient.get('private/details');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching admin profile:', error);
+    throw error;
+  }
+};
 
-  export const updateAdminProfile = async (formData) => {
-    try {
-      const response = await apiClient.put('private/updatedetails', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Important for file uploads
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error updating admin profile:', error);
-      throw error;
-    }
-  };
-
-
-  // ============================================
-  // ADMIN FUNDRAISER MANAGEMENT APIS
-  // ============================================
-
-  // Fetch all fundraisers
-  export const getAllFundraisers = async (page = 1, limit = 10, search = "", status = "") => {
-    try {
-      const response = await apiClient.get("private/fundraisers-list", {
-        params: { page, limit, search, status }
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching fundraisers:", error);
-      throw error;
-    }
-  };
-
-  // Approve
-  export const approveFundraiserAPI = async (fund_uuid) => {
-    try {
-      const response = await apiClient.post("private/fundraiser-approve", { fund_uuid });
-      return response.data;
-    } catch (error) {
-      console.error("Error approving fundraiser:", error);
-      throw error;
-    }
-  };
-
-  // Reject
-  export const rejectFundraiserAPI = async (fund_uuid, reason) => {
-    try {
-      const response = await apiClient.post("private/fundraiser-reject", { fund_uuid, reason });
-      return response.data;
-    } catch (error) {
-      console.error("Error rejecting fundraiser:", error);
-      throw error;
-    }
-  };
-
-  // Pause
-  export const pauseFundraiserAPI = async (fund_uuid, reason) => {
-    try {
-      const response = await apiClient.post("private/fundraiser-pause", { fund_uuid, reason });
-      return response.data;
-    } catch (error) {
-      console.error("Error pausing fundraiser:", error);
-      throw error;
-    }
-  };
-
-  // Resume
-  export const resumeFundraiserAPI = async (fund_uuid) => {
-    try {
-      const response = await apiClient.post("private/fundraiser-resume", { fund_uuid });
-      return response.data;
-    } catch (error) {
-      console.error("Error resuming fundraiser:", error);
-      throw error;
-    }
-  };
-
-  // Edit
-  export const editFundraiserAPI = async (payload) => {
-    try {
-      const response = await apiClient.post("private/fundraiser-edit", payload);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating fundraiser:", error);
-      throw error;
-    }
-  };
+export const updateAdminProfile = async (formData) => {
+  try {
+    const response = await apiClient.put('private/updatedetails', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // Important for file uploads
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating admin profile:', error);
+    throw error;
+  }
+};
 
 
-  // ========================================================================
-  // 💰 DONATION ADMIN PANEL APIS (NEWLY ADDED)
-  // ========================================================================
+// ============================================
+// ADMIN FUNDRAISER MANAGEMENT APIS
+// ============================================
 
-  // Get donations list
-  export const getAllDonations = async (params = {}) => {
-    try {
-      const response = await apiClient.get("private/donations-list", { params });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching donations:", error);
-      throw error;
-    }
-  };
+// Fetch all fundraisers
+export const getAllFundraisers = async (page = 1, limit = 10, search = "", status = "") => {
+  try {
+    const response = await apiClient.get("private/fundraisers-list", {
+      params: { page, limit, search, status }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching fundraisers:", error);
+    throw error;
+  }
+};
 
-  // Mark Safe
-  export const markDonationSafe = async ({ d_uuid }) => {
-    try {
-      const response = await apiClient.post("private/donation-mark-safe", { d_uuid });
-      return response.data;
-    } catch (error) {
-      console.error("Error marking donation safe:", error);
-      throw error;
-    }
-  };
+// Approve
+export const approveFundraiserAPI = async (fund_uuid) => {
+  try {
+    const response = await apiClient.post("private/fundraiser-approve", { fund_uuid });
+    return response.data;
+  } catch (error) {
+    console.error("Error approving fundraiser:", error);
+    throw error;
+  }
+};
 
-  // Mark Fraud
-  export const markDonationFraud = async ({ d_uuid, reason }) => {
-    try {
-      const response = await apiClient.post("private/donation-mark-fraud", { d_uuid, reason });
-      return response.data;
-    } catch (error) {
-      console.error("Error marking donation fraud:", error);
-      throw error;
-    }
-  };
+// Reject
+export const rejectFundraiserAPI = async (fund_uuid, reason) => {
+  try {
+    const response = await apiClient.post("private/fundraiser-reject", { fund_uuid, reason });
+    return response.data;
+  } catch (error) {
+    console.error("Error rejecting fundraiser:", error);
+    throw error;
+  }
+};
 
- // ============================================
+// Pause
+export const pauseFundraiserAPI = async (fund_uuid, reason) => {
+  try {
+    const response = await apiClient.post("private/fundraiser-pause", { fund_uuid, reason });
+    return response.data;
+  } catch (error) {
+    console.error("Error pausing fundraiser:", error);
+    throw error;
+  }
+};
+
+// Resume
+export const resumeFundraiserAPI = async (fund_uuid) => {
+  try {
+    const response = await apiClient.post("private/fundraiser-resume", { fund_uuid });
+    return response.data;
+  } catch (error) {
+    console.error("Error resuming fundraiser:", error);
+    throw error;
+  }
+};
+
+// Edit
+export const editFundraiserAPI = async (payload) => {
+  try {
+    const response = await apiClient.post("private/fundraiser-edit", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating fundraiser:", error);
+    throw error;
+  }
+};
+
+
+// ========================================================================
+// 💰 DONATION ADMIN PANEL APIS (NEWLY ADDED)
+// ========================================================================
+
+// Get donations list
+export const getAllDonations = async (params = {}) => {
+  try {
+    const response = await apiClient.get("private/donations-list", { params });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching donations:", error);
+    throw error;
+  }
+};
+
+// Mark Safe
+export const markDonationSafe = async ({ d_uuid }) => {
+  try {
+    const response = await apiClient.post("private/donation-mark-safe", { d_uuid });
+    return response.data;
+  } catch (error) {
+    console.error("Error marking donation safe:", error);
+    throw error;
+  }
+};
+
+// Mark Fraud
+export const markDonationFraud = async ({ d_uuid, reason }) => {
+  try {
+    const response = await apiClient.post("private/donation-mark-fraud", { d_uuid, reason });
+    return response.data;
+  } catch (error) {
+    console.error("Error marking donation fraud:", error);
+    throw error;
+  }
+};
+
+// ============================================
 // 💸 ADMIN PAYOUTS MANAGEMENT APIS
 // ============================================
 
@@ -508,15 +508,15 @@ export const createRole = async (data) => {
 };
 
 
-  export const getAllRoles = async (page = 1, limit = 10, search = "") => {
-    try {
-      const response = await apiClient.get(`private/getAllRoles?page=${page}&limit=${limit}&search=${search}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      throw error;
-    }
-  };
+export const getAllRoles = async (page = 1, limit = 10, search = "") => {
+  try {
+    const response = await apiClient.get(`private/getAllRoles?page=${page}&limit=${limit}&search=${search}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
 
 
 export const getRoleById = async (id) => {
@@ -640,7 +640,7 @@ export const getDatePlanWithDetailAPI = async ({ page = 1, limit = 10, search = 
 export const getSwipesAPI = async ({ id, page = 1, limit = 10, direction, search = "" }) => {
   try {
 
-    const params = { page, limit , direction, search};
+    const params = { page, limit, direction, search };
 
 
     const response = await apiClient.get(`private/getUsersSwipes/${id}`, {
@@ -713,11 +713,11 @@ export const getCallSchedulesAPI = async ({ id, page = 1, limit = 10, search = "
     const response = await apiClient.get(`private/getCallSchedules/${id}`, {
       params,
     });
-console.log(response, "response in api");
+    console.log(response, "response in api");
 
     return response.data;
 
-    
+
   } catch (error) {
     console.error("Error fetching call schedules:", error);
     throw error;
@@ -729,7 +729,7 @@ export const createExploreAPI = async (formData) => {
   try {
     const response = await apiClient.post(
       "private/createExplore",
-      formData, 
+      formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
       }
@@ -766,7 +766,7 @@ export const updateExploreAPI = async (uuid, formData) => {
   try {
     const response = await apiClient.put(
       `private/updateExplore/${uuid}`,
-      formData, 
+      formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
       }
