@@ -768,7 +768,7 @@ userObj.createWithdrawalRequest = async function (req, res) {
       }, 200);
     }
 
-    // ✅ Balance check only (no deduction)
+    // ✅ Balance check
     if (user.uc_balance < withdrawAmount) {
       return commonHelper.errorHandler(res, {
         status: false,
@@ -789,7 +789,11 @@ userObj.createWithdrawalRequest = async function (req, res) {
       }, 200);
     }
 
-    // ✅ Create withdrawal request
+    // 1️⃣ Deduct balance
+    user.uc_balance = Number(user.uc_balance) - withdrawAmount;
+    await user.save();
+
+    // 2️⃣ Create withdrawal request
     await WithdrawalModel.create({
       w_uuid: uuidv4(),
       w_fk_uc_uuid: userUuid,
@@ -806,11 +810,11 @@ userObj.createWithdrawalRequest = async function (req, res) {
     });
 
   } catch (error) {
-    console.error("❌ Withdrawal Error:", error.message);
+    console.error("❌ Withdrawal Error:", error);
 
     return commonHelper.errorHandler(res, {
       status: false,
-      message: error.message || "Withdrawal failed",
+      message: "Withdrawal failed",
     }, 200);
   }
 };

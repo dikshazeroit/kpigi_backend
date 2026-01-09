@@ -110,7 +110,7 @@ router.post("/private/security-reports", securityObj.getReports);
 //******************************************* 🛡️ FAQ ************************************************//
 router.post("/private/faq-list", faqObj.getFaqList);
 router.post("/private/faq-details", faqObj.getFaqDetails);
-router.get("/private/get-privacy-policy",faqObj.getPrivacyPolicies);
-router.get("/private/get-terms-conditions", faqObj.getTermsConditions);
+router.post("/private/get-privacy-policy",faqObj.getPrivacyPolicies);
+router.post("/private/get-terms-conditions", faqObj.getTermsConditions);
 
 export default router;
