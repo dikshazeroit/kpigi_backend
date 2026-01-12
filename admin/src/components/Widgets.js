@@ -220,8 +220,6 @@ export const BarChartWidget = ({ title, value, percentage, data = [] }) => {
           <h6 className="fw-normal text-gray mb-2">{title}</h6>
           <h3>{value}</h3>
           <small className="mt-2">
-            <FontAwesomeIcon icon={percentageIcon} className={`${percentageColor} me-1`} />
-            <span className={`${percentageColor} fw-bold`}>{percentage}%</span>
           </small>
         </div>
         <div className="d-block ms-auto">

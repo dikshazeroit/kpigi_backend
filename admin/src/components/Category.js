@@ -1,3 +1,4 @@
+// Category.jsx
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   Badge,
   Spinner,
   InputGroup,
+  Pagination,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -41,6 +43,11 @@ const Category = () => {
     c_description: "",
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Fetch categories
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -57,13 +64,23 @@ const Category = () => {
     fetchCategories();
   }, []);
 
+  // Filter categories on search
   useEffect(() => {
     const s = search.toLowerCase();
-    setFiltered(
-      categories.filter((c) => c.c_name.toLowerCase().includes(s))
+    const filteredData = categories.filter((c) =>
+      c.c_name.toLowerCase().includes(s)
     );
+    setFiltered(filteredData);
+    setCurrentPage(1); // reset to first page on search
   }, [search, categories]);
 
+  // Pagination calculation
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCategories = filtered.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  // Handle add/update category
   const handleSubmit = async () => {
     if (!form.c_name.trim()) {
       return Swal.fire({
@@ -76,7 +93,6 @@ const Category = () => {
     try {
       if (editData) {
         await updateCategory({ c_uuid: editData.c_uuid, ...form });
-
         Swal.fire({
           icon: "success",
           title: "Category Updated",
@@ -86,7 +102,6 @@ const Category = () => {
         });
       } else {
         await createCategory(form);
-
         Swal.fire({
           icon: "success",
           title: "Category Added",
@@ -110,6 +125,7 @@ const Category = () => {
     }
   };
 
+  // Toggle category status
   const handleStatus = async (cat) => {
     await toggleCategoryStatus({
       c_uuid: cat.c_uuid,
@@ -118,6 +134,7 @@ const Category = () => {
     fetchCategories();
   };
 
+  // Delete category
   const handleDelete = async (cat) => {
     if (cat.c_is_default) {
       return Swal.fire({
@@ -139,7 +156,6 @@ const Category = () => {
     if (result.isConfirmed) {
       try {
         await deleteCategory(cat.c_uuid);
-
         Swal.fire({
           icon: "success",
           title: "Deleted",
@@ -147,7 +163,6 @@ const Category = () => {
           timer: 1800,
           showConfirmButton: false,
         });
-
         fetchCategories();
       } catch (error) {
         console.error(error);
@@ -162,8 +177,6 @@ const Category = () => {
 
   return (
     <div>
-      {/* Breadcrumb */}
-
       <Card border="light" className="shadow-sm">
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
@@ -212,80 +225,120 @@ const Category = () => {
               <small>Add a new category to get started</small>
             </div>
           ) : (
-            <Table responsive hover className="align-middle">
-              <thead className="bg-light">
-                <tr>
-                  <th>Sr. No.</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Status</th>
-                  <th className="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((cat, index) => (
-                  <tr key={cat.c_uuid}>
-                    <td>{index + 1}</td>
-
-                    <td>
-                      <strong>{cat.c_name}</strong>{" "}
-                      {cat.c_is_default && (
-                        <Badge bg="info" className="ms-2">
-                          Default
-                        </Badge>
-                      )}
-                    </td>
-
-                    <td className="text-muted">{cat.c_description || "-"}</td>
-
-                    <td>
-                      <Form.Check
-                        type="switch"
-                        checked={cat.c_status === "ACTIVE"}
-                        onChange={() => handleStatus(cat)}
-                        label={
-                          <Badge
-                            bg={
-                              cat.c_status === "ACTIVE" ? "success" : "secondary"
-                            }
-                          >
-                            {cat.c_status}
+            <>
+              <Table responsive hover className="align-middle">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Sr. No.</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentCategories.map((cat, index) => (
+                    <tr key={cat.c_uuid}>
+                      <td>{indexOfFirstItem + index + 1}</td>
+                      <td>
+                        <strong>{cat.c_name}</strong>{" "}
+                        {cat.c_is_default && (
+                          <Badge bg="info" className="ms-2">
+                            Default
                           </Badge>
-                        }
-                      />
-                    </td>
-
-                    <td className="text-end">
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={() => {
-                          setEditData(cat);
-                          setForm({
-                            c_name: cat.c_name,
-                            c_description: cat.c_description,
-                          });
-                          setShowModal(true);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </Button>
-
-                      {!cat.c_is_default && (
+                        )}
+                      </td>
+                      <td className="text-muted">{cat.c_description || "-"}</td>
+                      <td>
+                        <Form.Check
+                          type="switch"
+                          checked={cat.c_status === "ACTIVE"}
+                          onChange={() => handleStatus(cat)}
+                          label={
+                            <Badge
+                              bg={
+                                cat.c_status === "ACTIVE" ? "success" : "secondary"
+                              }
+                            >
+                              {cat.c_status}
+                            </Badge>
+                          }
+                        />
+                      </td>
+                      <td className="text-end">
                         <Button
                           size="sm"
-                          variant="outline-danger"
-                          onClick={() => handleDelete(cat)}
+                          variant="outline-primary"
+                          className="me-2"
+                          onClick={() => {
+                            setEditData(cat);
+                            setForm({
+                              c_name: cat.c_name,
+                              c_description: cat.c_description,
+                            });
+                            setShowModal(true);
+                          }}
                         >
-                          <FontAwesomeIcon icon={faTrash} />
+                          <FontAwesomeIcon icon={faEdit} />
                         </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+
+                        {!cat.c_is_default && (
+                          <Button
+                            size="sm"
+                            variant="outline-danger"
+                            onClick={() => handleDelete(cat)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+
+              {/* PAGINATION */}
+              {filtered.length > itemsPerPage && (
+                <div className="d-flex justify-content-center mt-3">
+                  <Pagination>
+                    <Pagination.First
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    />
+                    <Pagination.Prev
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                    />
+
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <Pagination.Item
+                          key={pageNum}
+                          active={currentPage === pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Pagination.Item>
+                      );
+                    })}
+
+                    <Pagination.Next
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                    />
+                    <Pagination.Last
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+                </div>
+              )}
+            </>
           )}
         </Card.Body>
       </Card>

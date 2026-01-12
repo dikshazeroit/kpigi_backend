@@ -902,3 +902,30 @@ export const rejectWithdrawal = async (w_uuid, reason = "") => {
   console.log("API → rejectWithdrawal response:", res.data);
   return res.data;
 };
+
+
+
+export const DeleteUserById = async (id) => {
+  try {
+    const response = await apiClient.delete(`private/deleteUserById/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
+
+
+export const updateUser = async (id, updatedData) => {
+  try {
+
+    const response = await apiClient.put(`private/updateUser/${id}`, updatedData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+
