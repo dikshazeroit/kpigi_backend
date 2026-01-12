@@ -10,7 +10,7 @@ import {
   getAllAdmins, 
   loginAdmin, setNewPassword, updateAdmin, updateAdminById, verifyOtp 
 } from "../controllers/AdminController.js";
-import { deleteUserById, getAllUsers,getUserById } from "../controllers/UserController.js";
+import { deleteUserById, getAllUsers,getUserById,updateUserById } from "../controllers/UserController.js";
 import { createRole, deleteRole, getAllRoles, getRoleById, updateRole } from "../controllers/RolesController.js";
 import { getAllPermissions } from "../controllers/PermisionController.js";
 import {
@@ -75,7 +75,8 @@ router.delete("/private/adminDelete/:id", hasPermission("admin:delete"), deleteA
 //****************************** 🔐 User Routes *******************************************//
 router.get("/private/getAllUsers", adminAuth, getAllUsers);
 router.get("/private/getUserBy/:id", hasPermission("user:view"), getUserById);
-router.delete("/private/deleteUser/:id", hasPermission("user:delete"), deleteUserById);
+router.delete("/private/deleteUserById/:id", deleteUserById);
+router.put("/private/updateUser/:id", updateUserById);
 
 //****************************** 🔐 Fundraisers Routes *******************************************//
 router.get("/private/fundraisers-list", adminAuth, getAllFundraisers);

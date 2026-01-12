@@ -371,3 +371,98 @@ export const getCallSchedules = async (req, res) => {
     });
   }
 };
+
+
+
+export const updateUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+
+    if (!id) {
+      return res.status(400).json({
+        status: false,
+        message: "User ID is required",
+      });
+    }
+
+  
+    if (!updates || Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "No update data provided",
+      });
+    }
+
+    
+    const allowedUpdates = [
+      "uc_full_name",
+      "uc_email",
+      "uc_role",
+      "uc_phone",
+      "uc_country_code",
+      "uc_bio",
+      "uc_notifications_enabled",
+    ];
+
+    const invalidFields = Object.keys(updates).filter(
+      (key) => !allowedUpdates.includes(key)
+    );
+
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid fields in update",
+        invalidFields,
+      });
+    }
+
+  
+    if (updates.uc_role && !["REQUESTER", "DONOR"].includes(updates.uc_role)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid role value. Must be REQUESTER or DONOR",
+      });
+    }
+
+    
+    if (updates.uc_email) {
+      const existingUser = await userModel.findOne({ uc_email: updates.uc_email });
+      if (existingUser && existingUser._id.toString() !== id) {
+        return res.status(400).json({
+          status: false,
+          message: "Email already exists for another user",
+        });
+      }
+    }
+
+    
+    const updatedUser = await userModel.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+  
+    res.status(200).json({
+      status: true,
+      message: "User updated successfully",
+      payload: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      status: false,
+      message: "Something went wrong while updating the user",
+      error: error.message,
+    });
+  }
+};

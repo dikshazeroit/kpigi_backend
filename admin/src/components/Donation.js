@@ -338,33 +338,81 @@ export default function Donation() {
                         )}
 
                         {/* PAGINATION */}
-                        <div className="d-flex justify-content-center mt-3">
-                            <Pagination>
-                                <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+                        {totalPages > 1 && (
+                            <div className="d-flex justify-content-center mt-3">
+                               <Pagination>
+  {/* First Page */}
+  <Pagination.First
+    onClick={() => setCurrentPage(1)}
+    disabled={currentPage === 1}
+  />
 
-                                <Pagination.Prev
-                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                />
+  {/* Previous Page */}
+  <Pagination.Prev
+    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+  />
 
-                                {Array.from({ length: totalPages }).map((_, i) => (
-                                    <Pagination.Item
-                                        key={i}
-                                        active={currentPage === i + 1}
-                                        onClick={() => setCurrentPage(i + 1)}
-                                    >
-                                        {i + 1}
-                                    </Pagination.Item>
-                                ))}
+  {/* Always show first page */}
+  <Pagination.Item
+    active={currentPage === 1}
+    onClick={() => setCurrentPage(1)}
+  >
+    1
+  </Pagination.Item>
 
-                                <Pagination.Next
-                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                />
+  {/* Left Ellipsis */}
+  {currentPage > 4 && <Pagination.Ellipsis disabled />}
 
-                                <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
-                            </Pagination>
-                        </div>
+  {/* Pages around current page */}
+  {Array.from({ length: totalPages }).map((_, i) => {
+    const pageNum = i + 1;
+    if (pageNum === 1 || pageNum === totalPages) return null;
+    if (pageNum >= currentPage - 2 && pageNum <= currentPage + 2) {
+      return (
+        <Pagination.Item
+          key={pageNum}
+          active={currentPage === pageNum}
+          onClick={() => setCurrentPage(pageNum)}
+        >
+          {pageNum}
+        </Pagination.Item>
+      );
+    }
+    return null;
+  })}
+
+  {/* Right Ellipsis */}
+  {currentPage < totalPages - 3 && <Pagination.Ellipsis disabled />}
+
+  {/* Always show last page if more than 1 */}
+  {totalPages > 1 && (
+    <Pagination.Item
+      active={currentPage === totalPages}
+      onClick={() => setCurrentPage(totalPages)}
+    >
+      {totalPages}
+    </Pagination.Item>
+  )}
+
+  {/* Next Page */}
+  <Pagination.Next
+    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+  />
+
+  {/* Last Page */}
+  <Pagination.Last
+    onClick={() => setCurrentPage(totalPages)}
+    disabled={currentPage === totalPages}
+  />
+</Pagination>
+
+
+                            </div>
+                        )}
+
+
                     </Card.Body>
                 </Card>
             </Card>

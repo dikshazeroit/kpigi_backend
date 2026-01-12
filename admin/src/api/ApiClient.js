@@ -1,7 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/admin/";
-  //const BASE_URL = "http://3.137.82.51:3002/admin/"
+ const BASE_URL = "http://localhost:3000/admin/";
+  // const BASE_URL = "http://3.137.82.51:3002/admin/"
+
+  export const Image_Url =
+  "https://animaa-1.s3.eu-north-1.amazonaws.com/user-media/";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

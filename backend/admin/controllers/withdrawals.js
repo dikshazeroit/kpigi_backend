@@ -1,33 +1,46 @@
 import WithdrawalModel from "../../application/model/WithdrawalModel.js";
-import UserModel from "../../application/model/UserModel.js"; 
+import UserModel from "../../application/model/UserModel.js";
 
 export const getAllwithdrawal = async (req, res) => {
   try {
-    const withdrawals = await WithdrawalModel.find().sort({ createdAt: -1 });
+    const withdrawals = await WithdrawalModel.find()
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (!withdrawals || withdrawals.length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: "No withdrawal requests found",
-        payload: [],
+    const payload = [];
+
+    for (const w of withdrawals) {
+      let user = null;
+
+      try {
+        user = await UserModel.findOne(
+          { uc_uuid: w.w_fk_uc_uuid },
+          "uc_email uc_full_name uc_phone uc_country_code uc_role"
+        ).lean();
+      } catch (err) {
+
+      }
+
+      payload.push({
+        ...w,
+        user: user || null,
       });
     }
 
     res.status(200).json({
       status: true,
       message: "Withdrawal requests fetched successfully",
-      payload: withdrawals,
+      payload,
     });
+
   } catch (error) {
-    console.error("Error fetching withdrawals:", error);
     res.status(500).json({
       status: false,
-      message: "Something went wrong while fetching withdrawals",
+      message: "Something went wrong",
       error: error.message,
     });
   }
 };
-
 
 
 

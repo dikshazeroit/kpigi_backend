@@ -30,21 +30,22 @@ export default function Campaign() {
     const [filter, setFilter] = useState("All");
     const [search, setSearch] = useState("");
     const [selectedCampaign, setSelectedCampaign] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
     const [loading, setLoading] = useState(false);
 
     const campaignsPerPage = 10;
 
     // Fetch data from API
-    const fetchCampaigns = async (page = 1) => {
+    // Fetch data from API
+    const fetchCampaigns = async () => {
         setLoading(true);
         try {
             const statusParam = filter === "All" ? "" : filter.toUpperCase();
             const data = await getAllFundraisers(page, campaignsPerPage, search, statusParam);
 
             setCampaigns(data.payload || []);
-            setCurrentPage(data.pagination?.currentPage || 1);
             setTotalPages(data.pagination?.totalPages || 1);
         } catch (error) {
             console.error("Failed to fetch campaigns:", error);
@@ -53,15 +54,16 @@ export default function Campaign() {
         }
     };
 
+    // Fetch campaigns when page, filter, or search changes
     useEffect(() => {
-        fetchCampaigns(currentPage);
-    }, [filter, search, currentPage]);
+        fetchCampaigns();
+    }, [page, filter, search]);
 
     // ACTION HANDLERS
     const handlePause = async (campaign) => {
         try {
             await pauseFundraiserAPI(campaign.f_uuid, "Paused by admin");
-            fetchCampaigns(currentPage);
+            fetchCampaigns(setPage);
         } catch (err) {
             console.log("Pause error", err);
         }
@@ -70,7 +72,7 @@ export default function Campaign() {
     const handleResume = async (campaign) => {
         try {
             await resumeFundraiserAPI(campaign.f_uuid);
-            fetchCampaigns(currentPage);
+            fetchCampaigns(setPage);
         } catch (err) {
             console.log("Resume error", err);
         }
@@ -79,7 +81,7 @@ export default function Campaign() {
     const handleClose = async (campaign) => {
         try {
             await rejectFundraiserAPI(campaign.f_uuid, "Closed by admin");
-            fetchCampaigns(currentPage);
+            fetchCampaigns(setPage);
         } catch (err) {
             console.log("Close error", err);
         }
@@ -88,7 +90,7 @@ export default function Campaign() {
     const handleApprove = async (campaign) => {
         try {
             await approveFundraiserAPI(campaign.f_uuid);
-            fetchCampaigns(currentPage);
+            fetchCampaigns(setPage);
         } catch (err) {
             console.log("Approve error", err);
         }
@@ -163,7 +165,7 @@ export default function Campaign() {
                                     campaigns.map((c, index) => (
                                         <tr key={c.f_uuid}>
                                             <td>
-                                                {(currentPage - 1) * campaignsPerPage + index + 1}
+                                                {(setPage - 1) * campaignsPerPage + index + 1}
                                             </td>
                                             <td>{c.f_title}</td>
                                             <td>{c.userName}</td>
@@ -230,59 +232,34 @@ export default function Campaign() {
                             </tbody>
                         </Table>
                     )}
-                   {/* ================= PAGINATION ================= */}
-{totalPages > 1 && (
-    <Pagination className="justify-content-center mt-3 flex-wrap">
+                    {totalPages >= 1 && (
+                        <Pagination className="justify-content-end mt-3">
+                            <Pagination.Prev
+                                disabled={page === 1}
+                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                            >
+                                Prev
+                            </Pagination.Prev>
 
-        {/* First Page */}
-        {currentPage > 2 && totalPages > 5 && (
-            <Pagination.Item onClick={() => setCurrentPage(1)}>1</Pagination.Item>
-        )}
+                            {[...Array(totalPages)].map((_, i) => (
+                                <Pagination.Item
+                                    key={i + 1}
+                                    active={i + 1 === page}
+                                    onClick={() => setPage(i + 1)}
+                                >
+                                    {i + 1}
+                                </Pagination.Item>
+                            ))}
 
-        {/* Ellipsis before current pages */}
-        {currentPage > 3 && totalPages > 5 && <Pagination.Ellipsis disabled />}
+                            <Pagination.Next
+                                disabled={page === totalPages}
+                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                            >
+                                Next
+                            </Pagination.Next>
+                        </Pagination>
+                    )}
 
-        {/* Middle pages (current ±1) */}
-        {(() => {
-            const pages = [];
-            const startPage = Math.max(1, currentPage - 1);
-            const endPage = Math.min(totalPages, currentPage + 1);
-
-            for (let i = startPage; i <= endPage; i++) {
-                pages.push(
-                    <Pagination.Item
-                        key={i}
-                        active={currentPage === i}
-                        onClick={() => setCurrentPage(i)}
-                    >
-                        {i}
-                    </Pagination.Item>
-                );
-            }
-            return pages;
-        })()}
-
-        {/* Ellipsis after current pages */}
-        {currentPage < totalPages - 2 && totalPages > 5 && <Pagination.Ellipsis disabled />}
-
-        {/* Last Page */}
-        {currentPage < totalPages - 1 && totalPages > 4 && (
-            <Pagination.Item onClick={() => setCurrentPage(totalPages)}>
-                {totalPages}
-            </Pagination.Item>
-        )}
-
-        {/* Previous / Next Buttons */}
-        <Pagination.Prev
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        />
-        <Pagination.Next
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-        />
-    </Pagination>
-)}
 
 
                 </Card.Body>

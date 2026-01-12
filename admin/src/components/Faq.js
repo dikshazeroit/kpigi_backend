@@ -8,6 +8,7 @@ import {
     Badge,
     Spinner,
     InputGroup,
+    Pagination,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
@@ -36,21 +37,25 @@ const Faq = () => {
     const [showModal, setShowModal] = useState(false);
     const [editData, setEditData] = useState(null);
 
-    // DELETE MODAL STATES
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteData, setDeleteData] = useState(null);
-
     const [form, setForm] = useState({
         f_question: "",
         f_answer: "",
     });
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5; // FAQs per page
+
     // ================= Fetch FAQs =================
     const fetchFaqs = async () => {
         setLoading(true);
-        const res = await getAllFaqs();
-        setFaqs(res?.data || []);
-        setFiltered(res?.data || []);
+        try {
+            const res = await getAllFaqs();
+            setFaqs(res?.data || []);
+            setFiltered(res?.data || []);
+        } catch (error) {
+            console.error(error);
+        }
         setLoading(false);
     };
 
@@ -61,11 +66,11 @@ const Faq = () => {
     // ================= Search =================
     useEffect(() => {
         const s = search.toLowerCase();
-        setFiltered(
-            faqs.filter((f) =>
-                f.f_question.toLowerCase().includes(s)
-            )
+        const filteredData = faqs.filter((f) =>
+            f.f_question.toLowerCase().includes(s)
         );
+        setFiltered(filteredData);
+        setCurrentPage(1); // reset page on search
     }, [search, faqs]);
 
     // ================= Submit =================
@@ -80,10 +85,7 @@ const Faq = () => {
 
         try {
             if (editData) {
-                await updateFaq({
-                    f_uuid: editData.f_uuid,
-                    ...form,
-                });
+                await updateFaq({ f_uuid: editData.f_uuid, ...form });
 
                 Swal.fire({
                     icon: "success",
@@ -92,7 +94,6 @@ const Faq = () => {
                     timer: 1800,
                     showConfirmButton: false,
                 });
-
             } else {
                 await createFaq(form);
 
@@ -109,7 +110,6 @@ const Faq = () => {
             setEditData(null);
             setForm({ f_question: "", f_answer: "" });
             fetchFaqs();
-
         } catch (error) {
             console.log(error);
             Swal.fire({
@@ -119,7 +119,6 @@ const Faq = () => {
             });
         }
     };
-
 
     // ================= Status Toggle =================
     const handleStatus = async (faq) => {
@@ -166,13 +165,12 @@ const Faq = () => {
         });
     };
 
-
-    const confirmDelete = async () => {
-        await deleteFaq(deleteData.f_uuid);
-        setShowDeleteModal(false);
-        setDeleteData(null);
-        fetchFaqs();
-    };
+    // ================= Pagination =================
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedFaqs = filtered.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     return (
         <Card border="light" className="shadow-sm">
@@ -199,7 +197,6 @@ const Faq = () => {
                 </Button>
             </div>
 
-
             {/* BODY */}
             <Card.Body>
                 <InputGroup className="mb-3">
@@ -220,77 +217,108 @@ const Faq = () => {
                             Loading Faq data....
                         </div>
                     </div>
-                ) : filtered.length === 0 ? (
+                ) : paginatedFaqs.length === 0 ? (
                     <div className="text-center py-5 text-muted">
                         <h6>No FAQs found</h6>
                         <small>Add FAQs to help users</small>
                     </div>
                 ) : (
-                    <Table responsive hover className="align-middle">
-                        <thead className="bg-light">
-                            <tr>
-                                <th>Sr. No.</th>
-                                <th>Question</th>
-                                <th>Answer</th>
-                                <th>Status</th>
-                                <th className="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((faq, index) => (
-                                <tr key={faq.f_uuid}>
-                                    <td>{index + 1}</td> {/* Sr. No. */}
-                                    <td><strong>{faq.f_question}</strong></td>
-
-                                    <td className="text-muted">
-                                        {faq.f_answer.length > 80
-                                            ? faq.f_answer.substring(0, 80) + "..."
-                                            : faq.f_answer}
-                                    </td>
-
-                                    <td>
-                                        <Form.Check
-                                            type="switch"
-                                            checked={faq.f_active === "1"}
-                                            onChange={() => handleStatus(faq)}
-                                            label={
-                                                <Badge bg={faq.f_active === "1" ? "success" : "secondary"}>
-                                                    {faq.f_active === "1" ? "ACTIVE" : "INACTIVE"}
-                                                </Badge>
-                                            }
-                                        />
-                                    </td>
-
-                                    <td className="text-end">
-                                        <Button
-                                            size="sm"
-                                            variant="outline-primary"
-                                            className="me-2"
-                                            onClick={() => {
-                                                setEditData(faq);
-                                                setForm({
-                                                    f_question: faq.f_question,
-                                                    f_answer: faq.f_answer,
-                                                });
-                                                setShowModal(true);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faEdit} />
-                                        </Button>
-
-                                        <Button
-                                            size="sm"
-                                            variant="outline-danger"
-                                            onClick={() => handleDelete(faq)}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} />
-                                        </Button>
-                                    </td>
+                    <>
+                        <Table responsive hover className="align-middle">
+                            <thead className="bg-light">
+                                <tr>
+                                    <th>Sr. No.</th>
+                                    <th>Question</th>
+                                    <th>Answer</th>
+                                    <th>Status</th>
+                                    <th className="text-end">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {paginatedFaqs.map((faq, index) => (
+                                    <tr key={faq.f_uuid}>
+                                        <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                        <td><strong>{faq.f_question}</strong></td>
+                                        <td className="text-muted">
+                                            {faq.f_answer.length > 80
+                                                ? faq.f_answer.substring(0, 80) + "..."
+                                                : faq.f_answer}
+                                        </td>
+                                        <td>
+                                            <Form.Check
+                                                type="switch"
+                                                checked={faq.f_active === "1"}
+                                                onChange={() => handleStatus(faq)}
+                                                label={
+                                                    <Badge bg={faq.f_active === "1" ? "success" : "secondary"}>
+                                                        {faq.f_active === "1" ? "ACTIVE" : "INACTIVE"}
+                                                    </Badge>
+                                                }
+                                            />
+                                        </td>
+                                        <td className="text-end">
+                                            <Button
+                                                size="sm"
+                                                variant="outline-primary"
+                                                className="me-2"
+                                                onClick={() => {
+                                                    setEditData(faq);
+                                                    setForm({
+                                                        f_question: faq.f_question,
+                                                        f_answer: faq.f_answer,
+                                                    });
+                                                    setShowModal(true);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} />
+                                            </Button>
 
+                                            <Button
+                                                size="sm"
+                                                variant="outline-danger"
+                                                onClick={() => handleDelete(faq)}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+
+                        {/* Pagination */}
+                        {totalPages > 0 && (
+                            <div className="d-flex justify-content-center my-3">
+                                <Pagination>
+                                    <Pagination.First
+                                        onClick={() => setCurrentPage(1)}
+                                        disabled={currentPage === 1}
+                                    />
+                                    <Pagination.Prev
+                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                    />
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <Pagination.Item
+                                            key={i}
+                                            active={i + 1 === currentPage}
+                                            onClick={() => setCurrentPage(i + 1)}
+                                        >
+                                            {i + 1}
+                                        </Pagination.Item>
+                                    ))}
+                                    <Pagination.Next
+                                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                    />
+                                    <Pagination.Last
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                    />
+                                </Pagination>
+                            </div>
+                        )}
+                    </>
                 )}
             </Card.Body>
 
@@ -333,40 +361,12 @@ const Faq = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-
-            {/* DELETE CONFIRM MODAL */}
-            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="text-danger">
-                        <FontAwesomeIcon icon={faTrash} className="me-2" />
-                        Delete FAQ
-                    </Modal.Title>
-                </Modal.Header>
-
-                <Modal.Body className="text-center">
-                    <p>Are you sure you want to delete this FAQ?</p>
-                    <div className="bg-light p-3 rounded">
-                        <strong>{deleteData?.f_question}</strong>
-                    </div>
-                    <p className="text-muted mt-3 mb-0">
-                        This action cannot be undone.
-                    </p>
-                </Modal.Body>
-
-                <Modal.Footer className="justify-content-center">
-                    <Button variant="light" onClick={() => setShowDeleteModal(false)}>
-                        Cancel
-                    </Button>
-                    <Button variant="danger" onClick={confirmDelete}>
-                        Yes, Delete
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </Card>
     );
 };
 
 export default Faq;
+
 // import React, { useEffect, useState } from "react";
 // import {
 //   Card,
