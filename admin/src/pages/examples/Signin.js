@@ -8,7 +8,7 @@ import { Alert } from "@mui/material";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 import { isAuthenticated, loginAdmin } from "../../api/Auth";
 import Swal from "sweetalert2";
-import logo from "../../assets/img/pages/Kpigi-remove.png";
+import logo from "../../assets/img/pages/appstore 1.png";
 
 export default function Signin() {
   const history = useHistory();
@@ -118,7 +118,7 @@ export default function Signin() {
                 <img
                   src={logo}
                   alt="Kpigi Logo"
-                  style={{ height: "60px", objectFit: "contain", marginBottom: "12px",backgroundColor:"blue" }}
+                  style={{ height: "100px", objectFit: "contain", marginBottom: "12px", borderRadius: "4px" }}
                 />
                 <h3 className="fw-bold" style={{ fontSize: "1.9rem" }}>
                   Admin Login Portal

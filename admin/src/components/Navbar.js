@@ -3,27 +3,23 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import {
-  Row,
-  Col,
+
   Nav,
   Image,
   Navbar,
   Dropdown,
   Container,
-  ListGroup,
+
 } from "@themesberg/react-bootstrap";
 import { useHistory } from "react-router-dom";
 import Swal from "sweetalert2";
 
-import NOTIFICATIONS_DATA from "../data/notifications";
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
-import notificationImg from "../assets/img/team/notification-alert 1.png";
 import { Routes } from "../routes";
 import { getAdminProfile } from "../api/ApiServices";
 
 export default function TopNavbar() {
   const history = useHistory();
-  const [notifications, setNotifications] = useState(NOTIFICATIONS_DATA);
   const [adminImage, setAdminImage] = useState(Profile3);
   const [adminName, setAdminName] = useState("Admin");
 
@@ -68,13 +64,6 @@ export default function TopNavbar() {
     return () => window.removeEventListener("profile-updated", handleProfileUpdate);
   }, []);
 
-  const areNotificationsRead = notifications.every((n) => n.read);
-
-  const markNotificationsAsRead = () => {
-    setTimeout(() => {
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    }, 300);
-  };
 
   const handleLogout = () => {
     Swal.fire({
@@ -105,22 +94,6 @@ export default function TopNavbar() {
     });
   };
 
-  const NotificationItem = ({ link, sender, image, time, message, read }) => (
-    <ListGroup.Item action href={link} className="border-bottom border-light">
-      <Row className="align-items-center">
-        <Col className="col-auto">
-          <Image src={image} className="user-avatar lg-avatar rounded-circle" />
-        </Col>
-        <Col className="ps-0 ms--2">
-          <div className="d-flex justify-content-between align-items-center">
-            <h4 className="h6 mb-0 text-small">{sender}</h4>
-            <small className={read ? "" : "text-danger"}>{time}</small>
-          </div>
-          <p className="font-small mt-1 mb-0">{message}</p>
-        </Col>
-      </Row>
-    </ListGroup.Item>
-  );
 
   return (
     <Navbar
@@ -135,9 +108,11 @@ export default function TopNavbar() {
           <h6
             className="mb-0 fw-bold text-dark"
             style={{
-              fontSize: "18px",
+              fontSize: "1.2rem",
               letterSpacing: "0.5px",
               whiteSpace: "nowrap",
+              fontWeight: "bold",
+              fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
             }}
           >
             DASHBOARD
@@ -154,7 +129,7 @@ export default function TopNavbar() {
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "6px",
-                border: "1px solid #ddd",
+                border: "2px solid #ddd",
                 height: "40px",
                 fontSize: "14px",
                 whiteSpace: "nowrap",

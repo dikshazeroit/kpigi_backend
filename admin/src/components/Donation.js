@@ -338,33 +338,28 @@ export default function Donation() {
                         )}
 
                         {/* PAGINATION */}
-                        <div className="d-flex justify-content-center mt-3">
-                            <Pagination>
-                                <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
-
+                        {/* ===== SIMPLE PREV / NEXT PAGINATION ===== */}
+                        {totalPages > 1 && (
+                            <Pagination className="justify-content-end mt-3">
                                 <Pagination.Prev
+                                    disabled={currentPage === 1 || loading}
                                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                />
+                                >
+                                    Prev
+                                </Pagination.Prev>
 
-                                {Array.from({ length: totalPages }).map((_, i) => (
-                                    <Pagination.Item
-                                        key={i}
-                                        active={currentPage === i + 1}
-                                        onClick={() => setCurrentPage(i + 1)}
-                                    >
-                                        {i + 1}
-                                    </Pagination.Item>
-                                ))}
+                                <Pagination.Item active className="mx-2">
+                                    {currentPage}
+                                </Pagination.Item>
 
                                 <Pagination.Next
+                                    disabled={currentPage === totalPages || loading}
                                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                />
-
-                                <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
+                                >
+                                    Next
+                                </Pagination.Next>
                             </Pagination>
-                        </div>
+                        )}
                     </Card.Body>
                 </Card>
             </Card>

@@ -8,7 +8,7 @@ import {
   faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { CircleChartWidget, BarChartWidget } from "../../components/Widgets";
+import { BarChartWidget } from "../../components/Widgets";
 import { useHistory } from "react-router-dom";
 
 import {

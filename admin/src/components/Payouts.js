@@ -198,35 +198,29 @@ const WithdrawalManagement = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-center my-3">
-                <Pagination>
-                  <Pagination.First
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                  />
-                  <Pagination.Prev
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  />
-                  {[...Array(totalPages)].map((_, i) => (
-                    <Pagination.Item
-                      key={i}
-                      active={i + 1 === currentPage}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  />
-                  <Pagination.Last
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination>
-              </div>
+              <Pagination className="justify-content-end mt-3">
+                <Pagination.Prev
+                  disabled={currentPage === 1 || loading}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.max(1, p - 1))
+                  }
+                >
+                  Prev
+                </Pagination.Prev>
+
+                <Pagination.Item active className="mx-2">
+                  {currentPage}
+                </Pagination.Item>
+
+                <Pagination.Next
+                  disabled={currentPage === totalPages || loading}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                >
+                  Next
+                </Pagination.Next>
+              </Pagination>
             )}
           </>
         )}

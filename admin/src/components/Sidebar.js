@@ -13,14 +13,13 @@ import {
   faDonate,
   faFunnelDollar,
   faClipboardList,
-  faInfoCircle,
+  faChartPie,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstrap";
 
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
-import DashboardIcon from "../assets/img/team/dashboard-svgrepo-com 1.png";
-import logo from "../assets/img/pages/Kpigi-remove.png"
+import logo from "../assets/img/pages/appstore-preview.png"
 
 import { Routes } from "../routes";
 
@@ -129,14 +128,13 @@ export default function Sidebar({ userName = "Jane" }) {
                   src={logo}
                   alt="Kpigi Logo"
                   style={{
-                    width: "120px",        // adjust size
+                    width: "100px",        // adjust size
                     height: "auto",
                     margin: "10px 0",
-                    borderRadius: "8px",
+                    borderRadius: "5px",
                     padding: "10px",
-                    // backgroundColor: "#fff",
-                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
                     cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)"
                   }}
                 />
               </Link>
@@ -176,7 +174,7 @@ export default function Sidebar({ userName = "Jane" }) {
               <NavItem
                 title="Dashboard"
                 link={Routes.DashboardOverview.path}
-                imageIcon={DashboardIcon}
+                icon={faChartPie}
                 textColor="#ff6347"
                 iconColor="#ff6347"
               />

@@ -199,7 +199,7 @@ export const PageUserTable = () => {
             </Pagination.Prev>
 
             {/* Current Page */}
-            <Pagination.Item active>
+            <Pagination.Item active className="mx-2">
               {page}
             </Pagination.Item>
 

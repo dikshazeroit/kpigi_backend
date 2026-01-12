@@ -131,17 +131,17 @@ export const GeneralInfoForm = () => {
   return (
     <Card border="light" className="bg-white shadow-sm mb-4">
       <Card.Body>
-       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-  <FaAddressCard size={24} color="#1e293b" />
-  <span>Administrator Profile Information</span>
-</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FaAddressCard size={25} color="#1e293b" />
+          <span>Administrator Profile Information</span>
+        </div>
 
         <div
           className="mb-4"
           style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",    
+            alignItems: "center",
             position: "relative",
           }}
         >
