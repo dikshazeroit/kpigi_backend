@@ -853,119 +853,110 @@ authObj.verifyForgotEmail = async function (req, res) {
  * @developer Sangeeta
  */
 
+
 authObj.signinWithGoogleId = async function (req, res) {
   try {
-    const { email, name, deviceFcmToken, devicePlatform, deviceId } = req.body;
+    const { email, name } = req.body;
 
     if (!email) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "CCS-E2001",
-        message: "Email is required.",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "CCS-E2001",
+          message: "Email is required.",
+          payload: {},
+        },
+        200
+      );
     }
 
-    const normalizedEmail = email.toLowerCase();
-    let user = await userModel.findOne({ uc_email: normalizedEmail });
+    const user = await userModel.findOne({ uc_email: email.toLowerCase() });
 
-    // If user exists
     if (user) {
-      if (name && !user.uc_full_name) user.uc_full_name = name;
-      user.uc_login_type = "google";
-      await user.save();
+      // ✅ Existing user: update name, activate account, and set login type
+      let needSave = false;
 
-      const token = jwt.sign({ userId: user.uc_uuid }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-      // Save device info if provided
-      if (deviceFcmToken && devicePlatform && deviceId) {
-        await authModel.addDeviceIfNotExists({
-          ud_fk_uc_uuid: user.uc_uuid,
-          uc_card_verified: user.uc_card_verified,
-          ud_device_fcmToken: deviceFcmToken,
-          ud_device_platform: devicePlatform,
-          ud_device_id: deviceId,
-        });
+      if (name && user.uc_full_name !== name) {
+        user.uc_full_name = name;
+        needSave = true;
       }
 
-      // Fetch device info from DB (same as email login)
-      const deviceInfo = await UserDevice.findOne({ ud_fk_uc_uuid: user.uc_uuid });
+      if (user.uc_active !== "1") {
+        user.uc_active = "1"; // activate account
+        needSave = true;
+      }
 
-     
+      if (user.uc_login_type !== "google") {
+        user.uc_login_type = "google";
+        needSave = true;
+      }
 
-      const updatedUser = await userModel.findOne({ uc_uuid: user.uc_uuid }).lean();
+      if (needSave) {
+        await user.save();
+      }
+
+      const payload = {
+        iat: Date.now(),
+        userId: user.uc_uuid,
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET);
 
       return commonHelper.successHandler(res, {
-        status: true,
         message: "Signed in successfully.",
         payload: {
           new_account: false,
-          token,
-          uuid: updatedUser.uc_uuid,
-          email: updatedUser.uc_email,
-          uc_card_verified: updatedUser.uc_card_verified,
-          uc_login_type: updatedUser.uc_login_type,
+          token: token,
+          userId: user.uc_uuid,
+          userType: user.uc_role,
+          uc_card_verified: user.uc_card_verified,
+        },
+      });
+    } else {
+      // ✅ New user: create account and set active
+      const newUser = new userModel({
+        uc_email: email.toLowerCase(),
+        uc_full_name: name || "",
+        uc_registeration_type: "GOOGLE",
+        uc_login_type: "google",
+        uc_active: "1", // string active
+      });
 
-          // ✅ Same as email login API
-          devicePlatform: deviceInfo?.ud_device_platform || null,
-          deviceFcmToken: deviceInfo?.ud_device_fcmToken || null,
-          deviceId: deviceInfo?.ud_device_id || null,
+      const savedUser = await newUser.save();
 
-        
-         
+      const payload = {
+        iat: Date.now(),
+        userId: savedUser.uc_uuid,
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET);
+
+      return commonHelper.successHandler(res, {
+        message: "Account created and signed in successfully.",
+        payload: {
+          new_account: true,
+          token: token,
+          userId: savedUser.uc_uuid,
+          userType: savedUser.uc_role,
+          uc_card_verified: savedUser.uc_card_verified,
         },
       });
     }
-
-    // If new Google user
-    const newUser = new userModel({
-      uc_email: normalizedEmail,
-      uc_full_name: name || "",
-      uc_registeration_type: "GOOGLE",
-      uc_login_type: "google",
-    });
-
-    const savedUser = await newUser.save();
-
-    const token = jwt.sign({ userId: savedUser.uc_uuid }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    if (deviceFcmToken && devicePlatform && deviceId) {
-      await authModel.addDeviceIfNotExists({
-        ud_fk_uc_uuid: savedUser.uc_uuid,
-        uc_card_verified: savedUser.uc_card_verified,
-        ud_device_fcmToken: deviceFcmToken,
-        ud_device_platform: devicePlatform,
-        ud_device_id: deviceId,
-      });
-    }
-
-    return commonHelper.successHandler(res, {
-      status: true,
-      message: "Account created and signed in successfully.",
-      payload: {
-        new_account: true,
-        token,
-        uuid: savedUser.uc_uuid,
-        email: savedUser.uc_email,
-        uc_card_verified: savedUser.uc_card_verified,
-        uc_login_type: savedUser.uc_login_type,
-
-        devicePlatform: devicePlatform || null,
-        deviceFcmToken: deviceFcmToken || null,
-        deviceId: deviceId || null,
-
-      },
-    });
   } catch (error) {
     console.error("Error in signinWithGoogleId:", error);
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "ZIS-G9999",
-      message: "Internal server error.",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "RE-10002",
+        message: "Something went wrong.",
+      },
+      500
+    );
   }
 };
+
 
 
 /**
@@ -984,122 +975,108 @@ authObj.signinWithGoogleId = async function (req, res) {
 
 authObj.signinWithAppleId = async function (req, res) {
   try {
-    const { email, name, deviceFcmToken, devicePlatform, deviceId } = req.body;
+    const { email, name } = req.body;
 
     if (!email) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "CCS-E2001",
-        message: "Email is required.",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "CCS-E2001",
+          message: "Email is required.",
+          payload: {},
+        },
+        200
+      );
     }
 
-    const normalizedEmail = email.toLowerCase();
-    let user = await userModel.findOne({ uc_email: normalizedEmail });
+    const user = await userModel.findOne({ uc_email: email.toLowerCase() });
 
-    // ============================
-    //   IF USER ALREADY EXISTS
-    // ============================
+    // If user exists, update name, activate account, and set login type
     if (user) {
-      if (name && !user.uc_full_name) user.uc_full_name = name;
+      let needSave = false;
 
-      user.uc_login_type = "apple";
-      await user.save();
-
-      // Generate JWT
-      const token = jwt.sign({ userId: user.uc_uuid }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-      // Save device info only if all values exist
-      if (deviceFcmToken && devicePlatform && deviceId) {
-        await authModel.addDeviceIfNotExists({
-          ud_fk_uc_uuid: user.uc_uuid,
-          uc_card_verified: user.uc_card_verified,
-          ud_device_fcmToken: deviceFcmToken,
-          ud_device_platform: devicePlatform,
-          ud_device_id: deviceId,
-        });
+      if (name && user.uc_full_name !== name) {
+        user.uc_full_name = name;
+        needSave = true;
       }
 
-      // Fetch saved device info (same as Email login)
-      const deviceInfo = await UserDevice.findOne({ ud_fk_uc_uuid: user.uc_uuid });
+      // ✅ Activate account if inactive
+      if (user.uc_active !== "1") {
+        user.uc_active = "1";
+        needSave = true;
+      }
 
+      // ✅ Ensure login type is 'apple'
+      if (user.uc_login_type !== "apple") {
+        user.uc_login_type = "apple";
+        needSave = true;
+      }
 
-      const updatedUser = await userModel.findOne({ uc_uuid: user.uc_uuid }).lean();
+      if (needSave) {
+        await user.save();
+      }
+
+      const payload = {
+        iat: Date.now(),
+        userId: user.uc_uuid,
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET);
 
       return commonHelper.successHandler(res, {
-        status: true,
         message: "Signed in successfully.",
         payload: {
           new_account: false,
-          token,
-          uuid: updatedUser.uc_uuid,
-          email: updatedUser.uc_email,
-          uc_card_verified: updatedUser.uc_card_verified,
-          uc_login_type: updatedUser.uc_login_type,
+          token: token,
+          userId: user.uc_uuid,
+          userType: user.uc_user_type,
+          uc_card_verified: user.uc_card_verified,
+        },
+      });
 
-          // ✅ Return device info from DB (consistent with email & google)
-          devicePlatform: deviceInfo?.ud_device_platform || null,
-          deviceFcmToken: deviceInfo?.ud_device_fcmToken || null,
-          deviceId: deviceInfo?.ud_device_id || null,
+    } else {
+      // Register new Apple user
+      const newUser = new userModel({
+        uc_email: email.toLowerCase(),
+        uc_full_name: name || "",
+        uc_registeration_type: "APPLE",
+        uc_login_type: "apple",
+        uc_active: "1", // ✅ STRING active
+      });
 
-          
+      const savedUser = await newUser.save();
+
+      const payload = {
+        iat: Date.now(),
+        userId: savedUser.uc_uuid,
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET);
+
+      return commonHelper.successHandler(res, {
+        message: "Account created and signed in successfully.",
+        payload: {
+          new_account: true,
+          token: token,
+          userId: savedUser.uc_uuid,
+          userType: savedUser.uc_user_type,
+          uc_card_verified: savedUser.uc_card_verified,
         },
       });
     }
 
-    // ============================
-    //   NEW APPLE USER
-    // ============================
-    const newUser = new userModel({
-      uc_email: normalizedEmail,
-      uc_full_name: name || "",
-      uc_registeration_type: "APPLE",
-      uc_login_type: "apple",
-    });
-
-    const savedUser = await newUser.save();
-
-    const token = jwt.sign({ userId: savedUser.uc_uuid }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    // Save device info for new user
-    if (deviceFcmToken && devicePlatform && deviceId) {
-      await authModel.addDeviceIfNotExists({
-        ud_fk_uc_uuid: savedUser.uc_uuid,
-        uc_card_verified: savedUser.uc_card_verified,
-        ud_device_fcmToken: deviceFcmToken,
-        ud_device_platform: devicePlatform,
-        ud_device_id: deviceId,
-      });
-    }
-
-    return commonHelper.successHandler(res, {
-      status: true,
-      message: "Account created and signed in successfully.",
-      payload: {
-        new_account: true,
-        token,
-        uuid: savedUser.uc_uuid,
-        email: savedUser.uc_email,
-        uc_card_verified: savedUser.uc_card_verified,
-        uc_login_type: savedUser.uc_login_type,
-
-        devicePlatform: devicePlatform || null,
-        deviceFcmToken: deviceFcmToken || null,
-        deviceId: deviceId || null,
-
-
-       
-      },
-    });
   } catch (error) {
     console.error("Error in signinWithAppleId:", error);
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "ZIS-A9999",
-      message: "Internal server error.",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "RE-10002",
+        message: "Something went wrong.",
+      },
+      500
+    );
   }
 };
 
