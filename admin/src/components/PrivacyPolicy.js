@@ -10,6 +10,8 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
+import Swal from "sweetalert2";
+
 import { getPrivacyPolicys, saveAppContent } from "../api/ApiServices";
 
 /* Quill toolbar */
@@ -39,50 +41,74 @@ const AppContentManagement = () => {
   const [contact, setContact] = useState({
     email: "",
     phone: "",
-    contact_address: "", // must match backend
+    contact_address: "",
   });
 
   /* Fetch existing data */
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const res = await getPrivacyPolicys();
-      const payload = res?.payload || {};
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getPrivacyPolicys();
+        const payload = res?.payload || {};
 
-      setPrivacyPolicy(payload.privacyPolicy || "");
-      setTermsConditions(payload.termsConditions || "");
+        setPrivacyPolicy(payload.privacyPolicy || "");
+        setTermsConditions(payload.termsConditions || "");
+        setContact({
+          email: payload.email || "",
+          phone: payload.phone || "",
+          contact_address: payload.address || "",
+        });
+      } catch (err) {
+        console.error("Error fetching app content:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to fetch app content",
+        });
+      }
+    };
 
-      // Map API response keys to state
-      setContact({
-        email: payload.email || "",
-        phone: payload.phone || "",
-        contact_address: payload.address || "", 
-      });
-    } catch (err) {
-      console.error("Error fetching app content:", err);
-    }
-  };
-
-  fetchData();
-}, []);
-
+    fetchData();
+  }, []);
 
   /* Save handlers */
   const savePrivacy = async () => {
     try {
       await saveAppContent({ type: "0", data: privacyPolicy });
-      alert("Privacy Policy saved");
+
+      Swal.fire({
+        icon: "success",
+        title: "Saved",
+        text: "Privacy Policy saved successfully!",
+        confirmButtonText: "OK"
+      });
+
     } catch (err) {
       console.error("Error saving privacy policy:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to save Privacy Policy",
+      });
     }
   };
 
   const saveTerms = async () => {
     try {
       await saveAppContent({ type: "1", data: termsConditions });
-      alert("Terms & Conditions saved");
+      Swal.fire({
+        icon: "success",
+        title: "Saved",
+        text: "Terms & Conditions saved successfully!",
+        confirmButtonText: "OK"
+      });
     } catch (err) {
       console.error("Error saving terms & conditions:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to save Terms & Conditions",
+      });
     }
   };
 
@@ -91,17 +117,26 @@ const AppContentManagement = () => {
       const payload = {
         type: "2",
         email: contact.email,
-        phone: contact.phone, // include phone
+        phone: contact.phone,
         contact_address: contact.contact_address,
       };
 
       console.log("Saving contact:", payload);
 
       await saveAppContent(payload);
-      alert("Contact details saved");
+      Swal.fire({
+        icon: "success",
+        title: "Saved",
+        text: "Contact details saved successfully!",
+        confirmButtonText: "OK"
+      });
     } catch (err) {
       console.error("Error saving contact:", err);
-      if (err.response) console.error("Server response:", err.response.data);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to save contact details",
+      });
     }
   };
 

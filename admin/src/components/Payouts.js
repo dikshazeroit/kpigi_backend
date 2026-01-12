@@ -137,12 +137,14 @@ const WithdrawalManagement = () => {
                 <tr>
                   <th>Sr.No</th>
                   <th>Account Holder</th>
+                  <th>Email</th>
                   <th>Amount</th>
                   <th>Account Number</th>
                   <th>IFSC</th>
                   <th>Status</th>
                   <th>Created At</th>
                   <th>Actions</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -150,12 +152,23 @@ const WithdrawalManagement = () => {
                   paginatedWithdrawals.map((w, idx) => (
                     <tr key={w.w_uuid}>
                       <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                      <td>{w.w_account_holder_name}</td>
-                      <td>{w.w_amount}</td>
+
+                      <td>{w.w_account_holder_name || "No Data Found"}</td>
+
+
+                      <td>{w.user?.uc_email || "No Data Found"}</td>
+
+
+                      <td>₹ {w.w_amount}</td>
+
                       <td>{w.w_account_number}</td>
+
                       <td>{w.w_ifsc_code}</td>
+
                       <td>{getStatusBadge(w.w_status)}</td>
+
                       <td>{new Date(w.createdAt).toLocaleDateString()}</td>
+
                       <td>
                         {(w.w_status === "PENDING" || w.w_status === "PROCESSING") && (
                           <>
@@ -169,6 +182,7 @@ const WithdrawalManagement = () => {
                                 <FontAwesomeIcon icon={faCheck} /> Approve
                               </Button>
                             )}
+
                             {w.w_status === "PENDING" && (
                               <Button
                                 variant="danger"
@@ -185,10 +199,12 @@ const WithdrawalManagement = () => {
                         )}
                       </td>
                     </tr>
+
+
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="text-center">
+                    <td colSpan="9" className="text-center">
                       No withdrawals found.
                     </td>
                   </tr>
