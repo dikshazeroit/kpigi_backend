@@ -855,6 +855,7 @@ userObj.getWithdrawalHistory = async function (req, res) {
 userObj.getUserBalance = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
+    console.log(userUuid)
     if (!userUuid) {
       return commonHelper.errorHandler(res, {
         status: false,
