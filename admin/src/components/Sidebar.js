@@ -19,6 +19,7 @@ import {
 import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstrap";
 
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
+import DashboardIcon from "../assets/img/team/dashboard-svgrepo-com 1.png";
 import logo from "../assets/img/pages/appstore-preview.png"
 
 import { Routes } from "../routes";

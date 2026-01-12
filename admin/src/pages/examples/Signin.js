@@ -8,7 +8,7 @@ import { Alert } from "@mui/material";
 import BgImage from "../../assets/img/illustrations/Data_security_01.jpg";
 import { isAuthenticated, loginAdmin } from "../../api/Auth";
 import Swal from "sweetalert2";
-import logo from "../../assets/img/pages/appstore 1.png";
+import logo from "../../assets/img/pages/kpigi.png";
 
 export default function Signin() {
   const history = useHistory();
