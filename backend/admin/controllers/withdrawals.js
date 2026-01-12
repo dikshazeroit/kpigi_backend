@@ -1,5 +1,6 @@
 import WithdrawalModel from "../../application/model/WithdrawalModel.js";
 import UserModel from "../../application/model/UserModel.js";
+import { sendMail } from "../../middleware/MailSenderReport.js";
 
 export const getAllwithdrawal = async (req, res) => {
   try {
@@ -71,45 +72,42 @@ export const approveWithdrawal = async (req, res) => {
 };
 
 
+
 export const rejectWithdrawal = async (req, res) => {
   const { w_uuid, reason } = req.body;
 
   if (!w_uuid) {
-    return res.status(400).json({
-      status: false,
-      message: "Withdrawal UUID is required",
-    });
+    return res.status(400).json({ status: false, message: "Withdrawal UUID is required" });
   }
 
   try {
-    // Find the withdrawal request by UUID
     const withdrawal = await WithdrawalModel.findOne({ w_uuid });
     if (!withdrawal) {
-      return res.status(404).json({
-        status: false,
-        message: "Withdrawal not found",
-      });
+      return res.status(404).json({ status: false, message: "Withdrawal not found" });
     }
 
-    //  Find the user by UUID (avoid ObjectId casting)
     const user = await UserModel.findOne({ uc_uuid: withdrawal.w_fk_uc_uuid });
     if (!user) {
-      return res.status(404).json({
-        status: false,
-        message: "User not found",
-      });
+      return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    //  Refund the withdrawal amount to user balance
+    // Refund amount
     user.uc_balance = (user.uc_balance || 0) + (withdrawal.w_amount || 0);
     await user.save();
 
-    // Mark withdrawal as REJECTED and add admin note
+    // Update withdrawal status
     withdrawal.w_status = "REJECTED";
     withdrawal.w_admin_note = reason || "";
     await withdrawal.save();
 
-    // Send success response
+    // ===== Send rejection email =====
+    if (user.uc_email) {
+      const subject = "Withdrawal Request Rejected";
+      const text = `Hello ${user.uc_full_name || ""},\n\nYour withdrawal request of ₹${withdrawal.w_amount} has been rejected.\nReason: ${reason || "No reason provided"}\n\nThe amount has been refunded to your account balance.`;
+      
+      await sendMail(user.uc_email, subject, text);
+    }
+
     return res.status(200).json({
       status: true,
       message: "Withdrawal rejected and amount refunded successfully",
@@ -125,7 +123,6 @@ export const rejectWithdrawal = async (req, res) => {
     });
   }
 };
-
 
 
 
