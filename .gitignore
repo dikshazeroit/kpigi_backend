@@ -10,3 +10,4 @@ build
 .env
 /backend/FirebaseAdminSDK.json
 firebaseAdminSDK.jsonbackend/config/FirebaseAdminSDK.json
+backend/config/FirebaseAdminSDK.json
