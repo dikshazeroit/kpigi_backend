@@ -77,6 +77,7 @@ router.post( "/private/get-user-balance", userObj.getUserBalance);
 
 router.post("/private/create-fund",fundUpload,fundObj.createFundRequest);
 router.post("/private/fund-list", fundObj.getFundList);
+router.post("/private/my-fund-list", fundObj.getMyFundList);
 router.post("/private/fund-details", fundObj.getFundDetails);
 router.post("/private/update-fund", fundUpload,fundObj.updateFund);
 router.post("/private/delete-fund", fundObj.deleteFund);

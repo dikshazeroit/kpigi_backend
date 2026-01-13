@@ -460,4 +460,92 @@ fundObj.deleteFund = async function (req, res) {
   }
 };
 
+/**
+ * Get list of funds for the current user.
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void}
+ * @developer Sangeeta
+ */
+
+fundObj.getMyFundList = async function (req, res) {
+  try {
+    const userId = await appHelper.getUUIDByToken(req);
+    if (!userId) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-L1001",
+          message: "Unauthorized access.",
+        },
+        200
+      );
+    }
+
+    const today = new Date();
+
+    // 🔹 Get active funds
+    const funds = await FundModel.find({
+      f_fk_uc_uuid: userId,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // 🔹 Add raised amount + donor count
+    for (let fund of funds) {
+      const donationAgg = await DonationModel.aggregate([
+        {
+          $match: {
+            d_fk_f_uuid: fund.f_uuid,
+            d_status: "SUCCESS",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRaised: { $sum: "$d_amount" },
+            donors: { $addToSet: "$d_fk_uc_uuid" }, // 👈 unique donors
+          },
+        },
+      ]);
+
+      const raisedAmount =
+        donationAgg.length > 0 ? donationAgg[0].totalRaised : 0;
+
+      const donorCount =
+        donationAgg.length > 0 ? donationAgg[0].donors.length : 0;
+
+      const goalAmount = fund.f_amount || 0;
+
+      fund.raised_amount = raisedAmount;
+      fund.goal_amount = goalAmount;
+      fund.donor_count = donorCount;
+
+      fund.progress_percent =
+        goalAmount > 0 ? Math.round((raisedAmount / goalAmount) * 100) : 0;
+
+      fund.progress_text = `$${raisedAmount} raised of $${goalAmount} goal`;
+    }
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Active fund list fetched successfully.",
+      payload: funds,
+    });
+  } catch (error) {
+    console.error("❌ getFundList Error:", error);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "FUND-L9999",
+        message: "Internal server error.",
+      },
+      200
+    );
+  }
+};
+
 export default fundObj;
