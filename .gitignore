@@ -9,4 +9,4 @@ build
 /admin/package-lock.json
 .env
 /backend/FirebaseAdminSDK.json
-firebaseAdminSDK.json
+firebaseAdminSDK.jsonbackend/config/FirebaseAdminSDK.json
