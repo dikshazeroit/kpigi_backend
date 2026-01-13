@@ -48,13 +48,25 @@ fundObj.createFundRequest = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-E1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-E1001", message: "Unauthorized access." },
+        200
+      );
     }
 
     const { title, purpose, category, amount, deadline, story } = req.body;
 
     if (!title || !purpose || !category || !amount || !deadline || !story) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-E1002", message: "Missing required fields." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-E1002",
+          message: "Missing required fields.",
+        },
+        200
+      );
     }
 
     const uploadedMedia = [];
@@ -62,7 +74,10 @@ fundObj.createFundRequest = async function (req, res) {
       for (let i = 0; i < 5; i++) {
         const file = req.files.media[i];
         if (file) {
-          const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
+          const fileName = `fund-${Date.now()}-${file.originalname}`.replace(
+            / /g,
+            "_"
+          );
           await commonHelper.uploadFile({
             fileName,
             chunks: [file.buffer],
@@ -100,8 +115,13 @@ fundObj.createFundRequest = async function (req, res) {
 
     // Send notification
     try {
-      const deviceRecords = await UserDevice.find({ ud_fk_uc_uuid: userId, ud_device_fcmToken: { $exists: true, $ne: "" } }).select("ud_device_fcmToken");
-      const tokens = deviceRecords.map(d => d.ud_device_fcmToken).filter(Boolean);
+      const deviceRecords = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" },
+      }).select("ud_device_fcmToken");
+      const tokens = deviceRecords
+        .map((d) => d.ud_device_fcmToken)
+        .filter(Boolean);
 
       const notiTitle = "Your fundraiser is live!";
       const notiBody = `Your fundraiser "${title}" has been successfully created. Start sharing to receive donations.`;
@@ -115,16 +135,36 @@ fundObj.createFundRequest = async function (req, res) {
       });
 
       if (tokens.length > 0) {
-        await newModelObj.sendNotificationToUser({ userId, title: notiTitle, body: notiBody, data: { fund_uuid: uuid, type: "fund_created" }, tokens });
+        await newModelObj.sendNotificationToUser({
+          userId,
+          title: notiTitle,
+          body: notiBody,
+          data: { fund_uuid: uuid, type: "fund_created" },
+          tokens,
+        });
       }
     } catch (sendErr) {
       console.error("⚠️ Notification send failed:", sendErr);
     }
 
-    return commonHelper.successHandler(res, { status: true, message: "Fund request created successfully.", payload: { fund_uuid: uuid, title, category, amount, media: uploadedMedia } });
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Fund request created successfully.",
+      payload: {
+        fund_uuid: uuid,
+        title,
+        category,
+        amount,
+        media: uploadedMedia,
+      },
+    });
   } catch (error) {
     console.error("❌ createFundRequest Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-E9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "FUND-E9999", message: "Internal server error." },
+      200
+    );
   }
 };
 
@@ -141,11 +181,15 @@ fundObj.getFundList = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "FUND-L1001",
-        message: "Unauthorized access.",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-L1001",
+          message: "Unauthorized access.",
+        },
+        200
+      );
     }
 
     const today = new Date();
@@ -153,6 +197,7 @@ fundObj.getFundList = async function (req, res) {
     // 🔹 Get active funds
     const funds = await FundModel.find({
       f_deadline: { $gte: today },
+      f_status: "ACTIVE",
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -188,9 +233,7 @@ fundObj.getFundList = async function (req, res) {
       fund.donor_count = donorCount;
 
       fund.progress_percent =
-        goalAmount > 0
-          ? Math.round((raisedAmount / goalAmount) * 100)
-          : 0;
+        goalAmount > 0 ? Math.round((raisedAmount / goalAmount) * 100) : 0;
 
       fund.progress_text = `$${raisedAmount} raised of $${goalAmount} goal`;
     }
@@ -200,19 +243,19 @@ fundObj.getFundList = async function (req, res) {
       message: "Active fund list fetched successfully.",
       payload: funds,
     });
-
   } catch (error) {
     console.error("❌ getFundList Error:", error);
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "FUND-L9999",
-      message: "Internal server error.",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "FUND-L9999",
+        message: "Internal server error.",
+      },
+      200
+    );
   }
 };
-
-
-
 
 /**
  * Get details of a specific fund.
@@ -255,7 +298,7 @@ fundObj.getFundDetails = async function (req, res) {
         uc_country_name: 1,
         uc_profile_photo: 1,
         uc_bio: 1,
-        _id: 0
+        _id: 0,
       }
     ).lean();
 
@@ -267,15 +310,14 @@ fundObj.getFundDetails = async function (req, res) {
       creator_phone: creator?.uc_phone || "",
       creator_country_name: creator?.uc_country_name || "",
       creator_profile_photo: creator?.uc_profile_photo || "",
-      creator_bio: creator?.uc_bio || ""
+      creator_bio: creator?.uc_bio || "",
     };
 
     return commonHelper.successHandler(res, {
       status: true,
       message: "Fund details fetched.",
-      payload: responsePayload
+      payload: responsePayload,
     });
-
   } catch (error) {
     console.error("❌ getFundDetails Error:", error);
     return commonHelper.errorHandler(
@@ -285,7 +327,6 @@ fundObj.getFundDetails = async function (req, res) {
     );
   }
 };
-
 
 /**
  * Update a specific fund.
@@ -303,16 +344,31 @@ fundObj.updateFund = async function (req, res) {
     const { f_uuid } = req.body;
 
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-U1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-U1001", message: "Unauthorized access." },
+        200
+      );
     }
 
     const fund = await FundModel.findOne({ f_uuid, f_fk_uc_uuid: userId });
     if (!fund) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-U1002", message: "Fund not found." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-U1002", message: "Fund not found." },
+        200
+      );
     }
 
-    const updatableFields = ["title", "purpose", "category", "amount", "deadline", "story"];
-    updatableFields.forEach(field => {
+    const updatableFields = [
+      "title",
+      "purpose",
+      "category",
+      "amount",
+      "deadline",
+      "story",
+    ];
+    updatableFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         if (field === "deadline") fund.f_deadline = new Date(req.body[field]);
         else if (field === "amount") fund.f_amount = Number(req.body[field]);
@@ -324,18 +380,35 @@ fundObj.updateFund = async function (req, res) {
       for (let i = 0; i < 5; i++) {
         const file = req.files.media[i];
         if (file) {
-          const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
-          await commonHelper.uploadFile({ fileName, chunks: [file.buffer], encoding: file.encoding, contentType: file.mimetype, uploadFolder: process.env.AWS_USER_FILE_FOLDER });
+          const fileName = `fund-${Date.now()}-${file.originalname}`.replace(
+            / /g,
+            "_"
+          );
+          await commonHelper.uploadFile({
+            fileName,
+            chunks: [file.buffer],
+            encoding: file.encoding,
+            contentType: file.mimetype,
+            uploadFolder: process.env.AWS_USER_FILE_FOLDER,
+          });
           fund[`f_media_${i + 1}`] = fileName;
         }
       }
     }
 
     await fund.save();
-    return commonHelper.successHandler(res, { status: true, message: "Fund updated successfully.", payload: fund });
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Fund updated successfully.",
+      payload: fund,
+    });
   } catch (error) {
     console.error("❌ updateFund Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-U9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "FUND-U9999", message: "Internal server error." },
+      200
+    );
   }
 };
 
@@ -353,18 +426,37 @@ fundObj.deleteFund = async function (req, res) {
     const { f_uuid } = req.body;
 
     if (!userId) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-X1001", message: "Unauthorized access." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-X1001", message: "Unauthorized access." },
+        200
+      );
     }
 
-    const deleted = await FundModel.findOneAndDelete({ f_uuid, f_fk_uc_uuid: userId });
+    const deleted = await FundModel.findOneAndDelete({
+      f_uuid,
+      f_fk_uc_uuid: userId,
+    });
     if (!deleted) {
-      return commonHelper.errorHandler(res, { status: false, code: "FUND-X1002", message: "Fund not found." }, 200);
+      return commonHelper.errorHandler(
+        res,
+        { status: false, code: "FUND-X1002", message: "Fund not found." },
+        200
+      );
     }
 
-    return commonHelper.successHandler(res, { status: true, message: "Fund deleted successfully.", payload: { f_uuid } });
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "Fund deleted successfully.",
+      payload: { f_uuid },
+    });
   } catch (error) {
     console.error("❌ deleteFund Error:", error);
-    return commonHelper.errorHandler(res, { status: false, code: "FUND-X9999", message: "Internal server error." }, 200);
+    return commonHelper.errorHandler(
+      res,
+      { status: false, code: "FUND-X9999", message: "Internal server error." },
+      200
+    );
   }
 };
 
