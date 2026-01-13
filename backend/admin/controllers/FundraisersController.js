@@ -3,6 +3,7 @@
 import FundModel from "../../application/model/FundModel.js";
 import SecurityReportModel from "../../application/model/SecurityReportModel.js";
 import UsersCredentialsModel from "../../application/model/UserModel.js";
+import { sendMail } from "../../middleware/MailSenderReport.js";
 
 export const getAllFundraisers = async (req, res) => {
   try {
@@ -84,32 +85,73 @@ export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;
 
-    await FundModel.findOneAndUpdate(
+    // Update fundraiser status
+    const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "ACTIVE", f_pause_reason: null }
+      { f_status: "ACTIVE", f_pause_reason: null },
+      { new: true } // return updated document
     );
 
-    return res.json({ status: true, message: "Fundraiser approved" });
+    if (!fundraiser) {
+      return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    }
+
+    // Prepare email data
+    const mailData = {
+      to: fundraiser.f_email,
+      subject: "Your fundraiser has been approved!",
+      text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser has been approved and is now ACTIVE.\n\nBest regards,\nTeam`,
+    };
+
+
+    await sendMail(mailData);
+
+    return res.json({ status: true, message: "Fundraiser approved and email sent" });
   } catch (err) {
+    console.error("Error approving fundraiser:", err);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
+
+
 
 // REJECT
 export const rejectFundraiser = async (req, res) => {
   try {
     const { fund_uuid, reason } = req.body;
 
-    await FundModel.findOneAndUpdate(
+    // Update fundraiser status to CLOSED
+    const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "CLOSED", f_pause_reason: reason || "Rejected by admin" }
+      { f_status: "CLOSED", f_pause_reason: reason || "Rejected by admin" },
+      { new: true } // return the updated document
     );
 
-    return res.json({ status: true, message: "Fundraiser rejected" });
+    if (!fundraiser) {
+      return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    }
+
+    // Prepare email data
+    const mailData = {
+      to: fundraiser.f_email, // ensure fundraiser has an email
+      subject: "Your fundraiser has been rejected",
+      text: `Hello ${fundraiser.f_name || "there"},\n\n` +
+        `We are sorry to inform you that your fundraiser has been rejected.\n` +
+        `Reason: ${reason || "Rejected by admin"}\n\n` +
+        `Best regards,\nTeam`,
+    };
+
+    // Send email using your middleware
+    await sendMail(mailData);
+
+    return res.json({ status: true, message: "Fundraiser rejected and email sent" });
   } catch (err) {
+    console.error("Error rejecting fundraiser:", err);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
 
 // PAUSE
 export const pauseFundraiser = async (req, res) => {
