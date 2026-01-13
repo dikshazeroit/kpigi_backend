@@ -47,7 +47,7 @@ const Category = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -222,7 +222,7 @@ const Category = () => {
             <div className="text-center py-5">
               <Spinner animation="border" />
               <div className="text-muted fw-semibold">
-                Loading categories, please wait....
+                Loading data, please wait...
               </div>
             </div>
           ) : filtered.length === 0 ? (
@@ -304,46 +304,36 @@ const Category = () => {
               </Table>
 
               {/* PAGINATION */}
-              {filtered.length > itemsPerPage && (
-                <div className="d-flex justify-content-center mt-3">
+              {totalPages >= 1 && (
+                   <div className="d-flex justify-content-end mt-3">
                   <Pagination>
-                    <Pagination.First
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                    />
                     <Pagination.Prev
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
                       disabled={currentPage === 1}
-                    />
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      Prev
+                    </Pagination.Prev>
 
-                    {Array.from({ length: totalPages }).map((_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <Pagination.Item
-                          key={pageNum}
-                          active={currentPage === pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
-                          {pageNum}
-                        </Pagination.Item>
-                      );
-                    })}
+                    {[...Array(totalPages)].map((_, i) => (
+                      <Pagination.Item
+                        key={i + 1}
+                        active={i + 1 === currentPage}
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </Pagination.Item>
+                    ))}
 
                     <Pagination.Next
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
                       disabled={currentPage === totalPages}
-                    />
-                    <Pagination.Last
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                    />
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      Next
+                    </Pagination.Next>
                   </Pagination>
                 </div>
               )}
+
             </>
           )}
         </Card.Body>

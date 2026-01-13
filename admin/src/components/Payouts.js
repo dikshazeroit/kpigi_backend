@@ -128,7 +128,7 @@ const WithdrawalManagement = () => {
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
-            <div className="text-muted fw-semibold">Loading withdrawals...</div>
+            <div className="text-muted fw-semibold">Loading data, please wait...</div>
           </div>
         ) : (
           <>
@@ -213,31 +213,37 @@ const WithdrawalManagement = () => {
             </Table>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination className="justify-content-end mt-3">
-                <Pagination.Prev
-                  disabled={currentPage === 1 || loading}
-                  onClick={() =>
-                    setCurrentPage((p) => Math.max(1, p - 1))
-                  }
-                >
-                  Prev
-                </Pagination.Prev>
+            <div className="d-flex justify-content-end mt-3">
 
-                <Pagination.Item active className="mx-2">
-                  {currentPage}
-                </Pagination.Item>
+              {totalPages >= 1 && (
+                <Pagination className="justify-content-end mt-3">
+                  <Pagination.Prev
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  >
+                    Prev
+                  </Pagination.Prev>
 
-                <Pagination.Next
-                  disabled={currentPage === totalPages || loading}
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                >
-                  Next
-                </Pagination.Next>
-              </Pagination>
-            )}
+                  {[...Array(totalPages)].map((_, i) => (
+                    <Pagination.Item
+                      key={i + 1}
+                      active={i + 1 === currentPage}
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </Pagination.Item>
+                  ))}
+
+                  <Pagination.Next
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  >
+                    Next
+                  </Pagination.Next>
+                </Pagination>
+              )}
+            </div>
+
           </>
         )}
       </Card>

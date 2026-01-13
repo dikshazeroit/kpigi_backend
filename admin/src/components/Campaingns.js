@@ -165,7 +165,7 @@ export default function Campaign() {
                                     campaigns.map((c, index) => (
                                         <tr key={c.f_uuid}>
                                             <td>
-                                                {(setPage - 1) * campaignsPerPage + index + 1}
+                                                {(page - 1) * campaignsPerPage + index + 1}
                                             </td>
                                             <td>{c.f_title}</td>
                                             <td>{c.userName}</td>

@@ -17,15 +17,13 @@ import { faSearch, faUsers, faTrash, faEdit, faEye } from "@fortawesome/free-sol
 import Swal from "sweetalert2";
 import { Image_Url } from "../api/ApiClient";
 
-
-
 export const PageUserTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(""); // "" = All
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
@@ -42,25 +40,21 @@ export const PageUserTable = () => {
     try {
       setLoading(true);
       const res = await getAllUsers(page, limit, search);
-
       let data = res.payload || [];
 
+      // Apply role filter
       if (role) {
-        data = data.filter(
-          (u) => (u.uc_role || "").toLowerCase() === role.toLowerCase()
-        );
+        data = data.filter((u) => (u.uc_role || "").toLowerCase() === role.toLowerCase());
       }
 
+      // Apply start date filter
       if (start) {
-        data = data.filter(
-          (u) => u.uc_created_at?.substring(0, 10) >= start
-        );
+        data = data.filter((u) => u.uc_created_at?.substring(0, 10) >= start);
       }
 
+      // Apply end date filter
       if (end) {
-        data = data.filter(
-          (u) => u.uc_created_at?.substring(0, 10) <= end
-        );
+        data = data.filter((u) => u.uc_created_at?.substring(0, 10) <= end);
       }
 
       setUsers(data);
@@ -73,13 +67,16 @@ export const PageUserTable = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page, search]);
-
+  // ================= EFFECTS =================
+  // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [role, start, end]);
+  }, [role, start, end, search]);
+
+  // Fetch users whenever page or filters change
+  useEffect(() => {
+    fetchUsers();
+  }, [page, search, role, start, end]);
 
   // ================= DELETE USER =================
   const handleDeleteUser = async (id) => {
@@ -108,6 +105,7 @@ export const PageUserTable = () => {
     }
   };
 
+  // ================= VIEW USER =================
   const handleViewUser = (user) => {
     const profileImg = user.uc_profile_photo
       ? Image_Url + user.uc_profile_photo
@@ -116,36 +114,24 @@ export const PageUserTable = () => {
     Swal.fire({
       title: "User Details",
       html: `
-      <div style="text-align:center; margin-bottom:15px;">
-        <img 
-          src="${profileImg}"
-          alt="User"
-          style="
-            width:120px;
-            height:120px;
-            border-radius:50%;
-            object-fit:cover;
-            border:3px solid #ddd;
-          "
-          onerror="this.src='${defaultProfileImg}'"
-        />
-      </div>
-
-      <p><strong>Full Name:</strong> ${user.uc_full_name || "No Data Found"}</p>
-      <p><strong>Email:</strong> ${user.uc_email || "No Data Found"}</p>
-      <p><strong>Role:</strong> ${user.uc_role || "No Data Found"}</p>
-      <p><strong>Phone:</strong> ${user.uc_phone || "No Data Found"}</p>
-      <p><strong>Country Code:</strong> ${user.uc_country_code || "No Data Found"}</p>
-      <p><strong>Bio:</strong> ${user.uc_bio || "No Data Found"}</p>
-      <p><strong>Notifications Enabled:</strong> ${user.uc_notifications_enabled ? "Yes" : "No"}</p>
-      <p><strong>Date Created:</strong> ${user.uc_created_at?.substring(0, 10) || "No Data Found"}</p>
-    `,
+        <div style="text-align:center; margin-bottom:15px;">
+          <img src="${profileImg}" alt="User" style="
+            width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #ddd;"
+            onerror="this.src='${defaultProfileImg}'"
+          />
+        </div>
+        <p><strong>Full Name:</strong> ${user.uc_full_name || "No Data Found"}</p>
+        <p><strong>Email:</strong> ${user.uc_email || "No Data Found"}</p>
+        <p><strong>Role:</strong> ${user.uc_role || "No Data Found"}</p>
+        <p><strong>Phone:</strong> ${user.uc_phone || "No Data Found"}</p>
+        <p><strong>Country Code:</strong> ${user.uc_country_code || "No Data Found"}</p>
+        <p><strong>Bio:</strong> ${user.uc_bio || "No Data Found"}</p>
+        <p><strong>Notifications Enabled:</strong> ${user.uc_notifications_enabled ? "Yes" : "No"}</p>
+        <p><strong>Date Created:</strong> ${user.uc_created_at?.substring(0, 10) || "No Data Found"}</p>
+      `,
       confirmButtonText: "Close",
     });
   };
-
-
-
 
   // ================= EDIT USER =================
   const handleEditUser = async (user) => {
@@ -196,8 +182,7 @@ export const PageUserTable = () => {
     <Card border="light" className="shadow-sm p-3">
       <Card.Header className="border-0 bg-white p-0 mb-4">
         <h3 className="fw-bold mb-1 d-flex align-items-center gap-2">
-          <FontAwesomeIcon icon={faUsers} />
-          User List
+          <FontAwesomeIcon icon={faUsers} /> User List
         </h3>
       </Card.Header>
 
@@ -207,10 +192,7 @@ export const PageUserTable = () => {
           <Row className="g-3">
             <Col md={3}>
               <Form.Label className="fw-semibold">User Role</Form.Label>
-              <Form.Select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
+              <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
                 <option value="">All</option>
                 <option value="requester">Requester</option>
                 <option value="donor">Donor</option>
@@ -223,6 +205,7 @@ export const PageUserTable = () => {
                 type="date"
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
+                placeholder="Start date"
               />
             </Col>
 
@@ -232,9 +215,9 @@ export const PageUserTable = () => {
                 type="date"
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
+                placeholder="End date"
               />
             </Col>
-
             <Col md={5}>
               <Form.Label className="fw-semibold">Search</Form.Label>
               <InputGroup>
@@ -242,7 +225,7 @@ export const PageUserTable = () => {
                   <FontAwesomeIcon icon={faSearch} />
                 </InputGroup.Text>
                 <Form.Control
-                  placeholder="Search by name or email"
+                  placeholder="Search by name ..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -255,9 +238,7 @@ export const PageUserTable = () => {
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" />
-            <div className="text-muted fw-semibold">
-              Loading data, please wait...
-            </div>
+            <div className="text-muted fw-semibold">Loading data, please wait...</div>
           </div>
         ) : (
           <div className="table-responsive">
@@ -265,11 +246,11 @@ export const PageUserTable = () => {
               <thead className="bg-light">
                 <tr>
                   <th>Sr.No.</th>
-                  <th>profile photo</th>
+                  <th>Profile Photo</th>
                   <th>User Name</th>
                   <th>Email</th>
-                  <th>country code</th>
-                  <th>phone</th>
+                  <th>Country Code</th>
+                  <th>Phone</th>
                   <th>Role</th>
                   <th>Date Created</th>
                   <th className="text-center">Actions</th>
@@ -279,87 +260,38 @@ export const PageUserTable = () => {
                 {users.length > 0 ? (
                   users.map((u, index) => (
                     <tr key={u._id}>
-                      {/* Sr.No */}
                       <td>{(page - 1) * limit + index + 1}</td>
                       <td className="text-center">
                         <img
-                          src={
-                            u.uc_profile_photo
-                              ? Image_Url + u.uc_profile_photo
-                              : defaultProfileImg
-                          }
+                          src={u.uc_profile_photo ? Image_Url + u.uc_profile_photo : defaultProfileImg}
                           alt="profile"
-                          style={{
-                            width: "45px",
-                            height: "45px",
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                            border: "2px solid #ddd"
-                          }}
+                          style={{ width: "45px", height: "45px", borderRadius: "50%", objectFit: "cover", border: "2px solid #ddd" }}
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = defaultProfileImg;
                           }}
                         />
                       </td>
-                      {/* User Name */}
                       <td className="fw-semibold">{u.uc_full_name}</td>
-
-                      {/* Email */}
                       <td>{u.uc_email}</td>
-
-                      {/* Country Code */}
                       <td>{u.uc_country_code || "No Data Found"}</td>
-
-                      {/* Phone */}
                       <td>{u.uc_phone || "No Data Found"}</td>
-
-                      {/* Role */}
                       <td>
                         <Badge
-                          bg={
-                            u.uc_role === "DONOR"
-                              ? "success"
-                              : u.uc_role === "REQUESTER"
-                                ? "info"
-                                : "secondary"
-                          }
+                          bg={u.uc_role === "DONOR" ? "success" : u.uc_role === "REQUESTER" ? "info" : "secondary"}
                         >
                           {u.uc_role || "No Data Found"}
                         </Badge>
                       </td>
-
-                      {/* Date Created */}
                       <td>{u.uc_created_at?.substring(0, 10) || "No Data Found"}</td>
-
-                      {/* Actions */}
-
                       <td className="text-center">
-                        {/* View Button */}
-                        <Button
-                          variant="info"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleViewUser(u)}
-                        >
+                        <Button variant="info" size="sm" className="me-2" onClick={() => handleViewUser(u)}>
                           <FontAwesomeIcon icon={faEye} />
                         </Button>
-
-                        <Button
-                          variant="warning"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleEditUser(u)}
-                        >
+                        <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditUser(u)}>
                           <FontAwesomeIcon icon={faEdit} />
                         </Button>
-
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          disabled={deletingId === u._id}
-                          onClick={() => handleDeleteUser(u._id)}
-                        >
+                        <Button variant="danger" size="sm" disabled={deletingId === u._id} onClick={() => handleDeleteUser(u._id)}>
                           {deletingId === u._id ? <Spinner size="sm" /> : <FontAwesomeIcon icon={faTrash} />}
                         </Button>
                       </td>
@@ -373,7 +305,6 @@ export const PageUserTable = () => {
                   </tr>
                 )}
               </tbody>
-
             </Table>
           </div>
         )}
@@ -381,24 +312,9 @@ export const PageUserTable = () => {
         {/* ================= PAGINATION ================= */}
         {totalPages > 1 && (
           <Pagination className="justify-content-end mt-3">
-            <Pagination.Prev
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              Prev
-            </Pagination.Prev>
-
-            {/* Current Page */}
-            <Pagination.Item active className="mx-2">
-              {page}
-            </Pagination.Item>
-
-            <Pagination.Next
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              Next
-            </Pagination.Next>
+            <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
+            <Pagination.Item active>{page}</Pagination.Item>
+            <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
           </Pagination>
         )}
       </Card.Body>
