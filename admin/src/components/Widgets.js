@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp, faChartLine, faFlagUsa, faFolderOpen, faGlobeEurope, faPen, faUser } from '@fortawesome/free-solid-svg-icons';
 import { faAngular, faBootstrap, faReact, faVuejs } from "@fortawesome/free-brands-svg-icons";
 import { Col, Row, Card, Image, Button, ListGroup, ProgressBar } from '@themesberg/react-bootstrap';
 import { CircleChart, BarChart, SalesValueChart, SalesValueChartPhone } from "./Charts";
@@ -75,27 +75,12 @@ export const ProfileCardWidget = () => {
       {/* SAME COVER */}
       <div
         style={{
-          backgroundImage: `url(${ProfileCover})`,
-          height: "200px",
+          background: "rgba(255,255,255,0.9)",
+          height: "180px",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
         className="profile-cover rounded-top"
-      />
-
-      {/* SAME EDIT ICON */}
-      <FontAwesomeIcon
-        icon={faPen}
-        title="Edit Cover Image"
-        onClick={() => fileInputRef.current.click()}
-        style={{
-          position: "absolute", top: "10px", right: "20px", cursor: "pointer",
-          color: "#333", background: "#fff", padding: "10px", borderRadius: "50%",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.15)", height: "36px", width: "36px",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10
-        }}
-        onMouseEnter={(e) => e.target.style.transform = "scale(1.1)"}
-        onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
       />
 
       <input
@@ -114,6 +99,14 @@ export const ProfileCardWidget = () => {
           src={adminImageURL}
           alt="Profile"
           className="user-avatar large-avatar rounded-circle mx-auto mt-n7 mb-4"
+          style={{
+            width: "120px",
+            height: "120px",
+            objectFit: "cover",
+            marginTop: "-70px",
+            border: "4px solid #fff",
+            boxShadow: "0 6px 15px rgba(0,0,0,0.15)"
+          }}
         />
 
         {/* NAME */}
@@ -122,19 +115,30 @@ export const ProfileCardWidget = () => {
 
         {/* DETAILS */}
         <div className="text-start px-4">
-          <h5 className="fw-bold mb-3">Profile Information</h5>
 
-          <p className="mb-1">
-            <strong>Full Name:</strong> {admin.firstName} {admin.lastName}
+          <h5
+            className="fw-bold mb-3 d-flex align-items-center"
+            style={{ color: "#0d6efd" }}
+          >
+            <FontAwesomeIcon
+              icon={faUser}
+              className="me-2"
+              style={{ fontSize: "14px" }}
+            />
+            Profile Information
+          </h5>
+
+          <p className="mb-1 small">
+            <strong>Full Name :</strong> {admin.firstName} {admin.lastName}
           </p>
-          <p className="mb-1">
-            <strong>Mobile:</strong> {admin.phone || "N/A"}
+          <p className="mb-1 small">
+            <strong>Mobile :</strong> {admin.phone || "N/A"}
           </p>
-          <p className="mb-1">
-            <strong>Email:</strong> {admin.email || "N/A"}
+          <p className="mb-1 small">
+            <strong>Email :</strong> {admin.email || "N/A"}
           </p>
-          <p className="mb-0">
-            <strong>Location:</strong> {admin.address || "N/A"}
+          <p className="mb-0 small">
+            <strong>Location :</strong> {admin.address || "N/A"}
           </p>
         </div>
 
@@ -143,7 +147,7 @@ export const ProfileCardWidget = () => {
           icon={faPen}
           onClick={() => history.push(Routes.EditProfile.path)}
           style={{
-            position: "absolute", top: "345px", right: "15px", cursor: "pointer",
+            position: "absolute", top: "320px", right: "15px", cursor: "pointer",
             color: "#555", background: "#fff", padding: "8px", borderRadius: "50%",
             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
             height: "30px", width: "30px",

@@ -244,7 +244,7 @@ export default function Sidebar({ userName = "Jane" }) {
                 iconColor="#00ced1"
               /> */}
               <NavItem
-                title="FAQs"
+                title="Faq"
                 link={Routes.FaqsPage.path}
                 icon={faLifeRing}
                 textColor="#00ced1"

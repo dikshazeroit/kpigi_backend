@@ -1,6 +1,8 @@
 // Category.jsx
 import React, { useEffect, useState } from "react";
 import {
+  Row,
+  Col,
   Card,
   Table,
   Button,
@@ -200,16 +202,20 @@ const Category = () => {
 
         {/* SEARCH */}
         <Card.Body>
-          <InputGroup className="mb-3">
-            <InputGroup.Text>
-              <FontAwesomeIcon icon={faSearch} />
-            </InputGroup.Text>
-            <Form.Control
-              placeholder="Search category..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </InputGroup>
+          <Row className="mb-3">
+            <Col className="d-flex justify-content-end">
+              <InputGroup style={{ maxWidth: "280px" }}>
+                <InputGroup.Text>
+                  <FontAwesomeIcon icon={faSearch} />
+                </InputGroup.Text>
+                <Form.Control
+                  placeholder="Search by category name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+          </Row>
 
           {/* TABLE */}
           {loading ? (

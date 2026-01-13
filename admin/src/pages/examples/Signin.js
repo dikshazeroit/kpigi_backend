@@ -118,7 +118,7 @@ export default function Signin() {
                 <img
                   src={logo}
                   alt="Kpigi Logo"
-                  style={{ height: "100px", objectFit: "contain", marginBottom: "12px", borderRadius: "4px" }}
+                  style={{ height: "90px", objectFit: "contain", marginBottom: "12px", borderRadius: "4px" }}
                 />
                 <h3 className="fw-bold" style={{ fontSize: "1.9rem" }}>
                   Admin Login Portal
