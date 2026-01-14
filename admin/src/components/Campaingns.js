@@ -18,6 +18,8 @@ import {
     faInfoCircle,
     faFunnelDollar,
 } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+
 
 // API IMPORTS
 import {
@@ -81,15 +83,65 @@ export default function Campaign() {
     };
 
     const handleApprove = async (campaign) => {
-        await approveFundraiserAPI(campaign.f_uuid);
-        fetchCampaigns();
-    };
+  try {
+    const res = await approveFundraiserAPI(campaign.f_uuid);
 
-    const handleReject = async () => {
-        if (!rejectReason.trim()) return alert("Please enter a reason!");
-        await rejectFundraiserAPI(campaignToReject.f_uuid, rejectReason);
-        setShowRejectModal(false);
-        fetchCampaigns();
+    // SweetAlert success
+    Swal.fire({
+      icon: "success",
+      title: "Approved!",
+      text: res.message || "Fundraiser approved successfully",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+
+    fetchCampaigns();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error.response?.data?.message || "Failed to approve fundraiser",
+    });
+  }
+};
+const handleReject = async () => {
+  if (!rejectReason.trim()) {
+    Swal.fire({
+      icon: "warning",
+      title: "Warning",
+      text: "Please enter a reason!",
+    });
+    return;
+  }
+
+        try {
+            const res = await rejectFundraiserAPI(
+                campaignToReject.f_uuid,
+                rejectReason
+            );
+
+    Swal.fire({
+      icon: "success",
+      title: "Rejected!",
+      text: res.message || "Fundraiser rejected successfully",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+
+            setShowRejectModal(false);
+            setCampaignToReject(null);
+            setRejectReason("");
+
+            fetchCampaigns();
+        } catch (error) {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text:
+                error.response?.data?.message || "Failed to reject fundraiser",
+            });
+        }
     };
 
     // ================= STATUS TEXT =================
@@ -292,36 +344,36 @@ export default function Campaign() {
                             </tbody>
                         </Table>
                     )}
- {/* Pagination */}
-        
+                    {/* Pagination */}
 
-              {totalPages >= 1 && (
-                <Pagination className="justify-content-end mt-3">
-                  <Pagination.Prev
-                    disabled={page === 1}
-                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                  >
-                    Prev
-                  </Pagination.Prev>
 
-                  {[...Array(totalPages)].map((_, i) => (
-                    <Pagination.Item
-                      key={i + 1}
-                      active={i + 1 === page}
-                      onClick={() => setPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Pagination.Item>
-                  ))}
+                    {totalPages >= 1 && (
+                        <Pagination className="justify-content-end mt-3">
+                            <Pagination.Prev
+                                disabled={page === 1}
+                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                            >
+                                Prev
+                            </Pagination.Prev>
 
-                  <Pagination.Next
-                    disabled={page === totalPages}
-                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                  >
-                    Next
-                  </Pagination.Next>
-                </Pagination>
-              )}
+                            {[...Array(totalPages)].map((_, i) => (
+                                <Pagination.Item
+                                    key={i + 1}
+                                    active={i + 1 === page}
+                                    onClick={() => setPage(i + 1)}
+                                >
+                                    {i + 1}
+                                </Pagination.Item>
+                            ))}
+
+                            <Pagination.Next
+                                disabled={page === totalPages}
+                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                            >
+                                Next
+                            </Pagination.Next>
+                        </Pagination>
+                    )}
                 </Card.Body>
             </Card>
 

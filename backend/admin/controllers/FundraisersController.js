@@ -4,6 +4,7 @@ import FundModel from "../../application/model/FundModel.js";
 import SecurityReportModel from "../../application/model/SecurityReportModel.js";
 import UsersCredentialsModel from "../../application/model/UserModel.js";
 import { sendMail } from "../../middleware/MailSenderReport.js";
+import UserModel from "../../application/model/UserModel.js";
 
 export const getAllFundraisers = async (req, res) => {
   try {
@@ -35,20 +36,20 @@ export const getAllFundraisers = async (req, res) => {
     // ---------------------------------------
     const userIds = data.map((f) => f.f_fk_uc_uuid);
 
+    // Fetch full user details instead of just name
     const users = await UsersCredentialsModel.find(
-      { uc_uuid: { $in: userIds } },
-      { uc_uuid: 1, uc_full_name: 1 }
+      { uc_uuid: { $in: userIds } }
     ).lean();
 
     const userMap = {};
     users.forEach((u) => {
-      userMap[u.uc_uuid] = u.uc_full_name;
+      userMap[u.uc_uuid] = u; // store full user object
     });
 
-    // ADD FLAGGED COUNTS + USER NAME
+    // ADD FLAGGED COUNTS + USER DETAILS
     for (let i = 0; i < data.length; i++) {
-      // Add user name
-      data[i].userName = userMap[data[i].f_fk_uc_uuid] || "Unknown User";
+      // Add full user details
+      data[i].user = userMap[data[i].f_fk_uc_uuid] || null;
 
       // Add flagged count
       const flaggedCount = await SecurityReportModel.countDocuments({
@@ -80,51 +81,115 @@ export const getAllFundraisers = async (req, res) => {
 };
 
 
+
+// APPROVE
 export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;
-    if (!fund_uuid)
-      return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
-    
+    if (!fund_uuid) {
+      return res.status(400).json({
+        status: false,
+        message: "fund_uuid is required",
+      });
+    }
+
+    //  Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { 
+      {
         f_status: "ACTIVE",
-        f_approved_at: new Date() 
+        f_approved_at: new Date(),
       },
       { new: true }
     );
 
-    if (!fundraiser)
-      return res.status(404).json({ status: false, message: "Fundraiser not found" });
-
-    // Send approval email
-    if (fundraiser.f_email) {
-      const approvalTime = new Date().toLocaleString(); 
-      
-      await sendMail({
-        to: fundraiser.f_email,
-        subject: "Your fundraiser is approved",
-        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.\n\nApproval Date & Time: ${approvalTime}\n\nTeam`,
+    if (!fundraiser) {
+      return res.status(404).json({
+        status: false,
+        message: "Fundraiser not found",
       });
     }
 
-    return res.json({ status: true, message: "Fundraiser approved successfully" });
+    //  Fetch user email
+    let userEmail = null;
+
+    if (fundraiser.f_fk_uc_uuid) {
+      const user = await UserModel.findOne({
+        uc_uuid: fundraiser.f_fk_uc_uuid,
+      });
+
+      if (user && user.uc_email) {
+        userEmail = user.uc_email;
+      } else {
+        console.warn(
+          `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
+        );
+      }
+    } else {
+      console.warn(`Fundraiser ${fundraiser.f_uuid} has no linked user`);
+    }
+
+    //  Send approval email
+    if (userEmail) {
+      try {
+        const approvalTime = new Date().toLocaleString();
+
+        await sendMail(
+          userEmail,
+          "Your fundraiser has been approved ",
+          `Hello ${fundraiser.f_name || "there"},
+
+Great news! Your fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.
+
+Approval Date & Time: ${approvalTime}
+
+You can now start receiving donations.
+
+Team KPIGI`
+        );
+
+        console.log(` Approval email sent to ${userEmail}`);
+      } catch (emailError) {
+        console.error(" Failed to send approval email:", emailError);
+      }
+    } else {
+     
+    }
+
+    return res.json({
+      status: true,
+      message: "Fundraiser approved successfully",
+    });
+
   } catch (err) {
     console.error("Approve fundraiser error:", err);
-    return res.status(500).json({ status: false, message: err.message });
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
   }
 };
+
+
+
+
+
 
 
 // REJECT
 export const rejectFundraiser = async (req, res) => {
   try {
     const { fund_uuid, reason } = req.body;
-    if (!fund_uuid)
-      return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
+    if (!fund_uuid) {
+      return res.status(400).json({
+        status: false,
+        message: "fund_uuid is required",
+      });
+    }
+
+    //  Find & update fundraiser
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -134,37 +199,69 @@ export const rejectFundraiser = async (req, res) => {
       { new: true }
     );
 
-    if (!fundraiser)
-      return res.status(404).json({ status: false, message: "Fundraiser not found" });
-
-    // ================= SEND REJECTION EMAIL =================
-    if (fundraiser.f_email) {
-      try {
-        console.log(
-          `Sending rejection email to ${fundraiser.f_email} for fundraiser "${fundraiser.f_title}" with reason: ${reason}`
-        );
-
-        await sendMail({
-          to: fundraiser.f_email,
-          subject: "Your fundraiser has been rejected",
-          text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title
-            }" has been rejected.\nReason: ${reason || "Rejected by admin"}\n\nTeam`,
-        });
-
-        console.log("Rejection email sent successfully");
-      } catch (emailError) {
-        console.error("Failed to send rejection email:", emailError);
-      }
-    } else {
-      console.warn("No email found for this fundraiser, skipping email");
+    if (!fundraiser) {
+      return res.status(404).json({
+        status: false,
+        message: "Fundraiser not found",
+      });
     }
 
-    return res.json({ status: true, message: "Fundraiser rejected successfully" });
+    //  Fetch user email
+    let userEmail = null;
+
+    if (fundraiser.f_fk_uc_uuid) {
+      const user = await UserModel.findOne({
+        uc_uuid: fundraiser.f_fk_uc_uuid,
+      });
+
+      if (user && user.uc_email) {
+        userEmail = user.uc_email;
+      } else {
+        console.warn(
+          `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
+        );
+      }
+    } else {
+      console.warn(`Fundraiser ${fundraiser.f_uuid} has no linked user`);
+    }
+
+
+    if (userEmail) {
+      try {
+        await sendMail(
+          userEmail,
+          "Your fundraiser has been rejected",
+          `Hello ${fundraiser.f_name || "there"},
+
+Your fundraiser "${fundraiser.f_title}" has been rejected.
+
+Reason: ${reason || "Rejected by admin"}
+
+Team KPIGI`
+        );
+
+
+      } catch (emailError) {
+        console.error(" Failed to send rejection email:", emailError);
+      }
+    } else {
+
+    }
+
+    return res.json({
+      status: true,
+      message: "Fundraiser rejected successfully",
+    });
+
   } catch (err) {
     console.error("Reject fundraiser error:", err);
-    return res.status(500).json({ status: false, message: err.message });
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
   }
 };
+
 
 
 
