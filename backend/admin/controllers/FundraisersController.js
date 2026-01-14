@@ -80,39 +80,35 @@ export const getAllFundraisers = async (req, res) => {
 };
 
 
-// APPROVE
+
 export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;
+    if (!fund_uuid) return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
-    // Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "ACTIVE", f_pause_reason: null },
-      { new: true } // return updated document
+      { f_status: "ACTIVE" },
+      { new: true }
     );
 
-    if (!fundraiser) {
-      return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    if (!fundraiser) return res.status(404).json({ status: false, message: "Fundraiser not found" });
+
+    // Send approval email
+    if (fundraiser.f_email) {
+      await sendMail({
+        to: fundraiser.f_email,
+        subject: "Your fundraiser is approved",
+        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.\n\nTeam`,
+      });
     }
 
-    // Prepare email data
-    const mailData = {
-      to: fundraiser.f_email,
-      subject: "Your fundraiser has been approved!",
-      text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser has been approved and is now ACTIVE.\n\nBest regards,\nTeam`,
-    };
-
-
-    await sendMail(mailData);
-
-    return res.json({ status: true, message: "Fundraiser approved and email sent" });
+    return res.json({ status: true, message: "Fundraiser approved successfully" });
   } catch (err) {
-    console.error("Error approving fundraiser:", err);
+    console.error("Approve fundraiser error:", err);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
-
 
 
 
@@ -120,37 +116,36 @@ export const approveFundraiser = async (req, res) => {
 export const rejectFundraiser = async (req, res) => {
   try {
     const { fund_uuid, reason } = req.body;
+    if (!fund_uuid) return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
-    // Update fundraiser status to CLOSED
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "CLOSED", f_pause_reason: reason || "Rejected by admin" },
-      { new: true } // return the updated document
+      {
+        f_status: "REJECTED",
+        f_pause_reason: reason || "Rejected by admin",
+      },
+      { new: true }
     );
 
-    if (!fundraiser) {
-      return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    if (!fundraiser) return res.status(404).json({ status: false, message: "Fundraiser not found" });
+
+    // Send rejection email
+    if (fundraiser.f_email) {
+      await sendMail({
+        to: fundraiser.f_email,
+        subject: "Your fundraiser has been rejected",
+        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been rejected.\nReason: ${reason || "Rejected by admin"}\n\nTeam`,
+      });
     }
 
-    // Prepare email data
-    const mailData = {
-      to: fundraiser.f_email, // ensure fundraiser has an email
-      subject: "Your fundraiser has been rejected",
-      text: `Hello ${fundraiser.f_name || "there"},\n\n` +
-        `We are sorry to inform you that your fundraiser has been rejected.\n` +
-        `Reason: ${reason || "Rejected by admin"}\n\n` +
-        `Best regards,\nTeam`,
-    };
-
-    // Send email using your middleware
-    await sendMail(mailData);
-
-    return res.json({ status: true, message: "Fundraiser rejected and email sent" });
+    return res.json({ status: true, message: "Fundraiser rejected successfully" });
   } catch (err) {
-    console.error("Error rejecting fundraiser:", err);
+    console.error("Reject fundraiser error:", err);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
+
 
 
 // PAUSE
@@ -169,6 +164,8 @@ export const pauseFundraiser = async (req, res) => {
   }
 };
 
+
+
 // RESUME
 export const resumeFundraiser = async (req, res) => {
   try {
@@ -184,6 +181,8 @@ export const resumeFundraiser = async (req, res) => {
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
+
 
 // EDIT
 export const editFundraiser = async (req, res) => {
