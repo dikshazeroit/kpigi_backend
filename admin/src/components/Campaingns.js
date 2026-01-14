@@ -1,376 +1,362 @@
 import React, { useState, useEffect } from "react";
 import {
-  Table,
-  Row,
-  Col,
-  Form,
-  Button,
-  Badge,
-  Card,
-  Modal,
-  Pagination,
-  Spinner,
+    Table,
+    Row,
+    Col,
+    Form,
+    Button,
+    Badge,
+    Card,
+    Modal,
+    Pagination,
+    Spinner,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPause,
-  faPlay,
-  faInfoCircle,
-  faFunnelDollar,
+    faPause,
+    faPlay,
+    faInfoCircle,
+    faFunnelDollar,
 } from "@fortawesome/free-solid-svg-icons";
 
 // API IMPORTS
 import {
-  getAllFundraisers,
-  approveFundraiserAPI,
-  rejectFundraiserAPI,
-  pauseFundraiserAPI,
-  resumeFundraiserAPI,
+    getAllFundraisers,
+    approveFundraiserAPI,
+    rejectFundraiserAPI,
+    pauseFundraiserAPI,
+    resumeFundraiserAPI,
 } from "../api/ApiServices";
 
 export default function Campaign() {
-  const [campaigns, setCampaigns] = useState([]);
-  const [filter, setFilter] = useState("All");
-  const [search, setSearch] = useState("");
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+    const [campaigns, setCampaigns] = useState([]);
+    const [filter, setFilter] = useState("All");
+    const [search, setSearch] = useState("");
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
 
-  // REJECT MODAL STATES
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
-  const [campaignToReject, setCampaignToReject] = useState(null);
+    // REJECT MODAL STATES
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState("");
+    const [campaignToReject, setCampaignToReject] = useState(null);
 
-  const campaignsPerPage = 10;
+    const campaignsPerPage = 10;
 
-  // ================= FETCH DATA =================
-  const fetchCampaigns = async () => {
-    setLoading(true);
-    try {
-      const statusParam = filter === "All" ? "" : filter.toUpperCase();
-      const data = await getAllFundraisers(
-        page,
-        campaignsPerPage,
-        search,
-        statusParam
-      );
+    // ================= FETCH DATA =================
+    const fetchCampaigns = async () => {
+        setLoading(true);
+        try {
+            const statusParam = filter === "All" ? "" : filter.toUpperCase();
+            const data = await getAllFundraisers(
+                page,
+                campaignsPerPage,
+                search,
+                statusParam
+            );
 
-      setCampaigns(data.payload || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error("Failed to fetch campaigns:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+            setCampaigns(data.payload || []);
+            setTotalPages(data.pagination?.totalPages || 1);
+        } catch (error) {
+            console.error("Failed to fetch campaigns:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, [page, filter, search]);
+    useEffect(() => {
+        fetchCampaigns();
+    }, [page, filter, search]);
 
-  // ================= ACTION HANDLERS =================
-  const handlePause = async (campaign) => {
-    await pauseFundraiserAPI(campaign.f_uuid, "Paused by admin");
-    fetchCampaigns();
-  };
+    // ================= ACTION HANDLERS =================
+    const handlePause = async (campaign) => {
+        await pauseFundraiserAPI(campaign.f_uuid, "Paused by admin");
+        fetchCampaigns();
+    };
 
-  const handleResume = async (campaign) => {
-    await resumeFundraiserAPI(campaign.f_uuid);
-    fetchCampaigns();
-  };
+    const handleResume = async (campaign) => {
+        await resumeFundraiserAPI(campaign.f_uuid);
+        fetchCampaigns();
+    };
 
-  const handleApprove = async (campaign) => {
-    await approveFundraiserAPI(campaign.f_uuid);
-    fetchCampaigns();
-  };
+    const handleApprove = async (campaign) => {
+        await approveFundraiserAPI(campaign.f_uuid);
+        fetchCampaigns();
+    };
 
-  const handleReject = async () => {
-    if (!rejectReason.trim()) return alert("Please enter a reason!");
-    await rejectFundraiserAPI(campaignToReject.f_uuid, rejectReason);
-    setShowRejectModal(false);
-    fetchCampaigns();
-  };
+    const handleReject = async () => {
+        if (!rejectReason.trim()) return alert("Please enter a reason!");
+        await rejectFundraiserAPI(campaignToReject.f_uuid, rejectReason);
+        setShowRejectModal(false);
+        fetchCampaigns();
+    };
 
-  // ================= STATUS TEXT =================
-  const getStatusText = (status) => {
-    switch (status) {
-      case "PENDING":
-        return "Pending";
-      case "ACTIVE":
-        return "Active";
-      case "PAUSED":
-        return "Paused";
-      case "CLOSED":
-      case "REJECTED":
-        return "Rejected";
-      default:
-        return status;
-    }
-  };
+    // ================= STATUS TEXT =================
+    const getStatusText = (status) => {
+        switch (status) {
+            case "PENDING":
+                return "Pending";
+            case "ACTIVE":
+                return "Active";
+            case "PAUSED":
+                return "Paused";
+            case "CLOSED":
+            case "REJECTED":
+                return "Rejected";
+            default:
+                return status;
+        }
+    };
 
-  return (
-    <div>
-      <Card border="light" className="shadow-sm">
-        {/* TITLE */}
-        <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
-          <h4 className="mb-0">
-            <FontAwesomeIcon icon={faFunnelDollar} className="me-2" />
-            Fund Management
-          </h4>
-        </div>
+    return (
+        <div>
+            <Card border="light" className="shadow-sm">
+                {/* TITLE */}
+                <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+                    <h4 className="mb-0">
+                        <FontAwesomeIcon icon={faFunnelDollar} className="me-2" />
+                        Fund Management
+                    </h4>
+                </div>
 
-        <Card.Body>
-          {/* FILTER + SEARCH */}
-          <Row className="mb-4">
-            <Col md={4}>
-              <Form.Select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="All">All Funds</option>
-                <option value="PENDING">Pending</option>
-                <option value="ACTIVE">Active</option>
-                <option value="PAUSED">Paused</option>
-                <option value="CLOSED">Rejected</option>
-              </Form.Select>
-            </Col>
+                <Card.Body>
+                    {/* FILTER + SEARCH */}
+                    <Row className="mb-4">
+                        <Col md={4}>
+                            <Form.Select
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                            >
+                                <option value="All">All Funds</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="PAUSED">Paused</option>
+                                <option value="CLOSED">Rejected</option>
+                            </Form.Select>
+                        </Col>
 
-            <Col md={8}>
-              <Form.Control
-                placeholder="Search by title or requester"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Col>
-          </Row>
+                        <Col md={8}>
+                            <Form.Control
+                                placeholder="Search by title or requester"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </Col>
+                    </Row>
 
-          {/* TABLE */}
-          {loading ? (
-            <div className="text-center py-5">
-              <Spinner animation="border" />
-              <div className="text-muted fw-semibold">
-                Loading data, please wait...
-              </div>
-            </div>
-          ) : (
-            <Table bordered hover responsive className="align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>Sr. No</th>
-                  <th>Title</th>
-                  <th>Requester</th>
-                  <th>Status</th>
-                  <th>Raised / Goal</th>
-                  <th>Date</th>
-                  <th>Verification</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {campaigns.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center text-muted">
-                      No campaigns found
-                    </td>
-                  </tr>
-                ) : (
-                  campaigns.map((c, index) => (
-                    <tr key={c.f_uuid}>
-                      <td>{(page - 1) * campaignsPerPage + index + 1}</td>
-                      <td>{c.f_title}</td>
-                      <td>{c.userName}</td>
-
-                      <td>
-                        <Badge bg="info">{getStatusText(c.f_status)}</Badge>
-                      </td>
-
-                      <td>${c.f_amount}</td>
-                      <td>
-                        {new Date(c.f_deadline).toLocaleDateString()}
-                      </td>
-                      <td>{c.f_status === "ACTIVE" ? "Verified" : "Pending"}</td>
-
-                      {/* ACTIONS */}
-                      <td>
-                        <div className="fw-semibold mb-1">
-                          {getStatusText(c.f_status)}
+                    {/* TABLE */}
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <Spinner animation="border" />
+                            <div className="text-muted fw-semibold">
+                                Loading data, please wait...
+                            </div>
                         </div>
+                    ) : (
+                        <Table bordered hover responsive className="align-middle">
+                            <thead className="table-light">
+                                <tr>
+                                    <th>Sr. No</th>
+                                    <th>Title</th>
+                                    <th>Requester</th>
+                                    <th>Status</th>
+                                    <th>Raised / Goal</th>
+                                    <th>Date</th>
+                                    <th>Verification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
 
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          className="me-1 mb-1"
-                          onClick={() => setSelectedCampaign(c)}
-                        >
-                          <FontAwesomeIcon icon={faInfoCircle} /> Details
-                        </Button>
+                            <tbody>
+                                {campaigns.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="8" className="text-center text-muted">
+                                            No campaigns found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    campaigns.map((c, index) => (
+                                        <tr key={c.f_uuid}>
+                                            <td>{(page - 1) * campaignsPerPage + index + 1}</td>
+                                            <td>{c.f_title}</td>
+                                            <td>{c.userName}</td>
 
-                        {c.f_status === "PENDING" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="success"
-                              className="me-1 mb-1"
-                              onClick={() => handleApprove(c)}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
-                              className="mb-1"
-                              onClick={() => {
-                                setCampaignToReject(c);
-                                setRejectReason("");
-                                setShowRejectModal(true);
-                              }}
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        )}
+                                            <td>
+                                                <Badge bg="info">{getStatusText(c.f_status)}</Badge>
+                                            </td>
 
-                        {c.f_status === "ACTIVE" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="warning"
-                              className="me-1 mb-1"
-                              onClick={() => handlePause(c)}
-                            >
-                              <FontAwesomeIcon icon={faPause} /> Pause
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
-                              className="mb-1"
-                              onClick={() => {
-                                setCampaignToReject(c);
-                                setRejectReason("Closed by admin");
-                                setShowRejectModal(true);
-                              }}
-                            >
-                              Close
-                            </Button>
-                          </>
-                        )}
+                                            <td>${c.f_amount}</td>
+                                            <td>
+                                                {new Date(c.f_deadline).toLocaleDateString()}
+                                            </td>
+                                            <td>{c.f_status === "ACTIVE" ? "Verified" : "Pending"}</td>
 
-                        {c.f_status === "PAUSED" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="success"
-                              className="me-1 mb-1"
-                              onClick={() => handleResume(c)}
-                            >
-                              <FontAwesomeIcon icon={faPlay} /> Resume
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
-                              className="mb-1"
-                              onClick={() => {
-                                setCampaignToReject(c);
-                                setRejectReason("Closed by admin");
-                                setShowRejectModal(true);
-                              }}
-                            >
-                              Close
-                            </Button>
-                          </>
-                        )}
+                                            {/* ACTIONS */}
+                                            <td>
+                                                <div className="fw-semibold mb-1">
+                                                    {getStatusText(c.f_status)}
+                                                </div>
 
-                        {(c.f_status === "CLOSED" || c.f_status === "REJECTED") && (
-                          <span className="text-muted">No actions</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          )}
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    className="me-1 mb-1"
+                                                    onClick={() => setSelectedCampaign(c)}
+                                                >
+                                                    <FontAwesomeIcon icon={faInfoCircle} /> Details
+                                                </Button>
 
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <Pagination className="justify-content-end mt-3">
-              <Pagination.Prev
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-              />
-              {[...Array(totalPages)].map((_, i) => (
-                <Pagination.Item
-                  key={i + 1}
-                  active={page === i + 1}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
-                </Pagination.Item>
-              ))}
-              <Pagination.Next
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              />
-            </Pagination>
-          )}
-        </Card.Body>
-      </Card>
+                                                {c.f_status === "PENDING" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="success"
+                                                            className="me-1 mb-1"
+                                                            onClick={() => handleApprove(c)}
+                                                        >
+                                                            Approve
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="danger"
+                                                            className="mb-1"
+                                                            onClick={() => {
+                                                                setCampaignToReject(c);
+                                                                setRejectReason("");
+                                                                setShowRejectModal(true);
+                                                            }}
+                                                        >
+                                                            Reject
+                                                        </Button>
+                                                    </>
+                                                )}
 
-      {/* DETAILS MODAL */}
-      <Modal show={!!selectedCampaign} onHide={() => setSelectedCampaign(null)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Campaign Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedCampaign && (
-            <>
-              <p>
-                <strong>Title:</strong> {selectedCampaign.f_title}
-              </p>
-              <p>
-                <strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}
-              </p>
-              <p>
-                <strong>Amount:</strong> ${selectedCampaign.f_amount}
-              </p>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                                                {c.f_status === "ACTIVE" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="warning"
+                                                            className="me-1 mb-1"
+                                                            onClick={() => handlePause(c)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPause} /> Pause
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="danger"
+                                                            className="mb-1"
+                                                            onClick={() => {
+                                                                setCampaignToReject(c);
+                                                                setRejectReason("Closed by admin");
+                                                                setShowRejectModal(true);
+                                                            }}
+                                                        >
+                                                            Close
+                                                        </Button>
+                                                    </>
+                                                )}
 
-      {/* REJECT MODAL */}
-      <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Reject Campaign</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group>
-            <Form.Label>Reason for rejection</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Enter reason..."
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowRejectModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={handleReject}>
-            Submit Reject
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
-  );
+                                                {c.f_status === "PAUSED" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="success"
+                                                            className="me-1 mb-1"
+                                                            onClick={() => handleResume(c)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlay} /> Resume
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="danger"
+                                                            className="mb-1"
+                                                            onClick={() => {
+                                                                setCampaignToReject(c);
+                                                                setRejectReason("Closed by admin");
+                                                                setShowRejectModal(true);
+                                                            }}
+                                                        >
+                                                            Close
+                                                        </Button>
+                                                    </>
+                                                )}
+
+                                                {(c.f_status === "CLOSED" || c.f_status === "REJECTED") && (
+                                                    <span className="text-muted">No actions</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </Table>
+                    )}
+
+                    {/* ================= PAGINATION ================= */}
+                    {totalPages > 1 && (
+                        <Pagination className="justify-content-end mt-3">
+                            <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
+                            <Pagination.Item active>{page}</Pagination.Item>
+                            <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
+                        </Pagination>
+                    )}
+                </Card.Body>
+            </Card>
+
+            {/* DETAILS MODAL */}
+            <Modal show={!!selectedCampaign} onHide={() => setSelectedCampaign(null)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Campaign Details</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedCampaign && (
+                        <>
+                            <p>
+                                <strong>Title:</strong> {selectedCampaign.f_title}
+                            </p>
+                            <p>
+                                <strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}
+                            </p>
+                            <p>
+                                <strong>Amount:</strong> ${selectedCampaign.f_amount}
+                            </p>
+                        </>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* REJECT MODAL */}
+            <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Reject Campaign</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form.Group>
+                        <Form.Label>Reason for rejection</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="Enter reason..."
+                        />
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowRejectModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={handleReject}>
+                        Submit Reject
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    );
 }
