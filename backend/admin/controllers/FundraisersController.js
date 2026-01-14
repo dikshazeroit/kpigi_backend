@@ -110,13 +110,12 @@ export const approveFundraiser = async (req, res) => {
   }
 };
 
-
-
 // REJECT
 export const rejectFundraiser = async (req, res) => {
   try {
     const { fund_uuid, reason } = req.body;
-    if (!fund_uuid) return res.status(400).json({ status: false, message: "fund_uuid is required" });
+    if (!fund_uuid)
+      return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
@@ -127,15 +126,29 @@ export const rejectFundraiser = async (req, res) => {
       { new: true }
     );
 
-    if (!fundraiser) return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    if (!fundraiser)
+      return res.status(404).json({ status: false, message: "Fundraiser not found" });
 
-    // Send rejection email
+    // ================= SEND REJECTION EMAIL =================
     if (fundraiser.f_email) {
-      await sendMail({
-        to: fundraiser.f_email,
-        subject: "Your fundraiser has been rejected",
-        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been rejected.\nReason: ${reason || "Rejected by admin"}\n\nTeam`,
-      });
+      try {
+        console.log(
+          `Sending rejection email to ${fundraiser.f_email} for fundraiser "${fundraiser.f_title}" with reason: ${reason}`
+        );
+
+        await sendMail({
+          to: fundraiser.f_email,
+          subject: "Your fundraiser has been rejected",
+          text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title
+            }" has been rejected.\nReason: ${reason || "Rejected by admin"}\n\nTeam`,
+        });
+
+        console.log("Rejection email sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send rejection email:", emailError);
+      }
+    } else {
+      console.warn("No email found for this fundraiser, skipping email");
     }
 
     return res.json({ status: true, message: "Fundraiser rejected successfully" });
