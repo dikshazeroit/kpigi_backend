@@ -13,6 +13,8 @@ import {
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes, faSearch, faDollarSign } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+
 import {
   getAllwithdrawal,
   approveWithdrawal,
@@ -30,7 +32,7 @@ const WithdrawalManagement = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
 
-  // Fetch withdrawals
+  // ================= FETCH WITHDRAWALS =================
   const fetchWithdrawals = async () => {
     setLoading(true);
     try {
@@ -51,42 +53,100 @@ const WithdrawalManagement = () => {
     fetchWithdrawals();
   }, []);
 
-  // Approve withdrawal
+  // ================= APPROVE WITHDRAWAL =================
+  // ================= APPROVE WITHDRAWAL =================
   const handleApprove = async (w_uuid) => {
+    console.log("Approving withdrawal:", w_uuid);
+
     try {
-      await approveWithdrawal(w_uuid); // pass string, not object
-      fetchWithdrawals();
+      const res = await approveWithdrawal(w_uuid);
+      console.log("API response:", res); 
+
+      if (res.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Approved!",
+          text: res.message || "Withdrawal approved successfully and email sent.",
+          timer: 2500,
+          showConfirmButton: false,
+        });
+
+        fetchWithdrawals(); 
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: res.message || "Something went wrong.",
+        });
+      }
     } catch (err) {
       console.error("Error approving withdrawal:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to approve withdrawal",
+      });
     }
   };
 
-
-  // Reject withdrawal
+  // ================= REJECT WITHDRAWAL =================
   const handleReject = async () => {
     if (!selectedWithdrawal) return;
+
+    if (!rejectReason.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Warning",
+        text: "Please enter a reason for rejection!",
+      });
+      return;
+    }
+
     try {
-      await rejectWithdrawal(selectedWithdrawal.w_uuid, rejectReason); // correct args
+      const res = await rejectWithdrawal(selectedWithdrawal.w_uuid, rejectReason);
+
+      Swal.fire({
+        icon: "success",
+        title: "Rejected!",
+        text: res.message || "Withdrawal rejected successfully and email sent.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
+
       setShowRejectModal(false);
       setRejectReason("");
       setSelectedWithdrawal(null);
-      fetchWithdrawals(); // refresh table
+      fetchWithdrawals();
     } catch (err) {
       console.error("Error rejecting withdrawal:", err);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to reject withdrawal",
+      });
     }
   };
 
-  // Pagination & filtering
+  // ================= PAGINATION & SEARCH =================
   const filteredWithdrawals = withdrawals.filter((w) =>
     w.w_account_holder_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const totalPages = Math.ceil(filteredWithdrawals.length / itemsPerPage);
+
   const paginatedWithdrawals = filteredWithdrawals.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Status badge
+  // ================= STATUS BADGE =================
   const getStatusBadge = (status) => {
     switch (status) {
       case "PENDING":
@@ -104,6 +164,7 @@ const WithdrawalManagement = () => {
 
   return (
     <div className="p-3">
+      {/* ================= HEADER ================= */}
       <Card className="mb-4 shadow-sm">
         <Card.Header className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
@@ -124,6 +185,7 @@ const WithdrawalManagement = () => {
         </Card.Header>
       </Card>
 
+      {/* ================= TABLE ================= */}
       <Card className="p-3 shadow-sm">
         {loading ? (
           <div className="text-center py-5">
@@ -144,7 +206,6 @@ const WithdrawalManagement = () => {
                   <th>Status</th>
                   <th>Created At</th>
                   <th>Actions</th>
-
                 </tr>
               </thead>
               <tbody>
@@ -152,23 +213,13 @@ const WithdrawalManagement = () => {
                   paginatedWithdrawals.map((w, idx) => (
                     <tr key={w.w_uuid}>
                       <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-
                       <td>{w.w_account_holder_name || "No Data Found"}</td>
-
-
                       <td>{w.user?.uc_email || "No Data Found"}</td>
-
-
                       <td>₹ {w.w_amount}</td>
-
                       <td>{w.w_account_number}</td>
-
                       <td>{w.w_ifsc_code}</td>
-
                       <td>{getStatusBadge(w.w_status)}</td>
-
                       <td>{new Date(w.createdAt).toLocaleDateString()}</td>
-
                       <td>
                         {(w.w_status === "PENDING" || w.w_status === "PROCESSING") && (
                           <>
@@ -189,6 +240,7 @@ const WithdrawalManagement = () => {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedWithdrawal(w);
+                                  setRejectReason("");
                                   setShowRejectModal(true);
                                 }}
                               >
@@ -199,8 +251,6 @@ const WithdrawalManagement = () => {
                         )}
                       </td>
                     </tr>
-
-
                   ))
                 ) : (
                   <tr>
@@ -212,18 +262,14 @@ const WithdrawalManagement = () => {
               </tbody>
             </Table>
 
-            {/* Pagination */}
-            <div className="d-flex justify-content-end mt-3">
-
-              {totalPages >= 1 && (
-                <Pagination className="justify-content-end mt-3">
+            {/* ================= PAGINATION ================= */}
+            {totalPages >= 1 && (
+              <div className="d-flex justify-content-end mt-3">
+                <Pagination>
                   <Pagination.Prev
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  >
-                    Prev
-                  </Pagination.Prev>
-
+                  />
                   {[...Array(totalPages)].map((_, i) => (
                     <Pagination.Item
                       key={i + 1}
@@ -233,22 +279,18 @@ const WithdrawalManagement = () => {
                       {i + 1}
                     </Pagination.Item>
                   ))}
-
                   <Pagination.Next
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  >
-                    Next
-                  </Pagination.Next>
+                  />
                 </Pagination>
-              )}
-            </div>
-
+              </div>
+            )}
           </>
         )}
       </Card>
 
-      {/* Reject Modal */}
+      {/* ================= REJECT MODAL ================= */}
       <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Reject Withdrawal</Modal.Title>
