@@ -43,27 +43,52 @@ export const getAllwithdrawal = async (req, res) => {
   }
 };
 
-
-
 export const approveWithdrawal = async (req, res) => {
   const { w_uuid } = req.body;
+
+  if (!w_uuid) {
+    return res.status(400).json({ status: false, message: "Withdrawal UUID is required" });
+  }
+
   try {
+    // Find the withdrawal
     const withdrawal = await WithdrawalModel.findOne({ w_uuid });
     if (!withdrawal) {
       return res.status(404).json({ status: false, message: "Withdrawal not found" });
     }
 
+    // Find the user
+    const user = await UserModel.findOne({ uc_uuid: withdrawal.w_fk_uc_uuid });
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // Update withdrawal status
     withdrawal.w_status = "COMPLETED";
     await withdrawal.save();
 
-    res.status(200).json({
+    // Send approval email
+    if (user.uc_email) {
+      const subject = "Withdrawal Request Approved";
+      const text = `Hello ${user.uc_full_name || ""},\n\nYour withdrawal request of ₹${withdrawal.w_amount} has been approved and completed successfully.\n\nThank you!`;
+
+      try {
+        await sendMail(user.uc_email, subject, text);
+      } catch (emailError) {
+        console.error("Error sending approval email:", emailError);
+      }
+    }
+
+    // Respond to API call
+    return res.status(200).json({
       status: true,
       message: "Withdrawal approved successfully",
       payload: withdrawal,
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("Error approving withdrawal:", error);
+    return res.status(500).json({
       status: false,
       message: "Error approving withdrawal",
       error: error.message,
@@ -104,7 +129,7 @@ export const rejectWithdrawal = async (req, res) => {
     if (user.uc_email) {
       const subject = "Withdrawal Request Rejected";
       const text = `Hello ${user.uc_full_name || ""},\n\nYour withdrawal request of ₹${withdrawal.w_amount} has been rejected.\nReason: ${reason || "No reason provided"}\n\nThe amount has been refunded to your account balance.`;
-      
+
       await sendMail(user.uc_email, subject, text);
     }
 

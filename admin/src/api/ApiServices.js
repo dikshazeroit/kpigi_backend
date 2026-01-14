@@ -48,25 +48,32 @@ export const getAllFundraisers = async (page = 1, limit = 10, search = "", statu
 };
 
 // Approve
+
 export const approveFundraiserAPI = async (fund_uuid) => {
-  try {
-    const response = await apiClient.post("private/fundraiser-approve", { fund_uuid });
-    return response.data;
-  } catch (error) {
-    console.error("Error approving fundraiser:", error);
-    throw error;
-  }
+
+  if (!fund_uuid) throw new Error("fund_uuid is required");
+
+  const res = await apiClient.post("/private/fundraiser-approve", {
+   fund_uuid,
+    
+  });
+
+  console.log("API → approveFundraiserAPI response:", res.data);
+  return res.data;
 };
 
-// Reject
-export const rejectFundraiserAPI = async (fund_uuid, reason) => {
-  try {
-    const response = await apiClient.post("private/fundraiser-reject", { fund_uuid, reason });
-    return response.data;
-  } catch (error) {
-    console.error("Error rejecting fundraiser:", error);
-    throw error;
-  }
+
+export const rejectFundraiserAPI = async (fund_uuid, reason = "") => {
+
+  if (!fund_uuid) throw new Error("fund_uuid is required");
+
+  const res = await apiClient.post("/private/fundraiser-reject", {
+    fund_uuid,
+    reason,
+  });
+
+  console.log("API → rejectFundraiserAPI response:", res.data);
+  return res.data;
 };
 
 // Pause
