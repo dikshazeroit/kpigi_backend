@@ -82,17 +82,19 @@ export default function Campaign() {
         fetchCampaigns();
     };
 
-    const handleApprove = async (campaign) => {
+  const handleApprove = async (campaign) => {
   try {
     const res = await approveFundraiserAPI(campaign.f_uuid);
 
-    // SweetAlert success
+    
     Swal.fire({
       icon: "success",
       title: "Approved!",
       text: res.message || "Fundraiser approved successfully",
       timer: 2000,
       showConfirmButton: false,
+      toast: true, 
+      position: "top-end", 
     });
 
     fetchCampaigns();
@@ -100,11 +102,11 @@ export default function Campaign() {
     Swal.fire({
       icon: "error",
       title: "Error",
-      text:
-        error.response?.data?.message || "Failed to approve fundraiser",
+      text: error.response?.data?.message || "Failed to approve fundraiser",
     });
   }
 };
+
 const handleReject = async () => {
   if (!rejectReason.trim()) {
     Swal.fire({
