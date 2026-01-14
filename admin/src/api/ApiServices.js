@@ -54,8 +54,8 @@ export const approveFundraiserAPI = async (fund_uuid) => {
   if (!fund_uuid) throw new Error("fund_uuid is required");
 
   const res = await apiClient.post("/private/fundraiser-approve", {
-   fund_uuid,
-    
+    fund_uuid,
+
   });
 
   console.log("API → approveFundraiserAPI response:", res.data);
@@ -879,27 +879,27 @@ export const getAllwithdrawal = async () => {
   }
 };
 
+
 export const approveWithdrawal = async (w_uuid) => {
-  console.log("API approveWithdrawal w_uuid:", w_uuid);
 
   if (!w_uuid || typeof w_uuid !== "string") {
     throw new Error("Invalid w_uuid passed to approveWithdrawal");
   }
 
-  const response = await apiClient.post(
-    "/private/approveWithdrawal",
-    { w_uuid }
-  );
-
-  return response.data;
+  try {
+    const response = await apiClient.post("/private/approveWithdrawal", { w_uuid });
+    console.log("approveWithdrawal response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("approveWithdrawal API error:", error.response || error.message);
+    throw error;
+  }
 };
 
 
 
 
-
 export const rejectWithdrawal = async (w_uuid, reason = "") => {
-  console.log("API → rejectWithdrawal payload:", { w_uuid, reason });
 
   if (!w_uuid) throw new Error("w_uuid is required");
 
