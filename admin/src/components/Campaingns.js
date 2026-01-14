@@ -292,15 +292,36 @@ export default function Campaign() {
                             </tbody>
                         </Table>
                     )}
+ {/* Pagination */}
+        
 
-                    {/* ================= PAGINATION ================= */}
-                    {totalPages > 1 && (
-                        <Pagination className="justify-content-end mt-3">
-                            <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
-                            <Pagination.Item active>{page}</Pagination.Item>
-                            <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
-                        </Pagination>
-                    )}
+              {totalPages >= 1 && (
+                <Pagination className="justify-content-end mt-3">
+                  <Pagination.Prev
+                    disabled={page === 1}
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                  >
+                    Prev
+                  </Pagination.Prev>
+
+                  {[...Array(totalPages)].map((_, i) => (
+                    <Pagination.Item
+                      key={i + 1}
+                      active={i + 1 === page}
+                      onClick={() => setPage(i + 1)}
+                    >
+                      {i + 1}
+                    </Pagination.Item>
+                  ))}
+
+                  <Pagination.Next
+                    disabled={page === totalPages}
+                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                  >
+                    Next
+                  </Pagination.Next>
+                </Pagination>
+              )}
                 </Card.Body>
             </Card>
 
