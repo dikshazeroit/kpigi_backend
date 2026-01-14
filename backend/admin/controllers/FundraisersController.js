@@ -80,26 +80,33 @@ export const getAllFundraisers = async (req, res) => {
 };
 
 
-
 export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;
-    if (!fund_uuid) return res.status(400).json({ status: false, message: "fund_uuid is required" });
+    if (!fund_uuid)
+      return res.status(400).json({ status: false, message: "fund_uuid is required" });
 
+    
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "ACTIVE" },
+      { 
+        f_status: "ACTIVE",
+        f_approved_at: new Date() 
+      },
       { new: true }
     );
 
-    if (!fundraiser) return res.status(404).json({ status: false, message: "Fundraiser not found" });
+    if (!fundraiser)
+      return res.status(404).json({ status: false, message: "Fundraiser not found" });
 
     // Send approval email
     if (fundraiser.f_email) {
+      const approvalTime = new Date().toLocaleString(); 
+      
       await sendMail({
         to: fundraiser.f_email,
         subject: "Your fundraiser is approved",
-        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.\n\nTeam`,
+        text: `Hello ${fundraiser.f_name || "there"},\n\nYour fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.\n\nApproval Date & Time: ${approvalTime}\n\nTeam`,
       });
     }
 
@@ -109,6 +116,7 @@ export const approveFundraiser = async (req, res) => {
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
 
 // REJECT
 export const rejectFundraiser = async (req, res) => {
