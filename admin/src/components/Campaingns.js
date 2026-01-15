@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPause,
     faPlay,
-    faInfoCircle,
+    faEye,
     faFunnelDollar,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
@@ -254,11 +254,11 @@ export default function Campaign() {
 
                                                 <Button
                                                     size="sm"
-                                                    variant="primary"
+                                                    variant="blue"
                                                     className="me-1 mb-1"
                                                     onClick={() => setSelectedCampaign(c)}
                                                 >
-                                                    <FontAwesomeIcon icon={faInfoCircle} /> Details
+                                                     <FontAwesomeIcon icon={faEye} />
                                                 </Button>
 
                                                 {c.f_status === "PENDING" && (
