@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPause,
     faPlay,
-    faInfoCircle,
+    faEye,
     faFunnelDollar,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
@@ -82,40 +82,40 @@ export default function Campaign() {
         fetchCampaigns();
     };
 
-  const handleApprove = async (campaign) => {
-  try {
-    const res = await approveFundraiserAPI(campaign.f_uuid);
+    const handleApprove = async (campaign) => {
+        try {
+            const res = await approveFundraiserAPI(campaign.f_uuid);
 
-    
-    Swal.fire({
-      icon: "success",
-      title: "Approved!",
-      text: res.message || "Fundraiser approved successfully",
-      timer: 2000,
-      showConfirmButton: false,
-      toast: true, 
-      position: "top-end", 
-    });
 
-    fetchCampaigns();
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error.response?.data?.message || "Failed to approve fundraiser",
-    });
-  }
-};
+            Swal.fire({
+                icon: "success",
+                title: "Approved!",
+                text: res.message || "Fundraiser approved successfully",
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                position: "top-end",
+            });
 
-const handleReject = async () => {
-  if (!rejectReason.trim()) {
-    Swal.fire({
-      icon: "warning",
-      title: "Warning",
-      text: "Please enter a reason!",
-    });
-    return;
-  }
+            fetchCampaigns();
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.response?.data?.message || "Failed to approve fundraiser",
+            });
+        }
+    };
+
+    const handleReject = async () => {
+        if (!rejectReason.trim()) {
+            Swal.fire({
+                icon: "warning",
+                title: "Warning",
+                text: "Please enter a reason!",
+            });
+            return;
+        }
 
         try {
             const res = await rejectFundraiserAPI(
@@ -123,13 +123,13 @@ const handleReject = async () => {
                 rejectReason
             );
 
-    Swal.fire({
-      icon: "success",
-      title: "Rejected!",
-      text: res.message || "Fundraiser rejected successfully",
-      timer: 2000,
-      showConfirmButton: false,
-    });
+            Swal.fire({
+                icon: "success",
+                title: "Rejected!",
+                text: res.message || "Fundraiser rejected successfully",
+                timer: 2000,
+                showConfirmButton: false,
+            });
 
             setShowRejectModal(false);
             setCampaignToReject(null);
@@ -138,10 +138,10 @@ const handleReject = async () => {
             fetchCampaigns();
         } catch (error) {
             Swal.fire({
-              icon: "error",
-              title: "Error",
-              text:
-                error.response?.data?.message || "Failed to reject fundraiser",
+                icon: "error",
+                title: "Error",
+                text:
+                    error.response?.data?.message || "Failed to reject fundraiser",
             });
         }
     };
@@ -234,7 +234,7 @@ const handleReject = async () => {
                                         <tr key={c.f_uuid}>
                                             <td>{(page - 1) * campaignsPerPage + index + 1}</td>
                                             <td>{c.f_title}</td>
-                                            <td>{c.userName}</td>
+                                            <td>{c.user?.uc_full_name ?? "Anonymous"}</td>
 
                                             <td>
                                                 <Badge bg="info">{getStatusText(c.f_status)}</Badge>
@@ -254,11 +254,11 @@ const handleReject = async () => {
 
                                                 <Button
                                                     size="sm"
-                                                    variant="primary"
+                                                    variant="blue"
                                                     className="me-1 mb-1"
                                                     onClick={() => setSelectedCampaign(c)}
                                                 >
-                                                    <FontAwesomeIcon icon={faInfoCircle} /> Details
+                                                     <FontAwesomeIcon icon={faEye} />
                                                 </Button>
 
                                                 {c.f_status === "PENDING" && (
@@ -389,6 +389,9 @@ const handleReject = async () => {
                         <>
                             <p>
                                 <strong>Title:</strong> {selectedCampaign.f_title}
+                            </p>
+                            <p>
+                                <strong>Requester:</strong> {selectedCampaign.user?.uc_full_name ?? "Anonymous"}
                             </p>
                             <p>
                                 <strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}

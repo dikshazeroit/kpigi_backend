@@ -46,7 +46,7 @@ const Faq = () => {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5; // FAQs per page
+    const itemsPerPage = 10; // FAQs per page
 
     // ================= Fetch FAQs =================
     const fetchFaqs = async () => {

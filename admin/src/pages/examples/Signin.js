@@ -104,7 +104,7 @@ export default function Signin() {
                 filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))",
               }}
             />
-            <h2 className="fw-bold display-6 mb-2">Welcome Back!</h2>
+            <h2 className="fw-bold display-6 mb-2" style={{color: "white"}}>Welcome Back!</h2>
             <p className="fs-6 mb-0">
               Login to your <strong>Kpigi Admin Dashboard</strong>
             </p>

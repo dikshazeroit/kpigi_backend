@@ -155,7 +155,7 @@ const DashboardOverview = () => {
       {/* BAR CHART */}
       <Row className="mb-4 g-3">
         <Col lg={12}>
-          <Card className="shadow-sm p-3 rounded-4">
+          <Card className="shadow-sm p-3 rounded-4 ">
             <BarChartWidget title="Donations Overview" value="" data={barChartData} />
           </Card>
         </Col>

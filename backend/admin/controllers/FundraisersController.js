@@ -83,7 +83,6 @@ export const getAllFundraisers = async (req, res) => {
   }
 };
 
-
 export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;

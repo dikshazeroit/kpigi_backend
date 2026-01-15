@@ -106,7 +106,7 @@ export default function TopNavbar() {
 
           {/* DASHBOARD */}
           <h6
-            className="mb-0 fw-bold text-dark"
+            className="mb-0 fw-bold text- dark"
             style={{
               fontSize: "1.2rem",
               letterSpacing: "0.5px",
