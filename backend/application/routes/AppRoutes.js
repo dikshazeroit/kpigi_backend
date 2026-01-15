@@ -31,6 +31,7 @@ import notificationObj from "../controller/NotificationController.js";
 import securityObj from "../controller/SecurityController.js";
 import faqObj from "../controller/FaqController.js";
 
+
 const router = express.Router();
 
 // Global middleware (headers) - applies to all routes in this router
@@ -70,7 +71,7 @@ router.post("/category-list",userObj.categoryList);
 router.post("/private/withdraw-request",userObj.createWithdrawalRequest);
 router.post( "/private/withdraw-history", userObj.getWithdrawalHistory);
 router.post( "/private/get-user-balance", userObj.getUserBalance);
-router.post( "/private/update-two-factor-secuirty", userObj.UpdateTwoFactorSecurity);
+router.post( "/private/update-two-factor-secuirty", userObj.updateTwoFactorSecurity);
 
 
 

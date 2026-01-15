@@ -235,7 +235,7 @@ export default function Campaign() {
                                         <tr key={c.f_uuid}>
                                             <td>{(page - 1) * campaignsPerPage + index + 1}</td>
                                             <td>{c.f_title}</td>
-                                            <td>{c.userName || "Anonymous"}</td> {/* <- userName from API */}
+                                            <td>{c.userName || "Anonymous"}</td> 
 
                                             <td>
                                                 <Badge bg="info">{getStatusText(c.f_status)}</Badge>

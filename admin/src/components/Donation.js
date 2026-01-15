@@ -62,7 +62,6 @@ export default function DonationAdminPanel() {
 
                 setDonations(resp.payload || []);
                 setTotalPages(resp.pagination?.totalPages || 1);
-                setCurrentPage(resp.pagination?.currentPage || page);
             } catch (err) {
                 console.error(err);
                 setDonations([]);
@@ -76,7 +75,7 @@ export default function DonationAdminPanel() {
     useEffect(() => {
         fetchDonations(currentPage);
     }, [currentPage, fetchDonations]);
-
+    
     // ================= EXPORT CSV =================
     const exportCSV = () => {
         if (!donations.length) return;
@@ -166,7 +165,7 @@ export default function DonationAdminPanel() {
                             />
                         </Col>
                         <Col md={1}>
-                            <Button onClick={() => fetchDonations(1)}>Go</Button>
+                            <Button onClick={() => setCurrentPage(1)}>Go</Button>
                         </Col>
                     </Row>
                 </Card>
