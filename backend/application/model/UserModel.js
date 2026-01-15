@@ -147,7 +147,10 @@ uc_country_name: {
   default: 0
 }
 ,
-
+  uc_is_2fa_enabled: {
+    type: Boolean,
+    default: false,
+  },
     uc_active: {
       type: String,
       default: "0",

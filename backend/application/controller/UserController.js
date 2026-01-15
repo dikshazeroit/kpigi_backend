@@ -708,7 +708,15 @@ userObj.checkBankDetails = async function (req, res) {
 };
 
 
-
+/**
+ *  FUNCTION: categoryList
+ *  DESCRIPTION: To get category list
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
 userObj.categoryList = async function (req, res) {
   try {
     const categories = await categoryModel.find({
@@ -732,6 +740,15 @@ userObj.categoryList = async function (req, res) {
   }
 };
 
+/**
+ *  FUNCTION: createWithdrawalRequest
+ *  DESCRIPTION: To create withdrawal request
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
 userObj.createWithdrawalRequest = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
@@ -819,7 +836,15 @@ userObj.createWithdrawalRequest = async function (req, res) {
   }
 };
 
-
+/**
+ *  FUNCTION: getWithdrawalHistory
+ *  DESCRIPTION: To get withdrawal request history
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
 
 userObj.getWithdrawalHistory = async function (req, res) {
   try {
@@ -852,6 +877,16 @@ userObj.getWithdrawalHistory = async function (req, res) {
     }, 200);
   }
 };
+/**
+ *  FUNCTION: getUserBalance
+ *  DESCRIPTION: To get user balance 
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
+
 userObj.getUserBalance = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
@@ -890,6 +925,89 @@ userObj.getUserBalance = async function (req, res) {
       status: false,
       message: "Failed to fetch balance",
     }, 200);
+  }
+};
+/**
+ *  FUNCTION: updateTwoFactorSecurity
+ *  DESCRIPTION:This API allows an authenticated user to enable or disable Two-Factor Authentication (2FA) for their account.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
+
+userObj.updateTwoFactorSecurity = async function (req, res) {
+  try {
+    // 1️⃣ Get user UUID from token
+    const userUuid = await appHelper.getUUIDByToken(req);
+    console.log(userUuid);
+
+    if (!userUuid) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "Unauthorized",
+        },
+        200
+      );
+    }
+
+    // 2️⃣ Get enable flag from body
+    const { enable } = req.body; // true / false
+
+    if (typeof enable !== "boolean") {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "enable must be true or false",
+        },
+        200
+      );
+    }
+
+    // 3️⃣ Update 2FA flag
+    const user = await userModel.findOneAndUpdate(
+      { uc_uuid: userUuid },
+      { uc_is_2fa_enabled: enable },
+      { new: true }
+    ).lean();
+
+    if (!user) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "User not found",
+        },
+        200
+      );
+    }
+
+    // 4️⃣ Success response
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: enable
+        ? "Two-factor authentication enabled successfully"
+        : "Two-factor authentication disabled successfully",
+      payload: {
+        is_2fa_enabled: user.uc_is_2fa_enabled,
+      },
+    });
+
+  } catch (error) {
+    console.error("❌ UpdateTwoFactorSecurity Error:", error);
+
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        message: "Failed to update two-factor security",
+      },
+      200
+    );
   }
 };
 
