@@ -330,7 +330,7 @@ export default function Campaign() {
                     )}
 
                     {/* ================= PAGINATION ================= */}
-                    {totalPages > 1 && (
+                    {totalPages >= 1 && (
                         <Pagination className="justify-content-end mt-3">
                             <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
                             <Pagination.Item active>{page}</Pagination.Item>
