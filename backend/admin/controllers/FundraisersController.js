@@ -81,7 +81,6 @@ export const getAllFundraisers = async (req, res) => {
 };
 
 
-
 // APPROVE
 export const approveFundraiser = async (req, res) => {
   try {
@@ -154,7 +153,7 @@ Team KPIGI`
         console.error(" Failed to send approval email:", emailError);
       }
     } else {
-     
+
     }
 
     return res.json({

@@ -255,15 +255,9 @@ export default function DonationAdminPanel() {
                                 Prev
                             </Pagination.Prev>
 
-                            {[...Array(totalPages)].map((_, i) => (
-                                <Pagination.Item
-                                    key={i + 1}
-                                    active={i + 1 === currentPage}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </Pagination.Item>
-                            ))}
+                            <Pagination.Item active>
+                                {currentPage}
+                            </Pagination.Item>
 
                             <Pagination.Next
                                 disabled={currentPage === totalPages}
@@ -273,6 +267,7 @@ export default function DonationAdminPanel() {
                             </Pagination.Next>
                         </Pagination>
                     )}
+
                 </Card.Body>
             </Card>
 

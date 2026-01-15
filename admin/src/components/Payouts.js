@@ -60,7 +60,7 @@ const WithdrawalManagement = () => {
 
     try {
       const res = await approveWithdrawal(w_uuid);
-      console.log("API response:", res); 
+      console.log("API response:", res);
 
       if (res.status) {
         Swal.fire({
@@ -71,7 +71,7 @@ const WithdrawalManagement = () => {
           showConfirmButton: false,
         });
 
-        fetchWithdrawals(); 
+        fetchWithdrawals();
       } else {
         Swal.fire({
           icon: "error",
@@ -264,27 +264,31 @@ const WithdrawalManagement = () => {
 
             {/* ================= PAGINATION ================= */}
             {totalPages >= 1 && (
-              <div className="d-flex justify-content-end mt-3">
-                <Pagination>
-                  <Pagination.Prev
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  />
-                  {[...Array(totalPages)].map((_, i) => (
-                    <Pagination.Item
-                      key={i + 1}
-                      active={i + 1 === currentPage}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  />
-                </Pagination>
-              </div>
+              <Pagination className="justify-content-end mt-3">
+                <Pagination.Prev
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                >
+                  Prev
+                </Pagination.Prev>
+
+                {[...Array(totalPages)].map((_, i) => (
+                  <Pagination.Item
+                    key={i + 1}
+                    active={i + 1 === currentPage}
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </Pagination.Item>
+                ))}
+
+                <Pagination.Next
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                >
+                  Next
+                </Pagination.Next>
+              </Pagination>
             )}
           </>
         )}
