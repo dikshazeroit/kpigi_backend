@@ -1,6 +1,10 @@
 import WithdrawalModel from "../../application/model/WithdrawalModel.js";
 import UserModel from "../../application/model/UserModel.js";
 import { sendMail } from "../../middleware/MailSenderReport.js";
+import UserDevice from "../../application/model/UserDeviceModel.js";
+import newModelObj from "../../application/model/CommonModel.js";
+import { v4 as uuidv4 } from "uuid";
+import NotificationModel from "../../application/model/NotificationModel.js";
 
 export const getAllwithdrawal = async (req, res) => {
   try {
@@ -67,10 +71,14 @@ export const approveWithdrawal = async (req, res) => {
     withdrawal.w_status = "COMPLETED";
     await withdrawal.save();
 
-    // Send approval email
+    // ===== SEND APPROVAL EMAIL (UNCHANGED) =====
     if (user.uc_email) {
       const subject = "Withdrawal Request Approved";
-      const text = `Hello ${user.uc_full_name || ""},\n\nYour withdrawal request of ₹${withdrawal.w_amount} has been approved and completed successfully.\n\nThank you!`;
+      const text = `Hello ${user.uc_full_name || ""},
+
+Your withdrawal request of ₹${withdrawal.w_amount} has been approved and completed successfully.
+
+Thank you!`;
 
       try {
         await sendMail(user.uc_email, subject, text);
@@ -79,7 +87,51 @@ export const approveWithdrawal = async (req, res) => {
       }
     }
 
-    // Respond to API call
+    // ===== PUSH NOTIFICATION (NEW) =====
+    try {
+      const userId = user.uc_uuid;
+
+      const receiverDevices = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" }
+      }).select("ud_device_fcmToken");
+
+      const tokens = receiverDevices.map(d => d.ud_device_fcmToken).filter(Boolean);
+
+      if (tokens.length > 0) {
+        const title = "💰 Withdrawal Approved";
+        const body = `Your withdrawal of ₹${withdrawal.w_amount} has been approved successfully.`;
+
+       // ✅ Save notification (MODEL MATCHED)
+        await NotificationModel.create({
+          n_uuid: uuidv4(),
+          n_fk_uc_uuid: user.uc_uuid,
+          n_title: title,
+          n_body: body,
+          n_payload: {
+            type: "WITHDRAWAL_APPROVED",
+            withdrawalId: withdrawal.w_uuid,
+            amount: withdrawal.w_amount
+          },
+          n_channel: "push"
+        });
+
+        // ✅ Send push
+        await newModelObj.sendNotificationToUser({
+          userId: user.uc_uuid,
+          title,
+          body,
+          tokens,
+          data: {
+            type: "WITHDRAWAL_APPROVED",
+            withdrawalId: String(withdrawal.w_uuid)
+          }
+        });
+      }
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (approve withdrawal):", pushErr);
+    }
+
     return res.status(200).json({
       status: true,
       message: "Withdrawal approved successfully",
@@ -95,7 +147,6 @@ export const approveWithdrawal = async (req, res) => {
     });
   }
 };
-
 
 
 export const rejectWithdrawal = async (req, res) => {
@@ -125,12 +176,67 @@ export const rejectWithdrawal = async (req, res) => {
     withdrawal.w_admin_note = reason || "";
     await withdrawal.save();
 
-    // ===== Send rejection email =====
+    // ===== SEND REJECTION EMAIL (UNCHANGED) =====
     if (user.uc_email) {
       const subject = "Withdrawal Request Rejected";
-      const text = `Hello ${user.uc_full_name || ""},\n\nYour withdrawal request of ₹${withdrawal.w_amount} has been rejected.\nReason: ${reason || "No reason provided"}\n\nThe amount has been refunded to your account balance.`;
+      const text = `Hello ${user.uc_full_name || ""},
 
-      await sendMail(user.uc_email, subject, text);
+Your withdrawal request of ₹${withdrawal.w_amount} has been rejected.
+Reason: ${reason || "No reason provided"}
+
+The amount has been refunded to your account balance.`;
+
+      try {
+        await sendMail(user.uc_email, subject, text);
+      } catch (emailError) {
+        console.error("Error sending rejection email:", emailError);
+      }
+    }
+
+    // ===== PUSH NOTIFICATION (NEW) =====
+    try {
+      const userId = user.uc_uuid;
+
+      const receiverDevices = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" }
+      }).select("ud_device_fcmToken");
+
+      const tokens = receiverDevices.map(d => d.ud_device_fcmToken).filter(Boolean);
+
+      if (tokens.length > 0) {
+        const title = "❌ Withdrawal Rejected";
+        const body = `Your withdrawal of ₹${withdrawal.w_amount} was rejected. Amount refunded to wallet.`;
+
+         // ✅ Save notification
+        await NotificationModel.create({
+          n_uuid: uuidv4(),
+          n_fk_uc_uuid: user.uc_uuid,
+          n_title: title,
+          n_body: body,
+          n_payload: {
+            type: "WITHDRAWAL_REJECTED",
+            withdrawalId: withdrawal.w_uuid,
+            amount: withdrawal.w_amount,
+            reason: reason || ""
+          },
+          n_channel: "push"
+        });
+
+        // ✅ Send push
+        await newModelObj.sendNotificationToUser({
+          userId: user.uc_uuid,
+          title,
+          body,
+          tokens,
+          data: {
+            type: "WITHDRAWAL_REJECTED",
+            withdrawalId: String(withdrawal.w_uuid)
+          }
+        });
+      }
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (reject withdrawal):", pushErr);
     }
 
     return res.status(200).json({
@@ -148,6 +254,7 @@ export const rejectWithdrawal = async (req, res) => {
     });
   }
 };
+
 
 
 

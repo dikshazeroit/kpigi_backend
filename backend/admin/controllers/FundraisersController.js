@@ -3,8 +3,11 @@
 import FundModel from "../../application/model/FundModel.js";
 import SecurityReportModel from "../../application/model/SecurityReportModel.js";
 import UsersCredentialsModel from "../../application/model/UserModel.js";
+import UserDevice from "../../application/model/UserDeviceModel.js";
 import { sendMail } from "../../middleware/MailSenderReport.js";
-import UserModel from "../../application/model/UserModel.js";
+import newModelObj from "../../application/model/CommonModel.js";
+import { v4 as uuidv4 } from "uuid";
+import NotificationModel from "../../application/model/NotificationModel.js";
 
 export const getAllFundraisers = async (req, res) => {
   try {
@@ -36,20 +39,20 @@ export const getAllFundraisers = async (req, res) => {
     // ---------------------------------------
     const userIds = data.map((f) => f.f_fk_uc_uuid);
 
-    // Fetch full user details instead of just name
     const users = await UsersCredentialsModel.find(
-      { uc_uuid: { $in: userIds } }
+      { uc_uuid: { $in: userIds } },
+      { uc_uuid: 1, uc_full_name: 1 }
     ).lean();
 
     const userMap = {};
     users.forEach((u) => {
-      userMap[u.uc_uuid] = u; // store full user object
+      userMap[u.uc_uuid] = u.uc_full_name;
     });
 
-    // ADD FLAGGED COUNTS + USER DETAILS
+    // ADD FLAGGED COUNTS + USER NAME
     for (let i = 0; i < data.length; i++) {
-      // Add full user details
-      data[i].user = userMap[data[i].f_fk_uc_uuid] || null;
+      // Add user name
+      data[i].userName = userMap[data[i].f_fk_uc_uuid] || "Unknown User";
 
       // Add flagged count
       const flaggedCount = await SecurityReportModel.countDocuments({
@@ -80,8 +83,6 @@ export const getAllFundraisers = async (req, res) => {
   }
 };
 
-
-// APPROVE
 export const approveFundraiser = async (req, res) => {
   try {
     const { fund_uuid } = req.body;
@@ -93,7 +94,7 @@ export const approveFundraiser = async (req, res) => {
       });
     }
 
-    //  Update fundraiser status
+    // 1️⃣ Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -110,11 +111,11 @@ export const approveFundraiser = async (req, res) => {
       });
     }
 
-    //  Fetch user email
+    // 2️⃣ Fetch user email (UNCHANGED)
     let userEmail = null;
 
     if (fundraiser.f_fk_uc_uuid) {
-      const user = await UserModel.findOne({
+      const user = await UsersCredentialsModel.findOne({
         uc_uuid: fundraiser.f_fk_uc_uuid,
       });
 
@@ -125,18 +126,16 @@ export const approveFundraiser = async (req, res) => {
           `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
         );
       }
-    } else {
-      console.warn(`Fundraiser ${fundraiser.f_uuid} has no linked user`);
     }
 
-    //  Send approval email
+    // 3️⃣ Send approval email (UNCHANGED)
     if (userEmail) {
       try {
         const approvalTime = new Date().toLocaleString();
 
         await sendMail(
           userEmail,
-          "Your fundraiser has been approved ",
+          "Your fundraiser has been approved",
           `Hello ${fundraiser.f_name || "there"},
 
 Great news! Your fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.
@@ -148,12 +147,56 @@ You can now start receiving donations.
 Team KPIGI`
         );
 
-        console.log(` Approval email sent to ${userEmail}`);
+        console.log(`✅ Approval email sent to ${userEmail}`);
       } catch (emailError) {
-        console.error(" Failed to send approval email:", emailError);
+        console.error("❌ Failed to send approval email:", emailError);
       }
-    } else {
+    }
 
+    // 4️⃣ PUSH NOTIFICATION (NEW — SAFE)
+    try {
+      const userId = fundraiser.f_fk_uc_uuid;
+
+      const receiverDevices = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" }
+      }).select("ud_device_fcmToken");
+
+      const tokens = receiverDevices
+        .map(d => d.ud_device_fcmToken)
+        .filter(Boolean);
+
+      if (tokens.length > 0) {
+        const title = "🎉 Fundraiser Approved";
+        const body = `Your fundraiser "${fundraiser.f_title}" is now live and accepting donations.`;
+
+        await NotificationModel.create({
+            n_uuid: uuidv4(),
+            n_fk_uc_uuid: userId,
+            n_title: title,
+            n_body: body,
+            n_payload: {
+              type: "FUNDRAISER_APPROVED",
+              fundId: fundraiser.f_uuid,
+            },
+            n_channel: "push",
+          });
+
+          // Send push
+          await newModelObj.sendNotificationToUser({
+            userId: userId,
+            title,
+            body,
+            tokens,
+            data: {
+              type: "FUNDRAISER_APPROVED",
+              fundId: String(fundraiser.f_uuid),
+            },
+          });
+
+      }
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (approve):", pushErr);
     }
 
     return res.json({
@@ -172,10 +215,6 @@ Team KPIGI`
 
 
 
-
-
-
-
 // REJECT
 export const rejectFundraiser = async (req, res) => {
   try {
@@ -188,7 +227,7 @@ export const rejectFundraiser = async (req, res) => {
       });
     }
 
-    //  Find & update fundraiser
+    // 1️⃣ Update fundraiser
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -205,11 +244,11 @@ export const rejectFundraiser = async (req, res) => {
       });
     }
 
-    //  Fetch user email
+    // 2️⃣ Fetch user email (UNCHANGED)
     let userEmail = null;
 
     if (fundraiser.f_fk_uc_uuid) {
-      const user = await UserModel.findOne({
+      const user = await UsersCredentialsModel.findOne({
         uc_uuid: fundraiser.f_fk_uc_uuid,
       });
 
@@ -220,11 +259,9 @@ export const rejectFundraiser = async (req, res) => {
           `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
         );
       }
-    } else {
-      console.warn(`Fundraiser ${fundraiser.f_uuid} has no linked user`);
     }
 
-
+    // 3️⃣ Send rejection email (UNCHANGED)
     if (userEmail) {
       try {
         await sendMail(
@@ -239,12 +276,59 @@ Reason: ${reason || "Rejected by admin"}
 Team KPIGI`
         );
 
-
+        console.log(`✅ Rejection email sent to ${userEmail}`);
       } catch (emailError) {
-        console.error(" Failed to send rejection email:", emailError);
+        console.error("❌ Failed to send rejection email:", emailError);
       }
-    } else {
+    }
 
+    // 4️⃣ PUSH NOTIFICATION (NEW — SAFE)
+    try {
+      const userId = fundraiser.f_fk_uc_uuid;
+
+      const receiverDevices = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" }
+      }).select("ud_device_fcmToken");
+
+      const tokens = receiverDevices
+        .map(d => d.ud_device_fcmToken)
+        .filter(Boolean);
+
+      if (tokens.length > 0) {
+        const title = "❌ Fundraiser Rejected";
+        const body = `Your fundraiser "${fundraiser.f_title}" was rejected. Reason: ${reason || "Rejected by admin"}`;
+
+        // Save notification (MODEL MATCHED)
+         
+          // Save notification
+          await NotificationModel.create({
+            n_uuid: uuidv4(),
+            n_fk_uc_uuid: userId,
+            n_title: title,
+            n_body: body,
+            n_payload: {
+              type: "FUNDRAISER_REJECTED",
+              fundId: fundraiser.f_uuid,
+              reason: reason || "",
+            },
+            n_channel: "push",
+          });
+
+          // Send push
+          await newModelObj.sendNotificationToUser({
+            userId: userId,
+            title,
+            body,
+            tokens,
+            data: {
+              type: "FUNDRAISER_REJECTED",
+              fundId: String(fundraiser.f_uuid),
+            },
+          });
+      }
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (reject):", pushErr);
     }
 
     return res.json({
