@@ -369,10 +369,13 @@ export const pauseFundraiser = async (req, res) => {
       });
     }
 
-    // Update fundraiser status
+    // 1️⃣ Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
-      { f_status: "PAUSED", f_pause_reason: reason || "Paused by admin" },
+      {
+        f_status: "PAUSED",
+        f_pause_reason: reason || "Paused by admin",
+      },
       { new: true }
     );
 
@@ -383,18 +386,20 @@ export const pauseFundraiser = async (req, res) => {
       });
     }
 
-    // Fetch user email
+    const userId = fundraiser.f_fk_uc_uuid;
+
+    // 2️⃣ Fetch user email
     let userEmail = null;
-    if (fundraiser.f_fk_uc_uuid) {
-      const user = await UsersCredentialsModel.findOne({
-        uc_uuid: fundraiser.f_fk_uc_uuid,
-      });
+    if (userId) {
+      const user = await UsersCredentialsModel.findOne(
+        { uc_uuid: userId },
+        { uc_email: 1 }
+      ).lean();
 
       if (user?.uc_email) userEmail = user.uc_email;
-      else console.warn(`User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`);
     }
 
-    // Send pause email
+    // 3️⃣ Send pause email
     if (userEmail) {
       try {
         await sendMail(
@@ -408,61 +413,72 @@ Reason: ${reason || "Paused by admin"}
 
 Team KPIGI`
         );
-        console.log(`Pause email sent to ${userEmail}`);
       } catch (emailError) {
-        console.error("Failed to send pause email:", emailError);
+        console.error("❌ Failed to send pause email:", emailError);
       }
     }
 
-    // Send push notifications
+    // 4️⃣ Push Notification (NO inner catch)
     try {
-      const userId = fundraiser.f_fk_uc_uuid;
-      const devices = await UserDevice.find({
-        ud_fk_uc_uuid: userId,
-        ud_device_fcmToken: { $exists: true, $ne: "" },
-      }).select("ud_device_fcmToken");
+      if (userId) {
+        const devices = await UserDevice.find({
+          ud_fk_uc_uuid: userId,
+          ud_device_fcmToken: { $exists: true, $ne: "" },
+        }).select("ud_device_fcmToken");
 
-      const tokens = devices.map(d => d.ud_device_fcmToken).filter(Boolean);
-      if (tokens.length > 0) {
-        const title = "Fundraiser Paused";
-        const body = `Your fundraiser "${fundraiser.f_title}" has been paused. Reason: ${reason || "Paused by admin"}`;
+        const tokens = devices
+          .map(d => d.ud_device_fcmToken)
+          .filter(Boolean);
 
-        // Save notification
-        await NotificationModel.create({
-          n_uuid: uuidv4(),
-          n_fk_uc_uuid: userId,
-          n_title: title,
-          n_body: body,
-          n_payload: { type: "FUNDRAISER_PAUSED", fundId: fundraiser.f_uuid, reason: reason || "" },
-          n_channel: "push",
-        });
+        if (tokens.length > 0) {
+          const title = "Fundraiser Paused";
+          const body = `Your fundraiser "${fundraiser.f_title}" has been paused.`;
 
-        try {
-          await newModelObj.sendNotificationToUser({ userId, title, body, tokens, data: { type: "FUNDRAISER_PAUSED", fundId: String(fundraiser.f_uuid) } });
-          console.log(`Push notification sent for paused fundraiser to ${userId}`);
-        } catch (pushErr) {
-          console.error(" Push error:", pushErr);
-          // Remove invalid FCM tokens automatically
-          if (pushErr.message.includes("Requested entity was not found") || pushErr.code === "messaging/registration-token-not-registered") {
-            await UserDevice.updateMany(
-              { ud_device_fcmToken: { $in: tokens } },
-              { $unset: { ud_device_fcmToken: "" } }
-            );
-            console.log("Removed invalid FCM tokens from DB");
-          }
+          // Save notification
+          await NotificationModel.create({
+            n_uuid: uuidv4(),
+            n_fk_uc_uuid: userId,
+            n_title: title,
+            n_body: body,
+            n_payload: {
+              type: "FUNDRAISER_PAUSED",
+              fundId: fundraiser.f_uuid,
+              reason: reason || "Paused by admin",
+            },
+            n_channel: "push",
+          });
+
+          // Send push (no try-catch here)
+          await newModelObj.sendNotificationToUser({
+            userId,
+            title,
+            body,
+            tokens,
+            data: {
+              type: "FUNDRAISER_PAUSED",
+              fundId: String(fundraiser.f_uuid),
+            },
+          });
         }
       }
-    } catch (err) {
-      console.error(" Push notification error (pause):", err);
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (pause):", pushErr);
     }
 
-    return res.json({ status: true, message: "Fundraiser paused successfully" });
+    return res.json({
+      status: true,
+      message: "Fundraiser paused successfully",
+    });
 
   } catch (err) {
     console.error("Pause fundraiser error:", err);
-    return res.status(500).json({ status: false, message: err.message });
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
   }
 };
+
 
 
 // RESUME
