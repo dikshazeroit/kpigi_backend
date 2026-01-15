@@ -12,14 +12,8 @@ import {
     Spinner,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faPause,
-    faPlay,
-    faEye,
-    faFunnelDollar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPause, faPlay, faEye, faFunnelDollar } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-
 
 // API IMPORTS
 import {
@@ -39,25 +33,20 @@ export default function Campaign() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    // REJECT MODAL STATES
-    const [showRejectModal, setShowRejectModal] = useState(false);
-    const [rejectReason, setRejectReason] = useState("");
-    const [campaignToReject, setCampaignToReject] = useState(null);
-
     const campaignsPerPage = 10;
 
-    // ================= FETCH DATA =================
+    // ====== Pause / Reject Reason Modal ======
+    const [showReasonModal, setShowReasonModal] = useState(false);
+    const [reasonType, setReasonType] = useState(""); // "PAUSE" or "REJECT"
+    const [reasonText, setReasonText] = useState("");
+    const [campaignForReason, setCampaignForReason] = useState(null);
+
+    // ====== FETCH DATA ======
     const fetchCampaigns = async () => {
         setLoading(true);
         try {
             const statusParam = filter === "All" ? "" : filter.toUpperCase();
-            const data = await getAllFundraisers(
-                page,
-                campaignsPerPage,
-                search,
-                statusParam
-            );
-
+            const data = await getAllFundraisers(page, campaignsPerPage, search, statusParam);
             setCampaigns(data.payload || []);
             setTotalPages(data.pagination?.totalPages || 1);
         } catch (error) {
@@ -71,22 +60,72 @@ export default function Campaign() {
         fetchCampaigns();
     }, [page, filter, search]);
 
-    // ================= ACTION HANDLERS =================
-    const handlePause = async (campaign) => {
-        await pauseFundraiserAPI(campaign.f_uuid, "Paused by admin");
-        fetchCampaigns();
+    // ====== STATUS TEXT ======
+    const getStatusText = (status) => {
+        switch (status) {
+            case "PENDING": return "Pending";
+            case "ACTIVE": return "Active";
+            case "PAUSED": return "Paused";
+            case "CLOSED":
+            case "REJECTED": return "Rejected";
+            default: return status;
+        }
     };
 
-    const handleResume = async (campaign) => {
-        await resumeFundraiserAPI(campaign.f_uuid);
-        fetchCampaigns();
+    // ====== OPEN REASON MODAL ======
+    const openReasonModal = (campaign, type) => {
+        setCampaignForReason(campaign);
+        setReasonType(type);
+        setReasonText("");
+        setShowReasonModal(true);
     };
 
+    // ====== HANDLE PAUSE / REJECT SUBMIT ======
+    const handleReasonSubmit = async () => {
+        if (!reasonText.trim()) {
+            Swal.fire({ icon: "warning", title: "Warning", text: "Please enter a reason!" });
+            return;
+        }
+
+        try {
+            let res;
+            if (reasonType === "PAUSE") {
+                res = await pauseFundraiserAPI(campaignForReason.f_uuid, reasonText);
+            } else if (reasonType === "REJECT") {
+                res = await rejectFundraiserAPI(campaignForReason.f_uuid, reasonText);
+            }
+
+            if (res.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: reasonType === "PAUSE" ? "Paused!" : "Rejected!",
+                    text: res.message || `${reasonType === "PAUSE" ? "Fundraiser paused" : "Fundraiser rejected"}. Notification sent.`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: "top-end",
+                });
+            } else {
+                Swal.fire({ icon: "error", title: "Error", text: res.message || "Operation failed" });
+            }
+
+            setShowReasonModal(false);
+            setCampaignForReason(null);
+            setReasonText("");
+            fetchCampaigns();
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.response?.data?.message || "Operation failed",
+            });
+        }
+    };
+
+    // ====== HANDLE APPROVE ======
     const handleApprove = async (campaign) => {
         try {
             const res = await approveFundraiserAPI(campaign.f_uuid);
-
-
             Swal.fire({
                 icon: "success",
                 title: "Approved!",
@@ -96,7 +135,6 @@ export default function Campaign() {
                 toast: true,
                 position: "top-end",
             });
-
             fetchCampaigns();
         } catch (error) {
             Swal.fire({
@@ -107,66 +145,34 @@ export default function Campaign() {
         }
     };
 
-    const handleReject = async () => {
-        if (!rejectReason.trim()) {
-            Swal.fire({
-                icon: "warning",
-                title: "Warning",
-                text: "Please enter a reason!",
-            });
-            return;
-        }
-
+    // ====== HANDLE RESUME ======
+    const handleResume = async (campaign) => {
         try {
-            const res = await rejectFundraiserAPI(
-                campaignToReject.f_uuid,
-                rejectReason
-            );
-
-            Swal.fire({
-                icon: "success",
-                title: "Rejected!",
-                text: res.message || "Fundraiser rejected successfully",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-
-            setShowRejectModal(false);
-            setCampaignToReject(null);
-            setRejectReason("");
-
+            const res = await resumeFundraiserAPI(campaign.f_uuid);
+            if (res.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Resumed!",
+                    text: res.message || "Fundraiser resumed successfully",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: "top-end",
+                });
+            }
             fetchCampaigns();
         } catch (error) {
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text:
-                    error.response?.data?.message || "Failed to reject fundraiser",
+                text: error.response?.data?.message || "Failed to resume fundraiser",
             });
-        }
-    };
-
-    // ================= STATUS TEXT =================
-    const getStatusText = (status) => {
-        switch (status) {
-            case "PENDING":
-                return "Pending";
-            case "ACTIVE":
-                return "Active";
-            case "PAUSED":
-                return "Paused";
-            case "CLOSED":
-            case "REJECTED":
-                return "Rejected";
-            default:
-                return status;
         }
     };
 
     return (
         <div>
             <Card border="light" className="shadow-sm">
-                {/* TITLE */}
                 <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
                     <h4 className="mb-0">
                         <FontAwesomeIcon icon={faFunnelDollar} className="me-2" />
@@ -178,10 +184,7 @@ export default function Campaign() {
                     {/* FILTER + SEARCH */}
                     <Row className="mb-4">
                         <Col md={4}>
-                            <Form.Select
-                                value={filter}
-                                onChange={(e) => setFilter(e.target.value)}
-                            >
+                            <Form.Select value={filter} onChange={(e) => setFilter(e.target.value)}>
                                 <option value="All">All Funds</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="ACTIVE">Active</option>
@@ -203,9 +206,7 @@ export default function Campaign() {
                     {loading ? (
                         <div className="text-center py-5">
                             <Spinner animation="border" />
-                            <div className="text-muted fw-semibold">
-                                Loading data, please wait...
-                            </div>
+                            <div className="text-muted fw-semibold">Loading data, please wait...</div>
                         </div>
                     ) : (
                         <Table bordered hover responsive className="align-middle">
@@ -234,31 +235,24 @@ export default function Campaign() {
                                         <tr key={c.f_uuid}>
                                             <td>{(page - 1) * campaignsPerPage + index + 1}</td>
                                             <td>{c.f_title}</td>
-                                            <td>{c.user?.uc_full_name ?? "Anonymous"}</td>
+                                            <td>{c.userName || "Anonymous"}</td> {/* <- userName from API */}
 
                                             <td>
                                                 <Badge bg="info">{getStatusText(c.f_status)}</Badge>
                                             </td>
 
                                             <td>${c.f_amount}</td>
-                                            <td>
-                                                {new Date(c.f_deadline).toLocaleDateString()}
-                                            </td>
+                                            <td>{new Date(c.f_deadline).toLocaleDateString()}</td>
                                             <td>{c.f_status === "ACTIVE" ? "Verified" : "Pending"}</td>
 
-                                            {/* ACTIONS */}
                                             <td>
-                                                <div className="fw-semibold mb-1">
-                                                    {getStatusText(c.f_status)}
-                                                </div>
-
                                                 <Button
                                                     size="sm"
                                                     variant="blue"
                                                     className="me-1 mb-1"
                                                     onClick={() => setSelectedCampaign(c)}
                                                 >
-                                                     <FontAwesomeIcon icon={faEye} />
+                                                    <FontAwesomeIcon icon={faEye} />
                                                 </Button>
 
                                                 {c.f_status === "PENDING" && (
@@ -275,11 +269,7 @@ export default function Campaign() {
                                                             size="sm"
                                                             variant="danger"
                                                             className="mb-1"
-                                                            onClick={() => {
-                                                                setCampaignToReject(c);
-                                                                setRejectReason("");
-                                                                setShowRejectModal(true);
-                                                            }}
+                                                            onClick={() => openReasonModal(c, "REJECT")}
                                                         >
                                                             Reject
                                                         </Button>
@@ -292,7 +282,7 @@ export default function Campaign() {
                                                             size="sm"
                                                             variant="warning"
                                                             className="me-1 mb-1"
-                                                            onClick={() => handlePause(c)}
+                                                            onClick={() => openReasonModal(c, "PAUSE")}
                                                         >
                                                             <FontAwesomeIcon icon={faPause} /> Pause
                                                         </Button>
@@ -300,11 +290,7 @@ export default function Campaign() {
                                                             size="sm"
                                                             variant="danger"
                                                             className="mb-1"
-                                                            onClick={() => {
-                                                                setCampaignToReject(c);
-                                                                setRejectReason("Closed by admin");
-                                                                setShowRejectModal(true);
-                                                            }}
+                                                            onClick={() => openReasonModal(c, "REJECT")}
                                                         >
                                                             Close
                                                         </Button>
@@ -325,11 +311,7 @@ export default function Campaign() {
                                                             size="sm"
                                                             variant="danger"
                                                             className="mb-1"
-                                                            onClick={() => {
-                                                                setCampaignToReject(c);
-                                                                setRejectReason("Closed by admin");
-                                                                setShowRejectModal(true);
-                                                            }}
+                                                            onClick={() => openReasonModal(c, "REJECT")}
                                                         >
                                                             Close
                                                         </Button>
@@ -346,34 +328,13 @@ export default function Campaign() {
                             </tbody>
                         </Table>
                     )}
-                    {/* Pagination */}
 
-
+                    {/* ================= PAGINATION ================= */}
                     {totalPages >= 1 && (
                         <Pagination className="justify-content-end mt-3">
-                            <Pagination.Prev
-                                disabled={page === 1}
-                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                            >
-                                Prev
-                            </Pagination.Prev>
-
-                            {[...Array(totalPages)].map((_, i) => (
-                                <Pagination.Item
-                                    key={i + 1}
-                                    active={i + 1 === page}
-                                    onClick={() => setPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </Pagination.Item>
-                            ))}
-
-                            <Pagination.Next
-                                disabled={page === totalPages}
-                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                            >
-                                Next
-                            </Pagination.Next>
+                            <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
+                            <Pagination.Item active>{page}</Pagination.Item>
+                            <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
                         </Pagination>
                     )}
                 </Card.Body>
@@ -387,52 +348,38 @@ export default function Campaign() {
                 <Modal.Body>
                     {selectedCampaign && (
                         <>
-                            <p>
-                                <strong>Title:</strong> {selectedCampaign.f_title}
-                            </p>
-                            <p>
-                                <strong>Requester:</strong> {selectedCampaign.user?.uc_full_name ?? "Anonymous"}
-                            </p>
-                            <p>
-                                <strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}
-                            </p>
-                            <p>
-                                <strong>Amount:</strong> ${selectedCampaign.f_amount}
-                            </p>
+                            <p><strong>Title:</strong> {selectedCampaign.f_title}</p>
+                            <p><strong>Requester:</strong> {selectedCampaign.userName || "Anonymous"}</p>
+                            <p><strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}</p>
+                            <p><strong>Amount:</strong> ${selectedCampaign.f_amount}</p>
                         </>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>
-                        Close
-                    </Button>
+                    <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>Close</Button>
                 </Modal.Footer>
             </Modal>
 
-            {/* REJECT MODAL */}
-            <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)}>
+            {/* REASON MODAL (PAUSE or REJECT) */}
+            <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Reject Campaign</Modal.Title>
+                    <Modal.Title>{reasonType === "PAUSE" ? "Pause Campaign" : "Reject/Close Campaign"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form.Group>
-                        <Form.Label>Reason for rejection</Form.Label>
+                        <Form.Label>Reason</Form.Label>
                         <Form.Control
                             as="textarea"
                             rows={3}
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
+                            value={reasonText}
+                            onChange={(e) => setReasonText(e.target.value)}
                             placeholder="Enter reason..."
                         />
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowRejectModal(false)}>
-                        Cancel
-                    </Button>
-                    <Button variant="danger" onClick={handleReject}>
-                        Submit Reject
-                    </Button>
+                    <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Cancel</Button>
+                    <Button variant={reasonType === "PAUSE" ? "warning" : "danger"} onClick={handleReasonSubmit}>Submit</Button>
                 </Modal.Footer>
             </Modal>
         </div>
