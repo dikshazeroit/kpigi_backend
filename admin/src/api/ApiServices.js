@@ -938,3 +938,16 @@ export const updateUser = async (id, updatedData) => {
 };
 
 
+
+export const closeFundraisers = async (fund_uuid, reason = "") => {
+
+  if (!fund_uuid) throw new Error("fund_uuid is required");
+
+  const res = await apiClient.post("/private/closeFundraisers", {
+    fund_uuid,
+    reason,
+  });
+
+  console.log("API → closeFundraisers response:", res.data);
+  return res.data;
+};

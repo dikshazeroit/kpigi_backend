@@ -20,6 +20,7 @@ import {
   pauseFundraiser,
   resumeFundraiser,
   editFundraiser,
+  closeFundraisers,
 } from "../controllers/FundraisersController.js";
 import {getAllDonations,markDonationSafe,markDonationFraud} from "../controllers/DonationController.js";
 import {getAllPayouts,approvePayout,rejectPayout,updatePayoutStatus} from "../controllers/PayoutController.js";
@@ -85,6 +86,7 @@ router.post("/private/fundraiser-reject", adminAuth, rejectFundraiser);
 router.post("/private/fundraiser-pause", adminAuth, pauseFundraiser);
 router.post("/private/fundraiser-resume", adminAuth, resumeFundraiser);
 router.post("/private/fundraiser-edit", adminAuth, editFundraiser);
+router.post("/private/closeFundraisers", adminAuth, closeFundraisers);
 
 //****************************** 🔐 Donation Routes *******************************************//
 router.get("/private/donations-list", adminAuth, getAllDonations);

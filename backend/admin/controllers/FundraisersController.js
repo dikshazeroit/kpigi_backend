@@ -518,3 +518,130 @@ export const editFundraiser = async (req, res) => {
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
+
+
+
+
+
+
+export const closeFundraisers = async (req, res) => {
+  try {
+    const { fund_uuid, reason } = req.body;
+
+    if (!fund_uuid) {
+      return res.status(400).json({
+        status: false,
+        message: "fund_uuid is required",
+      });
+    }
+
+    //  Update fundraiser status
+    const fundraiser = await FundModel.findOneAndUpdate(
+      { f_uuid: fund_uuid },
+      {
+        f_status: "REJECTED",
+        f_pause_reason: reason || "Rejected by admin",
+      },
+      { new: true }
+    );
+
+    if (!fundraiser) {
+      return res.status(404).json({
+        status: false,
+        message: "Fundraiser not found",
+      });
+    }
+
+    const userId = fundraiser.f_fk_uc_uuid;
+
+    //  Fetch user email
+    let userEmail = null;
+    if (userId) {
+      const user = await UsersCredentialsModel.findOne(
+        { uc_uuid: userId },
+        { uc_email: 1 }
+      ).lean();
+
+      if (user?.uc_email) userEmail = user.uc_email;
+    }
+
+    //  Send close email
+    if (userEmail) {
+      try {
+        await sendMail(
+          userEmail,
+          "Your fundraiser has been closed",
+          `Hello ${fundraiser.f_name || "there"},
+
+Your fundraiser "${fundraiser.f_title}" has been closed.
+
+Reason: ${reason || "Closed by admin"}
+
+Team KPIGI`
+        );
+      } catch (emailError) {
+        console.error("❌ Failed to send close email:", emailError);
+      }
+    }
+
+    //  Push Notification (NO inner catch)
+    try {
+      if (userId) {
+        const devices = await UserDevice.find({
+          ud_fk_uc_uuid: userId,
+          ud_device_fcmToken: { $exists: true, $ne: "" },
+        }).select("ud_device_fcmToken");
+
+        const tokens = devices
+          .map(d => d.ud_device_fcmToken)
+          .filter(Boolean);
+
+        if (tokens.length > 0) {
+          const title = "Fundraiser Paused";
+          const body = `Your fundraiser "${fundraiser.f_title}" has been paused.`;
+
+          // Save notification
+          await NotificationModel.create({
+            n_uuid: uuidv4(),
+            n_fk_uc_uuid: userId,
+            n_title: title,
+            n_body: body,
+            n_payload: {
+              type: "FUNDRAISER_REJECTED",
+              fundId: fundraiser.f_uuid,
+              reason: reason || "Closed by admin",
+            },
+            n_channel: "push",
+          });
+
+          // Send push (no try-catch here)
+          await newModelObj.sendNotificationToUser({
+            userId,
+            title,
+            body,
+            tokens,
+            data: {
+              type: "FUNDRAISER_REJECTED",
+              fundId: String(fundraiser.f_uuid),
+            },
+          });
+        }
+      }
+    } catch (pushErr) {
+      console.error("⚠️ Push notification error (close):", pushErr);
+    }
+
+    return res.json({
+      status: true,
+      message: "Fundraiser closed successfully",
+    });
+
+  } catch (err) {
+    console.error("Close fundraiser error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
