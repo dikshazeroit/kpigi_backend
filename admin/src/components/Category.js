@@ -54,6 +54,7 @@ const Category = () => {
     setLoading(true);
     try {
       const res = await getAllCategories();
+      console.log("Fetched Categories:", res.data);
       setCategories(res.data || []);
       setFiltered(res.data || []);
     } catch (error) {
