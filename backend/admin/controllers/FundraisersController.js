@@ -100,7 +100,7 @@ export const approveFundraiser = async (req, res) => {
       { f_uuid: fund_uuid },
       {
         f_status: "ACTIVE",
-        f_approved_at: new Date(),
+        f_approved_at: new Date(), // store UTC
       },
       { new: true }
     );
@@ -122,17 +122,19 @@ export const approveFundraiser = async (req, res) => {
 
       if (user && user.uc_email) {
         userEmail = user.uc_email;
-      } else {
-        console.warn(
-          `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
-        );
       }
     }
 
-    // 3️⃣ Send approval email (UNCHANGED)
+    // 3️⃣ Send approval email (TEXT UNCHANGED, DATE ONLY)
     if (userEmail) {
       try {
-        const approvalTime = new Date().toLocaleString();
+        const approvalDate = new Date(
+          fundraiser.f_approved_at
+        ).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        });
 
         await sendMail(
           userEmail,
@@ -141,26 +143,24 @@ export const approveFundraiser = async (req, res) => {
 
 Great news! Your fundraiser "${fundraiser.f_title}" has been approved and is now ACTIVE.
 
-Approval Date & Time: ${approvalTime}
+Approval Date: ${approvalDate}
 
 You can now start receiving donations.
 
 Team KPIGI`
         );
-
-        console.log(`✅ Approval email sent to ${userEmail}`);
       } catch (emailError) {
         console.error("❌ Failed to send approval email:", emailError);
       }
     }
 
-    // 4️⃣ PUSH NOTIFICATION (NEW — SAFE)
+    // 4️⃣ Push Notification (NO DATE)
     try {
       const userId = fundraiser.f_fk_uc_uuid;
 
       const receiverDevices = await UserDevice.find({
         ud_fk_uc_uuid: userId,
-        ud_device_fcmToken: { $exists: true, $ne: "" }
+        ud_device_fcmToken: { $exists: true, $ne: "" },
       }).select("ud_device_fcmToken");
 
       const tokens = receiverDevices
@@ -169,35 +169,36 @@ Team KPIGI`
 
       if (tokens.length > 0) {
         const title = "🎉 Fundraiser Approved";
-        const body = `Your fundraiser "${fundraiser.f_title}" is now live and accepting donations.`;
+        const body =
+          "Your fundraiser has been successfully created and is now visible to users after admin approval.";
 
+        // Save notification
         await NotificationModel.create({
-            n_uuid: uuidv4(),
-            n_fk_uc_uuid: userId,
-            n_title: title,
-            n_body: body,
-            n_payload: {
-              type: "FUNDRAISER_APPROVED",
-              fundId: fundraiser.f_uuid,
-            },
-            n_channel: "push",
-          });
+          n_uuid: uuidv4(),
+          n_fk_uc_uuid: userId,
+          n_title: title,
+          n_body: body,
+          n_payload: {
+            type: "FUNDRAISER_APPROVED",
+            fundId: fundraiser.f_uuid,
+          },
+          n_channel: "push",
+        });
 
-          // Send push
-          await newModelObj.sendNotificationToUser({
-            userId: userId,
-            title,
-            body,
-            tokens,
-            data: {
-              type: "FUNDRAISER_APPROVED",
-              fundId: String(fundraiser.f_uuid),
-            },
-          });
-
+        // Send push
+        await newModelObj.sendNotificationToUser({
+          userId,
+          title,
+          body,
+          tokens,
+          data: {
+            type: "FUNDRAISER_APPROVED",
+            fundId: String(fundraiser.f_uuid),
+          },
+        });
       }
     } catch (pushErr) {
-      console.error("⚠️ Push notification error (approve):", pushErr);
+      console.error("⚠️ Push notification error:", pushErr);
     }
 
     return res.json({
@@ -213,6 +214,8 @@ Team KPIGI`
     });
   }
 };
+
+
 
 
 
