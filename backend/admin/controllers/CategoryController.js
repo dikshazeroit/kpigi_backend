@@ -20,6 +20,7 @@
 
 
 import CategoryModel from "../../application/model/CategoryModel.js";
+import FundraiserModel from "../../application/model/FundModel.js";
 
 /**
  * Get all categories
@@ -122,6 +123,14 @@ export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Category ID is required",
+      });
+    }
+
+    
     const category = await CategoryModel.findOne({
       c_uuid: id,
       c_is_deleted: false,
@@ -130,10 +139,11 @@ export const deleteCategory = async (req, res) => {
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found",
+        message: "Category not found or already deleted",
       });
     }
 
+  
     if (category.c_is_default) {
       return res.status(400).json({
         success: false,
@@ -141,17 +151,40 @@ export const deleteCategory = async (req, res) => {
       });
     }
 
-    category.c_is_deleted = true;
-    await category.save();
+    
+    const fundraisers = await FundraiserModel.find({
+      f_category_id: category.c_uuid,
+      f_status: { $in: ["ACTIVE", "PENDING"] },
+    });
 
+    if (fundraisers.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete category. There are ${fundraisers.length} fund requests in 'ACTIVE' or 'PENDING' status.`,
+      });
+    }
+
+  
+    console.log("Category before saving:", category);
+
+    category.c_is_deleted = true;
+    const savedCategory = await category.save();
+    console.log("Category after saving:", savedCategory);
     return res.status(200).json({
       success: true,
       message: "Category deleted successfully",
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    console.error("Delete category error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
+
+
+
 
 /**
  * Enable / Disable category
