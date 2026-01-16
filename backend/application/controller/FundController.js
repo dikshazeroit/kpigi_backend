@@ -30,6 +30,7 @@ import UserDevice from "../model/UserDeviceModel.js";
 import NotificationModel from "../model/NotificationModel.js";
 import newModelObj from "../model/CommonModel.js";
 import DonationModel from "../model/DonationModel.js";
+import CategoryModel from "../model/CategoryModel.js";
 
 let fundObj = {};
 
@@ -44,17 +45,24 @@ let fundObj = {};
  * @returns {void}
  * @developer Sangeeta
  */
+
 fundObj.createFundRequest = async function (req, res) {
   try {
+    // 🔐 Auth check
     const userId = await appHelper.getUUIDByToken(req);
     if (!userId) {
       return commonHelper.errorHandler(
         res,
-        { status: false, code: "FUND-E1001", message: "Unauthorized access." },
+        {
+          status: false,
+          code: "FUND-E1001",
+          message: "Unauthorized access.",
+        },
         200
       );
     }
 
+    // 📥 Request body
     const { title, purpose, category, amount, deadline, story } = req.body;
 
     if (!title || !purpose || !category || !amount || !deadline || !story) {
@@ -69,7 +77,28 @@ fundObj.createFundRequest = async function (req, res) {
       );
     }
 
+    // ✅ Validate category (UUID based)
+    const categoryData = await CategoryModel.findOne({
+      c_uuid: category,
+      c_status: "ACTIVE",
+      c_is_deleted: false,
+    });
+
+    if (!categoryData) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-E1003",
+          message: "Invalid category selected.",
+        },
+        200
+      );
+    }
+
+    // 📸 Upload media (max 5)
     const uploadedMedia = [];
+
     if (req.files?.media?.length > 0) {
       for (let i = 0; i < 5; i++) {
         const file = req.files.media[i];
@@ -78,6 +107,7 @@ fundObj.createFundRequest = async function (req, res) {
             / /g,
             "_"
           );
+
           await commonHelper.uploadFile({
             fileName,
             chunks: [file.buffer],
@@ -85,6 +115,7 @@ fundObj.createFundRequest = async function (req, res) {
             contentType: file.mimetype,
             uploadFolder: process.env.AWS_USER_FILE_FOLDER,
           });
+
           uploadedMedia.push(fileName);
         } else {
           uploadedMedia.push(null);
@@ -94,13 +125,15 @@ fundObj.createFundRequest = async function (req, res) {
       uploadedMedia.push(null, null, null, null, null);
     }
 
+    // 🆕 Create fund
     const uuid = v4();
+
     const newFund = new FundModel({
       f_uuid: uuid,
       f_fk_uc_uuid: userId,
       f_title: title,
       f_purpose: purpose,
-      f_category_name: category,
+      f_category_id: category, // ✅ CATEGORY UUID STORED
       f_amount: Number(amount),
       f_deadline: new Date(deadline),
       f_story: story,
@@ -113,25 +146,29 @@ fundObj.createFundRequest = async function (req, res) {
 
     await newFund.save();
 
-    // Send notification
+    // 🔔 Notification
     try {
       const deviceRecords = await UserDevice.find({
         ud_fk_uc_uuid: userId,
         ud_device_fcmToken: { $exists: true, $ne: "" },
       }).select("ud_device_fcmToken");
+
       const tokens = deviceRecords
         .map((d) => d.ud_device_fcmToken)
         .filter(Boolean);
 
-      const notiTitle = "Your fundraiser is live!";
-      const notiBody = `Your fundraiser "${title}" has been successfully created. Start sharing to receive donations.`;
+      const notiTitle = "Fundraiser is Live 🎉";
+      const notiBody = `Great news! Your fundraiser "${title}" is live. Share it with others and start receiving support.`;
 
       await NotificationModel.create({
         n_uuid: v4(),
         n_fk_uc_uuid: userId,
         n_title: notiTitle,
         n_body: notiBody,
-        n_payload: { fund_uuid: uuid, type: "fund_created" },
+        n_payload: {
+          fund_uuid: uuid,
+          type: "fund_created",
+        },
       });
 
       if (tokens.length > 0) {
@@ -139,7 +176,10 @@ fundObj.createFundRequest = async function (req, res) {
           userId,
           title: notiTitle,
           body: notiBody,
-          data: { fund_uuid: uuid, type: "fund_created" },
+          data: {
+            fund_uuid: uuid,
+            type: "fund_created",
+          },
           tokens,
         });
       }
@@ -147,13 +187,15 @@ fundObj.createFundRequest = async function (req, res) {
       console.error("⚠️ Notification send failed:", sendErr);
     }
 
+    // ✅ SUCCESS RESPONSE (CATEGORY NAME RETURNED)
     return commonHelper.successHandler(res, {
       status: true,
       message: "Fund request created successfully.",
       payload: {
         fund_uuid: uuid,
         title,
-        category,
+        category: categoryData.c_name, // ✅ CATEGORY NAME
+        category_id: category,          // (optional, good for frontend)
         amount,
         media: uploadedMedia,
       },
@@ -162,11 +204,16 @@ fundObj.createFundRequest = async function (req, res) {
     console.error("❌ createFundRequest Error:", error);
     return commonHelper.errorHandler(
       res,
-      { status: false, code: "FUND-E9999", message: "Internal server error." },
+      {
+        status: false,
+        code: "FUND-E9999",
+        message: "Internal server error.",
+      },
       200
     );
   }
 };
+
 
 /**
  * Get list of funds for the current user.
@@ -177,9 +224,11 @@ fundObj.createFundRequest = async function (req, res) {
  * @developer Sangeeta
  */
 
+
 fundObj.getFundList = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
+
     if (!userId) {
       return commonHelper.errorHandler(
         res,
@@ -202,8 +251,36 @@ fundObj.getFundList = async function (req, res) {
       .sort({ createdAt: -1 })
       .lean();
 
-    // 🔹 Add raised amount + donor count
-    for (let fund of funds) {
+    // 🔹 Collect unique category IDs
+    const categoryIds = [
+      ...new Set(
+        funds
+          .map((f) => f.f_category_id)
+          .filter((id) => id)
+      ),
+    ];
+
+    // 🔹 Fetch categories
+    const categories = await CategoryModel.find(
+      {
+        c_uuid: { $in: categoryIds },
+        c_is_deleted: false,
+      },
+      {
+        c_uuid: 1,
+        c_name: 1,
+        _id: 0,
+      }
+    ).lean();
+
+    // 🔹 Create category map (JS way)
+    const categoryMap = {};
+    categories.forEach((cat) => {
+      categoryMap[cat.c_uuid] = cat.c_name;
+    });
+
+    // 🔹 Add donation + category name
+    for (const fund of funds) {
       const donationAgg = await DonationModel.aggregate([
         {
           $match: {
@@ -215,7 +292,7 @@ fundObj.getFundList = async function (req, res) {
           $group: {
             _id: null,
             totalRaised: { $sum: "$d_amount" },
-            donors: { $addToSet: "$d_fk_uc_uuid" }, // 👈 unique donors
+            donors: { $addToSet: "$d_fk_uc_uuid" },
           },
         },
       ]);
@@ -228,13 +305,12 @@ fundObj.getFundList = async function (req, res) {
 
       const goalAmount = fund.f_amount || 0;
 
+      fund.category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
       fund.raised_amount = raisedAmount;
       fund.goal_amount = goalAmount;
       fund.donor_count = donorCount;
-
       fund.progress_percent =
         goalAmount > 0 ? Math.round((raisedAmount / goalAmount) * 100) : 0;
-
       fund.progress_text = `$${raisedAmount} raised of $${goalAmount} goal`;
     }
 
@@ -257,6 +333,7 @@ fundObj.getFundList = async function (req, res) {
   }
 };
 
+
 /**
  * Get details of a specific fund.
  *
@@ -265,6 +342,7 @@ fundObj.getFundList = async function (req, res) {
  * @returns {void}
  * @developer Sangeeta
  */
+
 fundObj.getFundDetails = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -273,7 +351,23 @@ fundObj.getFundDetails = async function (req, res) {
     if (!userId) {
       return commonHelper.errorHandler(
         res,
-        { status: false, code: "FUND-D1001", message: "Unauthorized access." },
+        {
+          status: false,
+          code: "FUND-D1001",
+          message: "Unauthorized access.",
+        },
+        200
+      );
+    }
+
+    if (!f_uuid) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-D1000",
+          message: "Fund UUID is required.",
+        },
         200
       );
     }
@@ -283,12 +377,30 @@ fundObj.getFundDetails = async function (req, res) {
     if (!fund) {
       return commonHelper.errorHandler(
         res,
-        { status: false, code: "FUND-D1002", message: "Fund not found." },
+        {
+          status: false,
+          code: "FUND-D1002",
+          message: "Fund not found.",
+        },
         200
       );
     }
 
-    // 2️⃣ Creator fetch
+    // 2️⃣ Category fetch (UUID based)
+    let categoryName = "";
+    if (fund.f_category_id) {
+      const category = await CategoryModel.findOne(
+        {
+          c_uuid: fund.f_category_id,
+          c_is_deleted: false,
+        },
+        { c_name: 1 }
+      ).lean();
+
+      categoryName = category ? category.c_name : "";
+    }
+
+    // 3️⃣ Creator fetch
     const creator = await UsersCredentialsModel.findOne(
       { uc_uuid: fund.f_fk_uc_uuid },
       {
@@ -302,9 +414,15 @@ fundObj.getFundDetails = async function (req, res) {
       }
     ).lean();
 
-    // 3️⃣ Merge (FLAT)
+    // 4️⃣ Merge (FLAT RESPONSE)
     const responsePayload = {
       ...fund,
+
+      // ✅ Category
+      category_name: categoryName,
+      category_id: fund.f_category_id,
+
+      // ✅ Creator info
       creator_name: creator?.uc_full_name || "",
       creator_email: creator?.uc_email || "",
       creator_phone: creator?.uc_phone || "",
@@ -322,11 +440,16 @@ fundObj.getFundDetails = async function (req, res) {
     console.error("❌ getFundDetails Error:", error);
     return commonHelper.errorHandler(
       res,
-      { status: false, code: "FUND-D9999", message: "Internal server error." },
+      {
+        status: false,
+        code: "FUND-D9999",
+        message: "Internal server error.",
+      },
       200
     );
   }
 };
+
 
 /**
  * Update a specific fund.
@@ -338,44 +461,98 @@ fundObj.getFundDetails = async function (req, res) {
  * @returns {void}
  * @developer Sangeeta
  */
+
 fundObj.updateFund = async function (req, res) {
   try {
+    // 🔐 Auth
     const userId = await appHelper.getUUIDByToken(req);
     const { f_uuid } = req.body;
 
     if (!userId) {
       return commonHelper.errorHandler(
         res,
-        { status: false, code: "FUND-U1001", message: "Unauthorized access." },
+        {
+          status: false,
+          code: "FUND-U1001",
+          message: "Unauthorized access.",
+        },
         200
       );
     }
 
-    const fund = await FundModel.findOne({ f_uuid, f_fk_uc_uuid: userId });
+    if (!f_uuid) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "FUND-U1000",
+          message: "Fund UUID is required.",
+        },
+        200
+      );
+    }
+
+    // 🔍 Find fund
+    const fund = await FundModel.findOne({
+      f_uuid,
+      f_fk_uc_uuid: userId,
+    });
+
     if (!fund) {
       return commonHelper.errorHandler(
         res,
-        { status: false, code: "FUND-U1002", message: "Fund not found." },
+        {
+          status: false,
+          code: "FUND-U1002",
+          message: "Fund not found.",
+        },
         200
       );
     }
 
-    const updatableFields = [
-      "title",
-      "purpose",
-      "category",
-      "amount",
-      "deadline",
-      "story",
-    ];
-    updatableFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        if (field === "deadline") fund.f_deadline = new Date(req.body[field]);
-        else if (field === "amount") fund.f_amount = Number(req.body[field]);
-        else fund[`f_${field}`] = req.body[field];
-      }
-    });
+    const {
+      title,
+      purpose,
+      category, // 👈 category UUID
+      amount,
+      deadline,
+      story,
+    } = req.body;
 
+    // 🗂️ CATEGORY UPDATE + VALIDATION
+    let categoryName = null;
+
+    if (category !== undefined) {
+      const categoryData = await CategoryModel.findOne({
+        c_uuid: category,
+        c_status: "ACTIVE",
+        c_is_deleted: false,
+      });
+
+      if (!categoryData) {
+        return commonHelper.errorHandler(
+          res,
+          {
+            status: false,
+            code: "FUND-U1003",
+            message: "Invalid category selected.",
+          },
+          200
+        );
+      }
+
+      fund.f_category_id = category; // ✅ store UUID
+      categoryName = categoryData.c_name;
+    }
+
+    // ✏️ Other fields
+    if (title !== undefined) fund.f_title = title;
+    if (purpose !== undefined) fund.f_purpose = purpose;
+    if (amount !== undefined) fund.f_amount = Number(amount);
+    if (deadline !== undefined) fund.f_deadline = new Date(deadline);
+    if (story !== undefined) fund.f_story = story;
+
+    // 📸 Media update (1–5)
     if (req.files?.media?.length > 0) {
       for (let i = 0; i < 5; i++) {
         const file = req.files.media[i];
@@ -384,6 +561,7 @@ fundObj.updateFund = async function (req, res) {
             / /g,
             "_"
           );
+
           await commonHelper.uploadFile({
             fileName,
             chunks: [file.buffer],
@@ -391,26 +569,59 @@ fundObj.updateFund = async function (req, res) {
             contentType: file.mimetype,
             uploadFolder: process.env.AWS_USER_FILE_FOLDER,
           });
+
           fund[`f_media_${i + 1}`] = fileName;
         }
       }
     }
 
     await fund.save();
+
+    // 🔁 Fetch category name if not updated
+    if (!categoryName && fund.f_category_id) {
+      const cat = await CategoryModel.findOne(
+        { c_uuid: fund.f_category_id },
+        { c_name: 1 }
+      );
+      categoryName = cat ? cat.c_name : "";
+    }
+
+    // ✅ SUCCESS RESPONSE
     return commonHelper.successHandler(res, {
       status: true,
       message: "Fund updated successfully.",
-      payload: fund,
+      payload: {
+        fund_uuid: fund.f_uuid,
+        title: fund.f_title,
+        purpose: fund.f_purpose,
+        category: categoryName,          // ✅ category name
+        category_id: fund.f_category_id, // ✅ category UUID
+        amount: fund.f_amount,
+        deadline: fund.f_deadline,
+        story: fund.f_story,
+        media: [
+          fund.f_media_one,
+          fund.f_media_two,
+          fund.f_media_three,
+          fund.f_media_four,
+          fund.f_media_five,
+        ],
+      },
     });
   } catch (error) {
     console.error("❌ updateFund Error:", error);
     return commonHelper.errorHandler(
       res,
-      { status: false, code: "FUND-U9999", message: "Internal server error." },
+      {
+        status: false,
+        code: "FUND-U9999",
+        message: "Internal server error.",
+      },
       200
     );
   }
 };
+
 
 /**
  * Delete a specific fund.
@@ -469,9 +680,11 @@ fundObj.deleteFund = async function (req, res) {
  * @developer Sangeeta
  */
 
+
 fundObj.getMyFundList = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
+
     if (!userId) {
       return commonHelper.errorHandler(
         res,
@@ -484,17 +697,43 @@ fundObj.getMyFundList = async function (req, res) {
       );
     }
 
-    const today = new Date();
-
-    // 🔹 Get active funds
+    // 🔹 Fetch user's funds
     const funds = await FundModel.find({
       f_fk_uc_uuid: userId,
     })
       .sort({ createdAt: -1 })
       .lean();
 
-    // 🔹 Add raised amount + donor count
-    for (let fund of funds) {
+    // 🔹 Collect unique category IDs
+    const categoryIds = [
+      ...new Set(
+        funds
+          .map((f) => f.f_category_id)
+          .filter((id) => id)
+      ),
+    ];
+
+    // 🔹 Fetch category names
+    const categories = await CategoryModel.find(
+      {
+        c_uuid: { $in: categoryIds },
+        c_is_deleted: false,
+      },
+      {
+        c_uuid: 1,
+        c_name: 1,
+        _id: 0,
+      }
+    ).lean();
+
+    // 🔹 Create category map
+    const categoryMap = {};
+    categories.forEach((cat) => {
+      categoryMap[cat.c_uuid] = cat.c_name;
+    });
+
+    // 🔹 Add raised amount + donor count + category name
+    for (const fund of funds) {
       const donationAgg = await DonationModel.aggregate([
         {
           $match: {
@@ -506,7 +745,7 @@ fundObj.getMyFundList = async function (req, res) {
           $group: {
             _id: null,
             totalRaised: { $sum: "$d_amount" },
-            donors: { $addToSet: "$d_fk_uc_uuid" }, // 👈 unique donors
+            donors: { $addToSet: "$d_fk_uc_uuid" },
           },
         },
       ]);
@@ -519,23 +758,22 @@ fundObj.getMyFundList = async function (req, res) {
 
       const goalAmount = fund.f_amount || 0;
 
+      fund.category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
       fund.raised_amount = raisedAmount;
       fund.goal_amount = goalAmount;
       fund.donor_count = donorCount;
-
       fund.progress_percent =
         goalAmount > 0 ? Math.round((raisedAmount / goalAmount) * 100) : 0;
-
       fund.progress_text = `$${raisedAmount} raised of $${goalAmount} goal`;
     }
 
     return commonHelper.successHandler(res, {
       status: true,
-      message: "Active fund list fetched successfully.",
+      message: "My fund list fetched successfully.",
       payload: funds,
     });
   } catch (error) {
-    console.error("❌ getFundList Error:", error);
+    console.error("❌ getMyFundList Error:", error);
     return commonHelper.errorHandler(
       res,
       {

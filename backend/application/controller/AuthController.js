@@ -359,96 +359,193 @@ authObj.verifyEmail = async function (req, res) {
  * @returns {void}
  * @developer Sangeeta
  */
-
-
 authObj.loginWithEmail = async function (req, res) {
   try {
-    const { email, password, deviceFcmToken, devicePlatform, deviceId } = req.body || {};
+    const { email, password } = req.body;
 
-    // -------------------------------------
-    // VALIDATION
-    // -------------------------------------
+    // ---------------- VALIDATION ----------------
     if (!email || !password) {
       return commonHelper.errorHandler(res, {
-        code: "ZIS-L1001",
-        message: "Email and password are required.",
         status: false,
+        message: "Email and password are required",
       }, 200);
     }
 
-    // Find user
-    const user = await userModel.findOne({ uc_email: email.toLowerCase() });
+    // ---------------- FIND USER ----------------
+    const user = await userModel.findOne({
+      uc_email: email.toLowerCase(),
+      uc_deleted: "0",
+    });
+
     if (!user) {
       return commonHelper.errorHandler(res, {
-        code: "ZIS-L1002",
-        message: "Invalid email or password.",
         status: false,
+        message: "Invalid email or password",
       }, 200);
     }
 
-    // Check password
+    // ---------------- PASSWORD CHECK ----------------
     const isMatch = await bcrypt.compare(password, user.uc_password);
     if (!isMatch) {
       return commonHelper.errorHandler(res, {
-        code: "ZIS-L1003",
-        message: "Invalid email or password.",
         status: false,
+        message: "Invalid email or password",
       }, 200);
     }
 
-    // Check account status
+    // ---------------- ACTIVE CHECK ----------------
     if (user.uc_active !== "1") {
       return commonHelper.errorHandler(res, {
-        code: "ZIS-L1004",
-        message: "Your account is not active. Please contact support.",
         status: false,
+        message: "Your account is not active",
       }, 200);
     }
 
-    // -------------------------------------
-    // JWT TOKEN GENERATION
-    // -------------------------------------
+    // =================================================
+    // 🔐 2FA ENABLED → SEND EMAIL OTP
+    // =================================================
+    if (user.uc_is_2fa_enabled === true) {
+
+      const otpSent = await authObj.sendEmailCode(user.uc_email);
+
+      if (!otpSent) {
+        return commonHelper.errorHandler(res, {
+          status: false,
+          message: "Failed to send OTP. Please try again.",
+        }, 200);
+      }
+
+      // ⬅️ FRONTEND SIGNAL
+      return commonHelper.successHandler(res, {
+        status: true,
+        code: "2FA_REQUIRED",
+        message: "Verification code sent to your email",
+        payload: {
+          user_uuid: user.uc_uuid,
+          next_screen: "OTP_VERIFICATION",
+        },
+      });
+    }
+
+    // =================================================
+    // ✅ NORMAL LOGIN (2FA OFF)
+    // =================================================
     const token = jwt.sign(
       { userId: user.uc_uuid },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // -------------------------------------
-    // SAVE DEVICE INFO IF PROVIDED
-    // -------------------------------------
-    if (deviceFcmToken && devicePlatform && deviceId) {
-      await authModel.addDeviceIfNotExists({
-        ud_fk_uc_uuid: user.uc_uuid,
-        uc_card_verified: user.uc_card_verified,
-        ud_device_fcmToken: deviceFcmToken,
-        ud_device_platform: devicePlatform,
-        ud_device_id: deviceId,
-      });
-    }
-    const updatedUser = await userModel.findOne({ uc_uuid: user.uc_uuid }).lean();
-
-  
     return commonHelper.successHandler(res, {
       status: true,
-      message: "Login successful.",
+      code: "LOGIN_SUCCESS",
+      message: "Login successful",
       payload: {
         token,
-        uuid: updatedUser.uc_uuid,
-        email: updatedUser.uc_email,
-        uc_card_verified: updatedUser.uc_card_verified,
+        user_uuid: user.uc_uuid,
+        email: user.uc_email,
       },
     });
 
   } catch (error) {
     console.error("Login error:", error);
     return commonHelper.errorHandler(res, {
-      code: "ZIS-L9999",
-      message: "Internal server error",
       status: false,
+      message: "Internal server error",
     }, 200);
   }
 };
+
+
+
+// authObj.loginWithEmail = async function (req, res) {
+//   try {
+//     const { email, password, deviceFcmToken, devicePlatform, deviceId } = req.body || {};
+
+//     // -------------------------------------
+//     // VALIDATION
+//     // -------------------------------------
+//     if (!email || !password) {
+//       return commonHelper.errorHandler(res, {
+//         code: "ZIS-L1001",
+//         message: "Email and password are required.",
+//         status: false,
+//       }, 200);
+//     }
+
+//     // Find user
+//     const user = await userModel.findOne({ uc_email: email.toLowerCase() });
+//     if (!user) {
+//       return commonHelper.errorHandler(res, {
+//         code: "ZIS-L1002",
+//         message: "Invalid email or password.",
+//         status: false,
+//       }, 200);
+//     }
+
+//     // Check password
+//     const isMatch = await bcrypt.compare(password, user.uc_password);
+//     if (!isMatch) {
+//       return commonHelper.errorHandler(res, {
+//         code: "ZIS-L1003",
+//         message: "Invalid email or password.",
+//         status: false,
+//       }, 200);
+//     }
+
+//     // Check account status
+//     if (user.uc_active !== "1") {
+//       return commonHelper.errorHandler(res, {
+//         code: "ZIS-L1004",
+//         message: "Your account is not active. Please contact support.",
+//         status: false,
+//       }, 200);
+//     }
+
+//     // -------------------------------------
+//     // JWT TOKEN GENERATION
+//     // -------------------------------------
+//     const token = jwt.sign(
+//       { userId: user.uc_uuid },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
+
+//     // -------------------------------------
+//     // SAVE DEVICE INFO IF PROVIDED
+//     // -------------------------------------
+//     if (deviceFcmToken && devicePlatform && deviceId) {
+//       await authModel.addDeviceIfNotExists({
+//         ud_fk_uc_uuid: user.uc_uuid,
+//         uc_card_verified: user.uc_card_verified,
+//         ud_device_fcmToken: deviceFcmToken,
+//         ud_device_platform: devicePlatform,
+//         ud_device_id: deviceId,
+//       });
+//     }
+//     const updatedUser = await userModel.findOne({ uc_uuid: user.uc_uuid }).lean();
+
+  
+//     return commonHelper.successHandler(res, {
+//       status: true,
+//       message: "Login successful.",
+//       payload: {
+//         token,
+//         uuid: updatedUser.uc_uuid,
+//         email: updatedUser.uc_email,
+//         uc_card_verified: updatedUser.uc_card_verified,
+//       },
+//     });
+
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     return commonHelper.errorHandler(res, {
+//       code: "ZIS-L9999",
+//       message: "Internal server error",
+//       status: false,
+//     }, 200);
+//   }
+// };
 
 /**
  * Send OTP to user email for resetting the password.

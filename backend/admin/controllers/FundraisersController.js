@@ -99,7 +99,7 @@ export const approveFundraiser = async (req, res) => {
       { f_uuid: fund_uuid },
       {
         f_status: "ACTIVE",
-        f_approved_at: new Date(), // store UTC
+        f_approved_at: new Date(),
       },
       { new: true }
     );
@@ -111,20 +111,16 @@ export const approveFundraiser = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch user email (UNCHANGED)
+    // 2️⃣ Fetch user email
     let userEmail = null;
-
     if (fundraiser.f_fk_uc_uuid) {
       const user = await UsersCredentialsModel.findOne({
         uc_uuid: fundraiser.f_fk_uc_uuid,
       });
-
-      if (user && user.uc_email) {
-        userEmail = user.uc_email;
-      }
+      if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    // 3️⃣ Send approval email (TEXT UNCHANGED, DATE ONLY)
+    // 3️⃣ Send approval email (TEXT FIXED)
     if (userEmail) {
       try {
         const approvalDate = new Date(
@@ -144,7 +140,7 @@ Great news! Your fundraiser "${fundraiser.f_title}" has been approved and is now
 
 Approval Date: ${approvalDate}
 
-You can now start receiving donations.
+You can now start receiving support from users.
 
 Team KPIGI`
         );
@@ -153,7 +149,7 @@ Team KPIGI`
       }
     }
 
-    // 4️⃣ Push Notification (NO DATE)
+    // 4️⃣ Push Notification (TEXT FIXED)
     try {
       const userId = fundraiser.f_fk_uc_uuid;
 
@@ -169,9 +165,8 @@ Team KPIGI`
       if (tokens.length > 0) {
         const title = "🎉 Fundraiser Approved";
         const body =
-          "Your fundraiser has been successfully created and is now visible to users after admin approval.";
+          "Your fundraiser is now active and visible to users. You can start receiving support.";
 
-        // Save notification
         await NotificationModel.create({
           n_uuid: uuidv4(),
           n_fk_uc_uuid: userId,
@@ -184,9 +179,7 @@ Team KPIGI`
           n_channel: "push",
         });
 
-        // Send push
         await newModelObj.sendNotificationToUser({
-          userId: userId,
           userId,
           title,
           body,
@@ -196,7 +189,6 @@ Team KPIGI`
             fundId: String(fundraiser.f_uuid),
           },
         });
-
       }
     } catch (pushErr) {
       console.error("⚠️ Push notification error:", pushErr);
@@ -206,7 +198,6 @@ Team KPIGI`
       status: true,
       message: "Fundraiser approved successfully",
     });
-
   } catch (err) {
     console.error("Approve fundraiser error:", err);
     return res.status(500).json({
@@ -220,7 +211,7 @@ Team KPIGI`
 
 
 
-// REJECT
+
 export const rejectFundraiser = async (req, res) => {
   try {
     const { fund_uuid, reason } = req.body;
@@ -232,12 +223,16 @@ export const rejectFundraiser = async (req, res) => {
       });
     }
 
+    const finalReason =
+      reason ||
+      "Support feature is currently unavailable due to review requirements.";
+
     // 1️⃣ Update fundraiser
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
         f_status: "REJECTED",
-        f_pause_reason: reason || "Rejected by admin",
+        f_pause_reason: finalReason,
       },
       { new: true }
     );
@@ -249,64 +244,52 @@ export const rejectFundraiser = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch user email (UNCHANGED)
+    // 2️⃣ Fetch user email
     let userEmail = null;
-
     if (fundraiser.f_fk_uc_uuid) {
       const user = await UsersCredentialsModel.findOne({
         uc_uuid: fundraiser.f_fk_uc_uuid,
       });
-
-      if (user && user.uc_email) {
-        userEmail = user.uc_email;
-      } else {
-        console.warn(
-          `User not found or email missing for uc_uuid: ${fundraiser.f_fk_uc_uuid}`
-        );
-      }
+      if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    // 3️⃣ Send rejection email (UNCHANGED)
+    // 3️⃣ Send rejection email (TEXT FIXED)
     if (userEmail) {
       try {
         await sendMail(
           userEmail,
-          "Your fundraiser has been rejected",
+          "Your fundraiser is temporarily unavailable",
           `Hello ${fundraiser.f_name || "there"},
 
-Your fundraiser "${fundraiser.f_title}" has been rejected.
+Thank you for creating a fundraiser on KPIGI.
 
-Reason: ${reason || "Rejected by admin"}
+Your fundraiser "${fundraiser.f_title}" is temporarily unavailable because the support feature is currently under review requirements.
+
+This is not a permanent rejection. You will be able to resubmit your fundraiser once the support functionality is enabled.
 
 Team KPIGI`
         );
-
-        console.log(`✅ Rejection email sent to ${userEmail}`);
       } catch (emailError) {
         console.error("❌ Failed to send rejection email:", emailError);
       }
     }
 
-    // 4️⃣ PUSH NOTIFICATION (NEW — SAFE)
+    // 4️⃣ Push Notification (TEXT FIXED)
     try {
       const userId = fundraiser.f_fk_uc_uuid;
 
-      const receiverDevices = await UserDevice.find({
+      const devices = await UserDevice.find({
         ud_fk_uc_uuid: userId,
-        ud_device_fcmToken: { $exists: true, $ne: "" }
+        ud_device_fcmToken: { $exists: true, $ne: "" },
       }).select("ud_device_fcmToken");
 
-      const tokens = receiverDevices
-        .map(d => d.ud_device_fcmToken)
-        .filter(Boolean);
+      const tokens = devices.map(d => d.ud_device_fcmToken).filter(Boolean);
 
       if (tokens.length > 0) {
-        const title = "❌ Fundraiser Rejected";
-        const body = `Your fundraiser "${fundraiser.f_title}" was rejected. Reason: ${reason || "Rejected by admin"}`;
+        const title = "Fundraiser Temporarily Unavailable";
+        const body =
+          "Your fundraiser is temporarily unavailable due to review requirements. You can resubmit once the support feature is enabled.";
 
-        // Save notification (MODEL MATCHED)
-
-        // Save notification
         await NotificationModel.create({
           n_uuid: uuidv4(),
           n_fk_uc_uuid: userId,
@@ -315,14 +298,13 @@ Team KPIGI`
           n_payload: {
             type: "FUNDRAISER_REJECTED",
             fundId: fundraiser.f_uuid,
-            reason: reason || "",
+            reason: finalReason,
           },
           n_channel: "push",
         });
 
-        // Send push
         await newModelObj.sendNotificationToUser({
-          userId: userId,
+          userId,
           title,
           body,
           tokens,
@@ -340,7 +322,6 @@ Team KPIGI`
       status: true,
       message: "Fundraiser rejected successfully",
     });
-
   } catch (err) {
     console.error("Reject fundraiser error:", err);
     return res.status(500).json({
@@ -369,7 +350,6 @@ export const pauseFundraiser = async (req, res) => {
       });
     }
 
-    // 1️⃣ Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -388,18 +368,16 @@ export const pauseFundraiser = async (req, res) => {
 
     const userId = fundraiser.f_fk_uc_uuid;
 
-    // 2️⃣ Fetch user email
+    // Email
     let userEmail = null;
     if (userId) {
       const user = await UsersCredentialsModel.findOne(
         { uc_uuid: userId },
         { uc_email: 1 }
       ).lean();
-
       if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    // 3️⃣ Send pause email
     if (userEmail) {
       try {
         await sendMail(
@@ -407,9 +385,11 @@ export const pauseFundraiser = async (req, res) => {
           "Your fundraiser has been paused",
           `Hello ${fundraiser.f_name || "there"},
 
-Your fundraiser "${fundraiser.f_title}" has been paused.
+Your fundraiser "${fundraiser.f_title}" has been temporarily paused.
 
 Reason: ${reason || "Paused by admin"}
+
+Once the support feature is fully enabled, you will be able to continue.
 
 Team KPIGI`
         );
@@ -418,48 +398,43 @@ Team KPIGI`
       }
     }
 
-    // 4️⃣ Push Notification (NO inner catch)
+    // Push
     try {
-      if (userId) {
-        const devices = await UserDevice.find({
-          ud_fk_uc_uuid: userId,
-          ud_device_fcmToken: { $exists: true, $ne: "" },
-        }).select("ud_device_fcmToken");
+      const devices = await UserDevice.find({
+        ud_fk_uc_uuid: userId,
+        ud_device_fcmToken: { $exists: true, $ne: "" },
+      }).select("ud_device_fcmToken");
 
-        const tokens = devices
-          .map(d => d.ud_device_fcmToken)
-          .filter(Boolean);
+      const tokens = devices.map(d => d.ud_device_fcmToken).filter(Boolean);
 
-        if (tokens.length > 0) {
-          const title = "Fundraiser Paused";
-          const body = `Your fundraiser "${fundraiser.f_title}" has been paused.`;
+      if (tokens.length > 0) {
+        const title = "Fundraiser Paused";
+        const body =
+          "Your fundraiser has been temporarily paused and is not visible to users.";
 
-          // Save notification
-          await NotificationModel.create({
-            n_uuid: uuidv4(),
-            n_fk_uc_uuid: userId,
-            n_title: title,
-            n_body: body,
-            n_payload: {
-              type: "FUNDRAISER_PAUSED",
-              fundId: fundraiser.f_uuid,
-              reason: reason || "Paused by admin",
-            },
-            n_channel: "push",
-          });
+        await NotificationModel.create({
+          n_uuid: uuidv4(),
+          n_fk_uc_uuid: userId,
+          n_title: title,
+          n_body: body,
+          n_payload: {
+            type: "FUNDRAISER_PAUSED",
+            fundId: fundraiser.f_uuid,
+            reason: reason || "Paused by admin",
+          },
+          n_channel: "push",
+        });
 
-          // Send push (no try-catch here)
-          await newModelObj.sendNotificationToUser({
-            userId,
-            title,
-            body,
-            tokens,
-            data: {
-              type: "FUNDRAISER_PAUSED",
-              fundId: String(fundraiser.f_uuid),
-            },
-          });
-        }
+        await newModelObj.sendNotificationToUser({
+          userId,
+          title,
+          body,
+          tokens,
+          data: {
+            type: "FUNDRAISER_PAUSED",
+            fundId: String(fundraiser.f_uuid),
+          },
+        });
       }
     } catch (pushErr) {
       console.error("⚠️ Push notification error (pause):", pushErr);
@@ -469,7 +444,6 @@ Team KPIGI`
       status: true,
       message: "Fundraiser paused successfully",
     });
-
   } catch (err) {
     console.error("Pause fundraiser error:", err);
     return res.status(500).json({
@@ -536,12 +510,16 @@ export const closeFundraisers = async (req, res) => {
       });
     }
 
-    //  Update fundraiser status
+    const finalReason =
+      reason ||
+      "Support feature is currently unavailable due to review requirements.";
+
+    // 1️⃣ Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
         f_status: "REJECTED",
-        f_pause_reason: reason || "Rejected by admin",
+        f_pause_reason: finalReason,
       },
       { new: true }
     );
@@ -555,7 +533,7 @@ export const closeFundraisers = async (req, res) => {
 
     const userId = fundraiser.f_fk_uc_uuid;
 
-    //  Fetch user email
+    // 2️⃣ Fetch user email
     let userEmail = null;
     if (userId) {
       const user = await UsersCredentialsModel.findOne(
@@ -566,17 +544,21 @@ export const closeFundraisers = async (req, res) => {
       if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    //  Send close email
+    // 3️⃣ Send close email (TEXT FIXED)
     if (userEmail) {
       try {
         await sendMail(
           userEmail,
-          "Your fundraiser has been closed",
+          "Your fundraiser is temporarily unavailable",
           `Hello ${fundraiser.f_name || "there"},
 
-Your fundraiser "${fundraiser.f_title}" has been closed.
+Thank you for creating a fundraiser on KPIGI.
 
-Reason: ${reason || "Closed by admin"}
+Your fundraiser "${fundraiser.f_title}" is temporarily unavailable because the support feature is currently under review requirements.
+
+This is not a permanent closure. You will be able to resubmit your fundraiser once the support functionality is enabled.
+
+Thank you for your patience and understanding.
 
 Team KPIGI`
         );
@@ -585,7 +567,7 @@ Team KPIGI`
       }
     }
 
-    //  Push Notification (NO inner catch)
+    // 4️⃣ Push Notification (TEXT FIXED)
     try {
       if (userId) {
         const devices = await UserDevice.find({
@@ -598,8 +580,9 @@ Team KPIGI`
           .filter(Boolean);
 
         if (tokens.length > 0) {
-          const title = "Fundraiser Paused";
-          const body = `Your fundraiser "${fundraiser.f_title}" has been paused.`;
+          const title = "Fundraiser Temporarily Unavailable";
+          const body =
+            "Your fundraiser is temporarily unavailable due to review requirements. You can resubmit once the support feature is enabled.";
 
           // Save notification
           await NotificationModel.create({
@@ -608,21 +591,21 @@ Team KPIGI`
             n_title: title,
             n_body: body,
             n_payload: {
-              type: "FUNDRAISER_REJECTED",
+              type: "FUNDRAISER_CLOSED",
               fundId: fundraiser.f_uuid,
-              reason: reason || "Closed by admin",
+              reason: finalReason,
             },
             n_channel: "push",
           });
 
-          // Send push (no try-catch here)
+          // Send push
           await newModelObj.sendNotificationToUser({
             userId,
             title,
             body,
             tokens,
             data: {
-              type: "FUNDRAISER_REJECTED",
+              type: "FUNDRAISER_CLOSED",
               fundId: String(fundraiser.f_uuid),
             },
           });

@@ -29,7 +29,7 @@ const FundSchema = new mongoose.Schema(
     f_purpose: { type: String, trim: true },
 
     // ✅ CATEGORY NAME ONLY
-    f_category_name: {
+    f_category_id: {
       type: String,
       required: true,
       trim: true,
