@@ -305,7 +305,7 @@ fundObj.getFundList = async function (req, res) {
 
       const goalAmount = fund.f_amount || 0;
 
-      fund.category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
+      fund.f_category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
       fund.raised_amount = raisedAmount;
       fund.goal_amount = goalAmount;
       fund.donor_count = donorCount;
@@ -758,7 +758,7 @@ fundObj.getMyFundList = async function (req, res) {
 
       const goalAmount = fund.f_amount || 0;
 
-      fund.category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
+      fund.f_category_name = categoryMap[fund.f_category_id] || ""; // ✅ category name
       fund.raised_amount = raisedAmount;
       fund.goal_amount = goalAmount;
       fund.donor_count = donorCount;
