@@ -134,49 +134,145 @@ export const PageUserTable = () => {
   };
 
   // ================= EDIT USER =================
-  const handleEditUser = async (user) => {
-    const { value: formValues } = await Swal.fire({
-      title: "Edit User",
-      html:
-        `<input id="swal-name" class="swal2-input" placeholder="Full Name" value="${user.uc_full_name || ""}" />` +
-        `<input id="swal-email" class="swal2-input" placeholder="Email" value="${user.uc_email || ""}" />` +
-        `<select id="swal-role" class="swal2-input">
+ const handleEditUser = async (user) => {
+  const { value: formValues } = await Swal.fire({
+    title: "Edit User",
+    width: 520,
+    showCancelButton: true,
+    confirmButtonText: "Update User",
+    cancelButtonText: "Cancel",
+    focusConfirm: false,
+
+    html: `
+      <style>
+        .edit-user-form {
+          text-align: left;
+        }
+
+        .edit-user-form label {
+          font-size: 13px;
+          font-weight: 600;
+          margin: 8px 0 4px;
+          display: block;
+          color: #444;
+        }
+
+        .edit-user-form input,
+        .edit-user-form select,
+        .edit-user-form textarea {
+          width: 100%;
+          padding: 10px;
+          font-size: 14px;
+          border-radius: 6px;
+          border: 1px solid #ced4da;
+        }
+
+        .edit-user-form input:focus,
+        .edit-user-form select:focus,
+        .edit-user-form textarea:focus {
+          border-color: #0d6efd;
+          outline: none;
+        }
+
+        .edit-user-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .edit-user-row div {
+          flex: 1;
+        }
+
+        .edit-user-form textarea {
+          min-height: 80px;
+          resize: none;
+        }
+
+        .edit-user-switch {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 15px;
+          font-size: 14px;
+        }
+
+        .edit-user-switch input {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+        }
+      </style>
+
+      <div class="edit-user-form">
+        <label>Full Name</label>
+        <input id="swal-name" value="${user.uc_full_name || ""}" />
+
+        <label>Email</label>
+        <input id="swal-email" type="email" value="${user.uc_email || ""}" />
+
+        <label>Role</label>
+        <select id="swal-role">
           <option value="DONOR" ${user.uc_role === "DONOR" ? "selected" : ""}>Donor</option>
           <option value="REQUESTER" ${user.uc_role === "REQUESTER" ? "selected" : ""}>Requester</option>
-        </select>` +
-        `<input id="swal-phone" class="swal2-input" placeholder="Phone" value="${user.uc_phone || ""}" />` +
-        `<input id="swal-country" class="swal2-input" placeholder="Country Code" value="${user.uc_country_code || ""}" />` +
-        `<textarea id="swal-bio" class="swal2-textarea" placeholder="Bio">${user.uc_bio || ""}</textarea>` +
-        `<div class="swal2-checkbox">
-            <input type="checkbox" id="swal-notify" ${user.uc_notifications_enabled ? "checked" : ""} />
-            <label for="swal-notify">Enable Notifications</label>
-         </div>`,
-      focusConfirm: false,
-      showCancelButton: true,
-      preConfirm: () => {
-        return {
-          uc_full_name: document.getElementById("swal-name").value,
-          uc_email: document.getElementById("swal-email").value,
-          uc_role: document.getElementById("swal-role").value,
-          uc_phone: document.getElementById("swal-phone").value,
-          uc_country_code: document.getElementById("swal-country").value,
-          uc_bio: document.getElementById("swal-bio").value,
-          uc_notifications_enabled: document.getElementById("swal-notify").checked,
-        };
-      },
-    });
+        </select>
 
-    if (!formValues) return;
+        <div class="edit-user-row">
+          <div>
+            <label>Country Code</label>
+            <input id="swal-country" value="${user.uc_country_code || ""}" />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="swal-phone" value="${user.uc_phone || ""}" />
+          </div>
+        </div>
 
-    try {
-      await updateUser(user._id, formValues);
-      Swal.fire("Updated!", "User has been updated.", "success");
-      fetchUsers();
-    } catch (error) {
-      console.error("Update failed", error);
-      Swal.fire("Error", error.response?.data?.message || "Failed to update user", "error");
-    }
-  };
+        <label>Bio</label>
+        <textarea id="swal-bio">${user.uc_bio || ""}</textarea>
+
+        <div class="edit-user-switch">
+          <input type="checkbox" id="swal-notify" ${user.uc_notifications_enabled ? "checked" : ""} />
+          <label for="swal-notify">Enable Notifications</label>
+        </div>
+      </div>
+    `,
+
+    preConfirm: () => {
+      const name = document.getElementById("swal-name").value.trim();
+      const email = document.getElementById("swal-email").value.trim();
+
+      if (!name || !email) {
+        Swal.showValidationMessage("Full name and email are required");
+        return false;
+      }
+
+      return {
+        uc_full_name: name,
+        uc_email: email,
+        uc_role: document.getElementById("swal-role").value,
+        uc_phone: document.getElementById("swal-phone").value,
+        uc_country_code: document.getElementById("swal-country").value,
+        uc_bio: document.getElementById("swal-bio").value,
+        uc_notifications_enabled: document.getElementById("swal-notify").checked,
+      };
+    },
+  });
+
+  if (!formValues) return;
+
+  try {
+    await updateUser(user._id, formValues);
+    Swal.fire("Updated!", "User has been updated successfully.", "success");
+    fetchUsers();
+  } catch (error) {
+    Swal.fire(
+      "Error",
+      error.response?.data?.message || "Failed to update user",
+      "error"
+    );
+  }
+};
+
 
   return (
     <Card border="light" className="shadow-sm p-3">
