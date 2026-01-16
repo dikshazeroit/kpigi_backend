@@ -288,47 +288,72 @@ export default function Campaign() {
                       </td>
 
                       {/* Media Column (Images + Video) */}
-                      <td>
-                        <div className="media-container">
-                          {c.f_media_one && (
-                            <img
-                              src={Image_Url + c.f_media_one}
-                              alt="Media 1"
-                              style={{
-                                width: "100px",
-                                height: "100px",
-                                objectFit: "cover",
-                                margin: "5px",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => openLightbox(index)} // Open lightbox on click
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = defaultImage; 
-                              }}
-                            />
-                          )}
-                          {c.f_media_two && (
-                            <img
-                              src={Image_Url + c.f_media_two}
-                              alt="Media 2"
-                              style={{
-                                width: "100px",
-                                height: "100px",
-                                objectFit: "cover",
-                                margin: "5px",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => openLightbox(index)}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = defaultImage;
-                              }}
-                            />
-                          )}
-                          {/* Repeat for other images... */}
-                        </div>
-                      </td>
+                     <td>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      flexWrap: "nowrap",
+    }}
+  >
+    {[c.f_media_one, c.f_media_two]
+      .filter(Boolean)
+      .map((img, idx) => (
+        <img
+          key={idx}
+          src={Image_Url + img}
+          alt="media"
+          onClick={() => openLightbox(index)}
+          style={{
+            width: "45px",
+            height: "45px",
+            borderRadius: "6px",
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = defaultImage;
+          }}
+        />
+      ))}
+
+    {/* EXTRA IMAGES COUNT */}
+    {[
+      c.f_media_one,
+      c.f_media_two,
+      c.f_media_three,
+      c.f_media_four,
+      c.f_media_five,
+    ].filter(Boolean).length > 2 && (
+      <div
+        onClick={() => openLightbox(index)}
+        style={{
+          width: "45px",
+          height: "45px",
+          borderRadius: "6px",
+          background: "#f1f3f5",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "12px",
+          fontWeight: "600",
+          cursor: "pointer",
+        }}
+      >
+        +{[
+          c.f_media_one,
+          c.f_media_two,
+          c.f_media_three,
+          c.f_media_four,
+          c.f_media_five,
+        ].filter(Boolean).length - 2}
+      </div>
+    )}
+  </div>
+</td>
+
 
                       <td>
                         <Button
