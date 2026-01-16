@@ -46,6 +46,7 @@ router.post("/auth/register", authObj.registerWithEmail);
 router.post("/auth/check-email", authObj.checkEmailExists);
 router.post("/auth/verify-email", authObj.verifyEmail);
 router.post("/auth/login", authObj.loginWithEmail);
+router.post("/auth/login-varification", authObj.verifyLoginOtp);
 router.post("/auth/forgot-password", authObj.userForgotPasswordEmail);
 router.post("/auth/resend-otp", authObj.resendOtp);
 router.post("/auth/verify-forgot-password-otp",authObj.verifyForgotPasswordOtp);

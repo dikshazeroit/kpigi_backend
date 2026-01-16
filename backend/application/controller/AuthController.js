@@ -547,6 +547,91 @@ authObj.loginWithEmail = async function (req, res) {
 //   }
 // };
 
+
+authObj.verifyLoginOtp = async function (req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    // ---------------- VALIDATION ----------------
+    if (!email || !otp) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Email and OTP are required",
+      }, 200);
+    }
+
+    // ---------------- FIND USER ----------------
+    const user = await userModel.findOne({
+      uc_email: email.toLowerCase(),
+      uc_deleted: "0",
+    });
+
+    if (!user) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Invalid email or OTP",
+      }, 200);
+    }
+
+    // ---------------- ACTIVE CHECK ----------------
+    if (user.uc_active !== "1") {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Your account is not active",
+      }, 200);
+    }
+
+    // ---------------- 2FA CHECK ----------------
+    if (user.uc_is_2fa_enabled !== true) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "2FA is not enabled for this account",
+      }, 200);
+    }
+
+    // ---------------- OTP CHECK ----------------
+    if (
+      !user.uc_activation_token ||
+      user.uc_activation_token !== otp
+    ) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Invalid OTP",
+      }, 200);
+    }
+
+    // ---------------- CLEAR OTP ----------------
+    user.uc_activation_token = "";
+    await user.save();
+
+    // ---------------- GENERATE JWT ----------------
+    const token = jwt.sign(
+      { userId: user.uc_uuid },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // ---------------- SUCCESS RESPONSE ----------------
+    return commonHelper.successHandler(res, {
+      status: true,
+      code: "LOGIN_SUCCESS",
+      message: "Login successful",
+      payload: {
+        token,
+        user_uuid: user.uc_uuid,
+        email: user.uc_email,
+      },
+    });
+
+  } catch (error) {
+    console.error("Verify Login OTP Error:", error);
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Internal server error",
+    }, 200);
+  }
+};
+
 /**
  * Send OTP to user email for resetting the password.
  *
