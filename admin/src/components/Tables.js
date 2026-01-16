@@ -252,6 +252,8 @@ export const PageUserTable = () => {
                   <th>Country Code</th>
                   <th>Phone</th>
                   <th>Role</th>
+                  <th className="text-center">2FA Verification</th>
+
                   <th>Date Created</th>
                   <th className="text-center">Actions</th>
                 </tr>
@@ -261,29 +263,53 @@ export const PageUserTable = () => {
                   users.map((u, index) => (
                     <tr key={u._id}>
                       <td>{(page - 1) * limit + index + 1}</td>
+
                       <td className="text-center">
                         <img
                           src={u.uc_profile_photo ? Image_Url + u.uc_profile_photo : defaultProfileImg}
                           alt="profile"
-                          style={{ width: "45px", height: "45px", borderRadius: "50%", objectFit: "cover", border: "2px solid #ddd" }}
+                          style={{
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid #ddd",
+                          }}
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = defaultProfileImg;
                           }}
                         />
                       </td>
+
                       <td className="fw-semibold">{u.uc_full_name}</td>
                       <td>{u.uc_email}</td>
                       <td>{u.uc_country_code || "No Data Found"}</td>
                       <td>{u.uc_phone || "No Data Found"}</td>
+
                       <td>
                         <Badge
-                          bg={u.uc_role === "DONOR" ? "success" : u.uc_role === "REQUESTER" ? "info" : "secondary"}
+                          bg={
+                            u.uc_role === "DONOR"
+                              ? "success"
+                              : u.uc_role === "REQUESTER"
+                                ? "info"
+                                : "secondary"
+                          }
                         >
                           {u.uc_role || "No Data Found"}
                         </Badge>
                       </td>
+
+                      {/*  2FA Column */}
+                      <td className="text-center">
+                        <Badge bg={u.uc_is_2fa_enabled ? "success" : "danger"}>
+                          {u.uc_is_2fa_enabled ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </td>
+
                       <td>{u.uc_created_at?.substring(0, 10) || "No Data Found"}</td>
+
                       <td className="text-center">
                         <Button variant="info" size="sm" className="me-2" onClick={() => handleViewUser(u)}>
                           <FontAwesomeIcon icon={faEye} />
@@ -291,11 +317,17 @@ export const PageUserTable = () => {
                         <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditUser(u)}>
                           <FontAwesomeIcon icon={faEdit} />
                         </Button>
-                        <Button variant="danger" size="sm" disabled={deletingId === u._id} onClick={() => handleDeleteUser(u._id)}>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={deletingId === u._id}
+                          onClick={() => handleDeleteUser(u._id)}
+                        >
                           {deletingId === u._id ? <Spinner size="sm" /> : <FontAwesomeIcon icon={faTrash} />}
                         </Button>
                       </td>
                     </tr>
+
                   ))
                 ) : (
                   <tr>
