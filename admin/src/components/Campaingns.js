@@ -14,6 +14,10 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPause, faPlay, faEye, faFunnelDollar } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { Image_Url } from "../api/ApiClient";
+import "react-image-lightbox/style.css";
+import ReactImageLightbox from "react-image-lightbox";
+
 
 // API IMPORTS
 import {
@@ -25,6 +29,8 @@ import {
   closeFundraisers
 } from "../api/ApiServices";
 
+const defaultImage =
+  "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 export default function Campaign() {
   const [campaigns, setCampaigns] = useState([]);
   const [filter, setFilter] = useState("All");
@@ -33,6 +39,9 @@ export default function Campaign() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const [photoIndex, setPhotoIndex] = useState(0); 
+  const [isOpen, setIsOpen] = useState(false);
 
   const campaignsPerPage = 10;
 
@@ -104,7 +113,7 @@ export default function Campaign() {
           icon: "success",
           title:
             reasonType === "PAUSE" ? "Paused!" :
-            reasonType === "REJECT" ? "Rejected!" : "Closed!",
+              reasonType === "REJECT" ? "Rejected!" : "Closed!",
           text: res.message || `${reasonType === "CLOSE" ? "Fundraiser closed" : reasonType === "PAUSE" ? "Fundraiser paused" : "Fundraiser rejected"}. Notification sent.`,
           timer: 2000,
           showConfirmButton: false,
@@ -176,6 +185,11 @@ export default function Campaign() {
     }
   };
 
+  const openLightbox = (index) => {
+    setPhotoIndex(index); // Set the index of the image clicked
+    setIsOpen(true); // Open the lightbox
+  };
+
   return (
     <div>
       <Card border="light" className="shadow-sm">
@@ -225,6 +239,8 @@ export default function Campaign() {
                   <th>Raised / Goal</th>
                   <th>Date</th>
                   <th>Verification</th>
+                  <th>Story</th>
+                  <th>Media</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -232,7 +248,7 @@ export default function Campaign() {
               <tbody>
                 {campaigns.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center text-muted">
+                    <td colSpan="10" className="text-center text-muted">
                       No campaigns found
                     </td>
                   </tr>
@@ -248,6 +264,72 @@ export default function Campaign() {
                       <td>${c.f_amount}</td>
                       <td>{new Date(c.f_deadline).toLocaleDateString()}</td>
                       <td>{c.f_status === "ACTIVE" ? "Verified" : "Pending"}</td>
+
+                      {/* Story Column */}
+                      <td className="text-truncate" style={{ maxWidth: "200px" }}>
+                        {c.f_story ? (
+                          c.f_story.length > 100 ? (
+                            <>
+                              {c.f_story.substring(0, 100)}...{" "}
+                              <span
+                                className="text-primary"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => alert("Show full story here")}
+                              >
+                                Read More
+                              </span>
+                            </>
+                          ) : (
+                            c.f_story
+                          )
+                        ) : (
+                          "No story available"
+                        )}
+                      </td>
+
+                      {/* Media Column (Images + Video) */}
+                      <td>
+                        <div className="media-container">
+                          {c.f_media_one && (
+                            <img
+                              src={Image_Url + c.f_media_one}
+                              alt="Media 1"
+                              style={{
+                                width: "100px",
+                                height: "100px",
+                                objectFit: "cover",
+                                margin: "5px",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => openLightbox(index)} // Open lightbox on click
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = defaultImage; 
+                              }}
+                            />
+                          )}
+                          {c.f_media_two && (
+                            <img
+                              src={Image_Url + c.f_media_two}
+                              alt="Media 2"
+                              style={{
+                                width: "100px",
+                                height: "100px",
+                                objectFit: "cover",
+                                margin: "5px",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => openLightbox(index)}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = defaultImage;
+                              }}
+                            />
+                          )}
+                          {/* Repeat for other images... */}
+                        </div>
+                      </td>
+
                       <td>
                         <Button
                           size="sm"
@@ -293,7 +375,7 @@ export default function Campaign() {
                               size="sm"
                               variant="danger"
                               className="mb-1"
-                              onClick={() => openReasonModal(c, "CLOSE")} // ✅ CLOSE API
+                              onClick={() => openReasonModal(c, "CLOSE")}
                             >
                               Close
                             </Button>
@@ -314,7 +396,7 @@ export default function Campaign() {
                               size="sm"
                               variant="danger"
                               className="mb-1"
-                              onClick={() => openReasonModal(c, "CLOSE")} // ✅ CLOSE API
+                              onClick={() => openReasonModal(c, "CLOSE")}
                             >
                               Close
                             </Button>
@@ -330,17 +412,10 @@ export default function Campaign() {
                 )}
               </tbody>
             </Table>
-          )}
 
-          {/* PAGINATION */}
-          {totalPages >= 1 && (
-            <Pagination className="justify-content-end mt-3">
-              <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
-              <Pagination.Item active>{page}</Pagination.Item>
-              <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
-            </Pagination>
           )}
         </Card.Body>
+
       </Card>
 
       {/* DETAILS MODAL */}
@@ -355,6 +430,85 @@ export default function Campaign() {
               <p><strong>Requester:</strong> {selectedCampaign.userName || "Anonymous"}</p>
               <p><strong>Status:</strong> {getStatusText(selectedCampaign.f_status)}</p>
               <p><strong>Amount:</strong> ${selectedCampaign.f_amount}</p>
+
+              {/* Story Section */}
+              <p><strong>Story:</strong></p>
+              <p>{selectedCampaign.f_story || "No story available"}</p>
+
+              {/* Media Section */}
+              <p><strong>Media:</strong></p>
+              <div className="media-container">
+                {selectedCampaign.f_media_one && (
+                  <img
+                    src={Image_Url + selectedCampaign.f_media_one}
+                    alt="Media 1"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      margin: "5px",
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultImage; 
+                    }}
+                  />
+                )}
+                {selectedCampaign.f_media_two && (
+                  <img
+                    src={Image_Url + selectedCampaign.f_media_two}
+                    alt="Media 2"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      margin: "5px",
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultImage; 
+                    }}
+                  />
+                )}
+                {selectedCampaign.f_media_three && (
+                  <img
+                    src={Image_Url + selectedCampaign.f_media_three}
+                    alt="Media 3"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      margin: "5px",
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultImage; 
+                    }}
+                  />
+                )}
+                {selectedCampaign.f_media_four && (
+                  <img
+                    src={Image_Url + selectedCampaign.f_media_four}
+                    alt="Media 4"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      margin: "5px",
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultImage; 
+                    }}
+                  />
+                )}
+                {selectedCampaign.f_media_five && (
+                  <video width="100" height="100" controls style={{ margin: "5px" }}>
+                    <source src={Image_Url + selectedCampaign.f_media_five} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
             </>
           )}
         </Modal.Body>
@@ -363,12 +517,13 @@ export default function Campaign() {
         </Modal.Footer>
       </Modal>
 
+
       {/* REASON MODAL */}
       <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
             {reasonType === "PAUSE" ? "Pause Campaign" :
-             reasonType === "REJECT" ? "Reject Campaign" : "Close Campaign"}
+              reasonType === "REJECT" ? "Reject Campaign" : "Close Campaign"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -393,6 +548,16 @@ export default function Campaign() {
           </Button>
         </Modal.Footer>
       </Modal>
+        {isOpen && (
+        <ReactImageLightbox
+          mainSrc={Image_Url + campaigns[photoIndex].f_media_one}  
+          nextSrc={Image_Url + campaigns[(photoIndex + 1) % campaigns.length].f_media_one}
+          prevSrc={Image_Url + campaigns[(photoIndex + campaigns.length - 1) % campaigns.length].f_media_one}
+          onCloseRequest={() => setIsOpen(false)}
+          onMovePrevRequest={() => setPhotoIndex((photoIndex + campaigns.length - 1) % campaigns.length)}
+          onMoveNextRequest={() => setPhotoIndex((photoIndex + 1) % campaigns.length)}
+        />
+      )}
     </div>
   );
 }
