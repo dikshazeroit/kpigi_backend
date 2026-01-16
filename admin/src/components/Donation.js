@@ -71,6 +71,7 @@ export default function DonationAdminPanel() {
         },
         [search, minAmount, maxAmount]
     );
+    console.log("DONATIONS DATA:", donations);
 
     useEffect(() => {
         fetchDonations(currentPage);
@@ -165,7 +166,7 @@ export default function DonationAdminPanel() {
                             />
                         </Col>
                         <Col md={1}>
-                            <Button onClick={() => setCurrentPage(1)}>Go</Button>
+                            <Button onClick={() => fetchDonations(1)}>Go</Button>
                         </Col>
                     </Row>
                 </Card>
