@@ -417,7 +417,7 @@ authObj.loginWithEmail = async function (req, res) {
 
       // ⬅️ FRONTEND SIGNAL
       return commonHelper.successHandler(res, {
-        status: true,
+        status: false,
         code: "2FA_REQUIRED",
         message: "Verification code sent to your email",
         payload: {
