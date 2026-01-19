@@ -24,7 +24,7 @@ const imageFields = [
   "profileImage",
   "backgroundImage",
   "companyLogo",
-  "profilePhotos"
+  "profilePhotos","idImage"
 ];
 
 const imageFilter = (req, file, cb) => {
@@ -92,6 +92,7 @@ const combinedUpload = multer({
   fileFilter: combinedFilter,
 }).fields([
   { name: "profileImage", maxCount: 1 },
+  { name: "idImage", maxCount: 1 },
   { name: "certificateFile", maxCount: 1 },
   { name: "backgroundImage", maxCount: 1 },
   { name: "companyLogo", maxCount: 1 },

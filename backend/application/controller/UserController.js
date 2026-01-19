@@ -29,6 +29,7 @@ import categoryModel from "../model/CategoryModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
 import WithdrawalModel from "../model/WithdrawalModel.js";
+import KycModel from "../model/KycModel.js";
 
 let userObj = {};
 /**
@@ -1008,6 +1009,94 @@ userObj.updateTwoFactorSecurity = async function (req, res) {
       },
       200
     );
+  }
+};
+
+
+/**
+ * FUNCTION: submitKyc
+ * DESCRIPTION: Submit user KYC details along with government ID image.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @returns {void}
+ * @developer Sangeeta
+ */
+
+userObj.submitKyc = async function (req, res) {
+  try {
+    const userUuid = await appHelper.getUUIDByToken(req);
+
+    if (!userUuid) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "Unauthorized access.",
+      }, 200);
+    }
+
+    const { fullName, dateOfBirth, address, idType } = req.body;
+
+    if (!fullName || !dateOfBirth || !address || !idType) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "All KYC fields are required.",
+      }, 200);
+    }
+
+    if (!req.files?.idImage?.[0]) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "ID image is required.",
+      }, 200);
+    }
+
+    // 🔁 Prevent duplicate KYC
+    const existingKyc = await KycModel.findOne({ k_fk_uc_uuid: userUuid });
+    if (existingKyc) {
+      return commonHelper.errorHandler(res, {
+        status: false,
+        message: "KYC already submitted.",
+      }, 200);
+    }
+
+    const file = req.files.idImage[0];
+    const ext = path.extname(file.originalname).toLowerCase();
+    const fileName = `kyc-${userUuid}-${Date.now()}${ext}`.replace(/ /g, "_");
+
+    await commonHelper.uploadFile({
+      fileName,
+      chunks: [file.buffer],
+      encoding: file.encoding,
+      contentType: file.mimetype,
+      uploadFolder: process.env.AWS_KYC_FILE_FOLDER,
+    });
+
+    // ✅ Save with auto-generated kyc_uuid
+    const kyc = await KycModel.create({
+      k_fk_uc_uuid: userUuid,
+      fullName,
+      dateOfBirth,
+      address,
+      idType,
+      idImageName: fileName
+    });
+
+    return commonHelper.successHandler(res, {
+      status: true,
+      message: "KYC submitted successfully. Verification in progress.",
+      payload: {
+        kyc_uuid: kyc.kyc_uuid,
+        kycStatus: kyc.status
+      },
+    });
+
+  } catch (error) {
+    console.error("❌ submitKyc Error:", error);
+
+    return commonHelper.errorHandler(res, {
+      status: false,
+      message: "Failed to submit KYC.",
+    }, 200);
   }
 };
 

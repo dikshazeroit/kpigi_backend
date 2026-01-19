@@ -73,7 +73,7 @@ router.post("/private/withdraw-request",userObj.createWithdrawalRequest);
 router.post( "/private/withdraw-history", userObj.getWithdrawalHistory);
 router.post( "/private/get-user-balance", userObj.getUserBalance);
 router.post( "/private/update-two-factor-secuirty", userObj.updateTwoFactorSecurity);
-
+router.post( "/private/submit-kyc",combinedUpload, userObj.submitKyc);
 
 
 //****************************** 🔐 Found Routes *******************************************//

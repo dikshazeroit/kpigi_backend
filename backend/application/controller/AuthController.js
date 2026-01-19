@@ -105,12 +105,12 @@ authObj.registerWithEmail = async function (req, res) {
     const { email, country_code, phone, password, full_name } = req.body || {};
 
     // Validate required fields
-    if (!email || !country_code || !phone || !password || !full_name) {
+    if (!email  || !password || !full_name) {
       return commonHelper.errorHandler(
         res,
         {
           code: "ZIS-E1002",
-          message: "All fields (email, country_code, phone, password, full_name) are mandatory.",
+          message: "All fields (email, password, full name) are mandatory.",
           status: false,
         },
         200
@@ -118,7 +118,7 @@ authObj.registerWithEmail = async function (req, res) {
     }
 
     const normalizedEmail = email.toLowerCase();
-    const normalizedPhone = phone.trim();
+    // const normalizedPhone = phone.trim();
 
     // 🔎 CHECK EMAIL (verified + not verified)
     const existingUser = await userModel.findOne({
@@ -161,7 +161,7 @@ authObj.registerWithEmail = async function (req, res) {
     // 🆕 Create unverified user
     const tempUser = await userModel.create({
       uc_email: normalizedEmail,
-      uc_phone: normalizedPhone,
+      uc_phone: phone,
       uc_country_code: country_code,
       uc_password: hashedPassword,
       uc_full_name: full_name,
