@@ -951,3 +951,54 @@ export const closeFundraisers = async (fund_uuid, reason = "") => {
   console.log("API → closeFundraisers response:", res.data);
   return res.data;
 };
+
+
+
+
+
+
+
+export const getAllUsersWithKyc = async () => {
+  try {
+    const response = await apiClient.get("/private/getAllUsersWithKyc");
+    return response.data;
+
+  } catch (error) {
+    console.error("Error fetching new matches:", error);
+    throw error;
+  }
+};
+
+
+
+export const approveKyc = async (kyc_uuid) => {
+    if (!kyc_uuid || typeof kyc_uuid !== "string") {
+        throw new Error("Invalid kyc_uuid passed to approveKyc");
+    }
+    try {
+        const response = await apiClient.post("/private/approveKyc", { kyc_uuid });
+        console.log("approveKyc response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("approveKyc API error:", error.response || error.message);
+        throw error;
+    }
+};
+
+
+
+export const rejectKYC = async (kyc_uuid, reason = "") => {
+    if (!kyc_uuid) throw new Error("kyc_uuid is required");
+    try {
+        const res = await apiClient.post("/private/rejectKYC", {
+            kyc_uuid,
+            reason,
+        });
+        console.log("rejectKYC response:", res.data);
+        return res.data;
+    } catch (error) {
+        console.error("rejectKYC API error:", error.response || error.message);
+        throw error;
+    }
+};
+

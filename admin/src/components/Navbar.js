@@ -119,7 +119,7 @@ export default function TopNavbar() {
           </h6>
 
           {/* RIGHT SIDE (SEARCH + PROFILE) */}
-          <div className="d-flex align-items-center gap-3"style={{marginBottom: "10px"}}>
+          <div className="d-flex align-items-center gap-3"style={{marginBottom: "10px",marginLeft: "280px"}}>
 
             {/* WELCOME / SEARCH BOX */}
             <div

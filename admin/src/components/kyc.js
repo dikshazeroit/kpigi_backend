@@ -10,6 +10,7 @@ import {
     Modal,
     Spinner,
     InputGroup,
+    Pagination,
 } from "@themesberg/react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,38 +19,17 @@ import {
     faUserTimes,
     faPause,
     faPlay,
-    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { Image_Url } from "../api/ApiClient";
-import { faSearch, } from "@fortawesome/free-solid-svg-icons";
-
-
-
-const defaultProfileImg =
-    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-
-
-/* Dummy data */
-const dummyKycData = Array.from({ length: 37 }, (_, i) => ({
-    id: i + 1,
-    uuid: `kyc-${i + 1}`,
-    name: `User ${i + 1}`,
-    email: `user${i + 1}@mail.com`,
-    documentType: i % 2 === 0 ? "Aadhar" : "Passport",
-    documentNumber: `DOC${1000 + i}`,
-    status:
-        i % 4 === 0
-            ? "PENDING"
-            : i % 4 === 1
-                ? "VERIFIED"
-                : i % 4 === 2
-                    ? "PAUSED"
-                    : "REJECTED",
-    submittedAt: new Date().toISOString(),
-}));
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { getAllUsersWithKyc, approveKyc, rejectKYC } from "../api/ApiServices";
 
 const ITEMS_PER_PAGE = 10;
+const defaultProfileImg =
+    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+const defaultDocImg = "https://via.placeholder.com/200x150?text=Document+Not+Found";
+
 
 export default function KycManagement() {
     const [kycList, setKycList] = useState([]);
@@ -63,23 +43,41 @@ export default function KycManagement() {
     const [reason, setReason] = useState("");
     const [actionType, setActionType] = useState("");
 
+    // Fetch KYC data from API
     useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            setKycList(dummyKycData);
-            setLoading(false);
-        }, 500);
+        const fetchKycData = async () => {
+            setLoading(true);
+            try {
+                const response = await getAllUsersWithKyc();
+                console.log("KYC Data:", response.data);
+                setKycList(response.data || []);
+            } catch (error) {
+                console.error("Failed to fetch KYC data:", error);
+                Swal.fire("Error", "Failed to fetch KYC data", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchKycData();
     }, []);
 
-    const filteredData = kycList.filter((item) => {
-        const matchesSearch =
-            item.name.toLowerCase().includes(search.toLowerCase()) ||
-            item.email.toLowerCase().includes(search.toLowerCase());
+    // Filter + search
+    const filteredData = Array.isArray(kycList)
+        ? kycList.filter((item) => {
+            const kyc = item.kyc || {};
+            const matchesSearch =
+                (item.uc_full_name || "")
+                    .toLowerCase()
+                    .includes(search.toLowerCase()) ||
+                (item.uc_email || "").toLowerCase().includes(search.toLowerCase()) ||
+                (kyc.idType || "").toLowerCase().includes(search.toLowerCase());
 
-        const matchesFilter = filter === "ALL" ? true : item.status === filter;
+            const matchesFilter =
+                filter === "ALL" ? true : (kyc.status || "") === filter;
 
-        return matchesSearch && matchesFilter;
-    });
+            return matchesSearch && matchesFilter;
+        })
+        : [];
 
     const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
     const paginatedData = filteredData.slice(
@@ -103,50 +101,87 @@ export default function KycManagement() {
     };
 
     const updateStatus = (uuid, status) => {
-        setKycList((prev) => prev.map((k) => (k.uuid === uuid ? { ...k, status } : k)));
+        setKycList((prev) =>
+            prev.map((k) =>
+                k.uc_uuid === uuid ? { ...k, kyc: { ...k.kyc, status } } : k
+            )
+        );
     };
 
-    const handleApprove = (user) => {
-        updateStatus(user.uuid, "VERIFIED");
-        Swal.fire("Approved", "KYC approved successfully", "success");
+    const handleApprove = async (user) => {
+        if (!user.kyc?.kyc_uuid) {
+            Swal.fire("Error", "Invalid KYC record", "error");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const res = await approveKyc(user.kyc.kyc_uuid);
+
+            // Update status based on API response
+            const newStatus = res?.data?.status || "VERIFIED";
+            updateStatus(user.uc_uuid, newStatus);
+
+            console.log("KYC approved:", res.data);
+            Swal.fire("Approved", "KYC approved successfully", "success");
+        } catch (error) {
+            console.error("KYC approval failed:", error);
+            Swal.fire("Error", "Failed to approve KYC", "error");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const openReason = (user, type) => {
-        setSelectedUser(user);
-        setActionType(type);
-        setReason("");
-        setShowReasonModal(true);
-    };
+   const openReason = (user, type) => {
+    setSelectedUser(null); 
+    setActionType(type);
+    setReason("");
+    setShowReasonModal(true); 
+};
 
-    const submitReason = () => {
+    const submitReason = async () => {
         if (!reason.trim()) {
             Swal.fire("Warning", "Please enter a reason", "warning");
             return;
         }
 
-        if (actionType === "REJECT") updateStatus(selectedUser.uuid, "REJECTED");
-        if (actionType === "PAUSE") updateStatus(selectedUser.uuid, "PAUSED");
-        if (actionType === "RESUME") updateStatus(selectedUser.uuid, "VERIFIED");
+        setLoading(true);
+        try {
+            if (actionType === "REJECT") {
+                const res = await rejectKYC(selectedUser.kyc?.kyc_uuid, reason);
 
-        Swal.fire("Success", "Action completed", "success");
-        setShowReasonModal(false);
+                const newStatus = res?.data?.status || "REJECTED";
+                updateStatus(selectedUser.uc_uuid, newStatus);
+
+                console.log("KYC rejected:", res.data);
+                Swal.fire("Rejected", "KYC rejected successfully", "success");
+            }
+
+            if (actionType === "PAUSE") {
+                updateStatus(selectedUser.uc_uuid, "PAUSED");
+                Swal.fire("Paused", "KYC paused successfully", "success");
+            }
+
+            if (actionType === "RESUME") {
+                updateStatus(selectedUser.uc_uuid, "VERIFIED");
+                Swal.fire("Resumed", "KYC resumed successfully", "success");
+            }
+        } catch (error) {
+            console.error("Action failed:", error);
+            Swal.fire("Error", "Failed to complete action", "error");
+        } finally {
+            setShowReasonModal(false);
+            setLoading(false);
+        }
     };
 
     return (
-        <Card border="light" className="shadow-sm p-3"style={{marginBottom:"10px"}}>
-            <Card.Header className="border-0 bg-white p-0 mb-4"style={{marginBottom:"10px"}}>
-
-
-
-            </Card.Header>
-
+        <Card border="light" className="shadow-sm p-3" style={{ marginBottom: "10px" }}>
             <Card.Body>
                 {/* SEARCH + FILTER */}
-                <Row className="mb-4 align-items-center"style={{marginBottom:"10px"}}>
-
-                    {/* LEFT – FILTER */}
+                <Row className="mb-4 align-items-center" style={{ marginBottom: "10px" }}>
                     <Col md={4}>
-                        <Form.Group className="mb-0">
+                        <Form.Group>
                             <Form.Select
                                 value={filter}
                                 onChange={(e) => {
@@ -162,8 +197,6 @@ export default function KycManagement() {
                             </Form.Select>
                         </Form.Group>
                     </Col>
-
-                    {/* RIGHT – SEARCH */}
                     <Col md={8} className="d-flex justify-content-end">
                         <Col md={8}>
                             <InputGroup>
@@ -171,14 +204,13 @@ export default function KycManagement() {
                                     <FontAwesomeIcon icon={faSearch} />
                                 </InputGroup.Text>
                                 <Form.Control
-                                    placeholder="Search by name or email"
+                                    placeholder="Search by name, email, or document"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </InputGroup>
                         </Col>
                     </Col>
-
                 </Row>
 
                 {/* TABLE */}
@@ -187,143 +219,322 @@ export default function KycManagement() {
                         <Spinner />
                     </div>
                 ) : (
-                    <Table bordered hover responsive>
-                        <thead className="bg-light">
-                            <tr>
-                                <th>Sr.No.</th>
-                                <th>Profile Image</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Document</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedData.length === 0 ? (
+                    <>
+                        <Table bordered hover responsive>
+                            <thead className="bg-light">
                                 <tr>
-                                    <td colSpan="7" className="text-center text-muted">
-                                        No records found
-                                    </td>
+                                    <th>Sr.No.</th>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Address</th>
+                                    <th>Document</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ) : (
-                                paginatedData.map((u, i) => (
-                                    <tr key={u.uuid}>
-                                        <td>{(page - 1) * ITEMS_PER_PAGE + i + 1}</td>
-                                        <td>
-                                            <img
-                                                src={`${Image_Url}${u.uuid}/profile.jpg`}
-                                                alt="Profile"
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = defaultProfileImg;
-                                                }}
-                                                style={{ width: "40px", height: "40px", borderRadius: "50%" }}
-                                            />
-                                        </td>
-                                        <td>{u.name}</td>
-                                        <td>{u.email}</td>
-                                        <td>{u.documentType}</td>
-                                        <td>{statusBadge(u.status)}</td>
-                                        <td>{new Date(u.submittedAt).toLocaleDateString()}</td>
-                                        <td>
-                                            <Button size="sm" className="me-1" onClick={() => setSelectedUser(u)}>
-                                                <FontAwesomeIcon icon={faEye} />
-                                            </Button>
+                            </thead>
 
-                                            {u.status === "PENDING" && (
-                                                <>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="success"
-                                                        onClick={() => handleApprove(u)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faUserCheck} />
-                                                    </Button>{" "}
-                                                    <Button
-                                                        size="sm"
-                                                        variant="danger"
-                                                        onClick={() => openReason(u, "REJECT")}
-                                                    >
-                                                        <FontAwesomeIcon icon={faUserTimes} />
-                                                    </Button>
-                                                </>
-                                            )}
-
-                                            {u.status === "PAUSED" && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="success"
-                                                    onClick={() => openReason(u, "RESUME")}
-                                                >
-                                                    <FontAwesomeIcon icon={faPlay} />
-                                                </Button>
-                                            )}
-
-                                            {u.status === "VERIFIED" && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="warning"
-                                                    onClick={() => openReason(u, "PAUSE")}
-                                                >
-                                                    <FontAwesomeIcon icon={faPause} />
-                                                </Button>
-                                            )}
+                            <tbody>
+                                {paginatedData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="9" className="text-center text-muted">
+                                            No records found
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </Table>
+                                ) : (
+                                    paginatedData.map((u, i) => {
+                                        const kyc = u.kyc || {};
+
+                                        return (
+                                            <tr key={u.uc_uuid}>
+                                                {/* Sr No */}
+                                                <td>{(page - 1) * ITEMS_PER_PAGE + i + 1}</td>
+
+                                                {/* Profile Image */}
+                                                <td className="text-center">
+                                                    <img
+                                                        src={
+                                                            u.uc_profile_photo
+                                                                ? `${Image_Url}/${u.uc_profile_photo}`
+                                                                : defaultProfileImg
+                                                        }
+                                                        alt="profile"
+                                                        style={{
+                                                            width: "40px",
+                                                            height: "40px",
+                                                            borderRadius: "50%",
+                                                            objectFit: "cover",
+                                                            border: "1px solid #ddd",
+                                                        }}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = defaultProfileImg;
+                                                        }}
+                                                    />
+                                                </td>
+
+                                                {/* Name */}
+                                                <td>{u.uc_full_name}</td>
+
+                                                {/* Email */}
+                                                <td>{u.uc_email}</td>
+
+                                                {/* Address */}
+                                                <td>{kyc.address || "-"}</td>
+
+                                                {/* Document Image + Type */}
+                                                <td className="text-center">
+                                                    {kyc.idImageName ? (
+                                                        <>
+                                                            <img
+                                                                src={`${Image_Url}/${kyc.idImageName}`}
+                                                                alt={kyc.idType}
+                                                                style={{
+                                                                    width: "45px",
+                                                                    height: "45px",
+                                                                    objectFit: "cover",
+                                                                    borderRadius: "4px",
+                                                                    border: "1px solid #ccc",
+                                                                    marginBottom: "4px",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={() => setSelectedUser(u)}
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src =
+                                                                        "https://via.placeholder.com/45x45?text=No+Img";
+                                                                }}
+                                                            />
+                                                            <div style={{ fontSize: "12px" }}>
+                                                                {kyc.idType}
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        "-"
+                                                    )}
+                                                </td>
+
+                                                {/* Status */}
+                                                <td>{statusBadge(kyc.status)}</td>
+
+                                                {/* Date */}
+                                                <td>
+                                                    {kyc.createdAt
+                                                        ? new Date(kyc.createdAt).toLocaleDateString()
+                                                        : "-"}
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td>
+                                                    <Button
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => setSelectedUser(u)}
+                                                    >
+                                                        <FontAwesomeIcon icon={faEye} />
+                                                    </Button>
+
+                                                    {kyc.status === "PENDING" && (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="success"
+                                                                className="me-1"
+                                                                onClick={() => handleApprove(u)}
+                                                            >
+                                                                <FontAwesomeIcon icon={faUserCheck} />
+                                                            </Button>
+
+                                                            <Button
+                                                                size="sm"
+                                                                variant="danger"
+                                                                onClick={() => openReason(u, "REJECT")}
+                                                            >
+                                                                <FontAwesomeIcon icon={faUserTimes} />
+                                                            </Button>
+                                                        </>
+                                                    )}
+
+                                                    {kyc.status === "PAUSED" && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="success"
+                                                            onClick={() => openReason(u, "RESUME")}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlay} />
+                                                        </Button>
+                                                    )}
+
+                                                    {kyc.status === "VERIFIED" && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="warning"
+                                                            onClick={() => openReason(u, "PAUSE")}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPause} />
+                                                        </Button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </Table>
+
+                        {/* Pagination */}
+                        {totalPages > 0 && (
+                            <div className="d-flex justify-content-end mt-3">
+
+                                {totalPages >= 1 && (
+                                    <Pagination className="justify-content-end mt-3">
+                                        <Pagination.Prev
+                                            disabled={page === 1}
+                                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                        >
+                                            Prev
+                                        </Pagination.Prev>
+
+                                        {[...Array(totalPages)].map((_, i) => (
+                                            <Pagination.Item
+                                                key={i + 1}
+                                                active={i + 1 === page}
+                                                onClick={() => setPage(i + 1)}
+                                            >
+                                                {i + 1}
+                                            </Pagination.Item>
+                                        ))}
+
+                                        <Pagination.Next
+                                            disabled={page === totalPages}
+                                            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                                        >
+                                            Next
+                                        </Pagination.Next>
+                                    </Pagination>
+                                )}
+                            </div>
+                        )}
+
+                    </>
                 )}
             </Card.Body>
-
             {/* VIEW MODAL */}
-            <Modal show={!!selectedUser} onHide={() => setSelectedUser(null)} centered>
-                <Modal.Header closeButton>
+            <Modal show={!!selectedUser} onHide={() => setSelectedUser(null)} centered size="lg">
+                <Modal.Header closeButton className="border-bottom">
                     <Modal.Title>KYC Details</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedUser && (
-                        <div className="text-center">
-                            {/* Profile Image */}
-                            <img
-                                src={`https://i.pravatar.cc/100?img=${selectedUser.id}`}
-                                alt={selectedUser.name}
-                                style={{
-                                    width: "100px",
-                                    height: "100px",
-                                    borderRadius: "50%",
-                                    objectFit: "cover",
-                                    marginBottom: "15px",
-                                }}
-                            />
-                            <p><strong>Name:</strong> {selectedUser.name}</p>
-                            <p><strong>Email:</strong> {selectedUser.email}</p>
-                            <p>
-                                <strong>Document:</strong> {selectedUser.documentType}
-                            </p>
-                            {/* Document Image */}
-                            <img
-                                src={`https://via.placeholder.com/200x120?text=${selectedUser.documentType}`}
-                                alt={selectedUser.documentType}
-                                style={{
-                                    width: "200px",
-                                    height: "120px",
-                                    objectFit: "cover",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "6px",
-                                    marginBottom: "10px",
-                                }}
-                            />
-                            <p><strong>Document No:</strong> {selectedUser.documentNumber}</p>
-                            <p><strong>Status:</strong> {statusBadge(selectedUser.status)}</p>
-                        </div>
+                        <Row className="g-4">
+                            <Col md={4} className="text-center">
+                                <img
+                                    src={
+                                        selectedUser.uc_profile_photo
+                                            ? `${Image_Url}/${selectedUser.uc_profile_photo}`
+                                            : defaultProfileImg
+                                    }
+                                    alt={selectedUser.uc_full_name}
+                                    className="rounded-circle border mb-3"
+                                    style={{
+                                        width: "120px",
+                                        height: "120px",
+                                        objectFit: "cover",
+                                    }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = defaultProfileImg;
+                                    }}
+                                />
+                                <h5 className="mb-1">{selectedUser.uc_full_name}</h5>
+                                <p className="text-muted mb-0">{selectedUser.uc_email}</p>
+                                <div className="mt-3">
+                                    {statusBadge(selectedUser.kyc?.status)}
+                                </div>
+                            </Col>
+
+                            <Col md={8}>
+                                <div className="mb-4">
+                                    <h6 className="text-muted mb-3">User Information</h6>
+                                    <Row className="g-3">
+                                        <Col sm={6}>
+                                            <div className="mb-2">
+                                                <small className="text-muted d-block">Full Name</small>
+                                                <strong>{selectedUser.uc_full_name || "-"}</strong>
+                                            </div>
+                                        </Col>
+                                        <Col sm={6}>
+                                            <div className="mb-2">
+                                                <small className="text-muted d-block">Email</small>
+                                                <strong>{selectedUser.uc_email || "-"}</strong>
+                                            </div>
+                                        </Col>
+                                        <Col xs={12}>
+                                            <div className="mb-2">
+                                                <small className="text-muted d-block">Address</small>
+                                                <strong>{selectedUser.kyc?.address || "-"}</strong>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </div>
+
+                                <div className="mb-4">
+                                    <h6 className="text-muted mb-3">Document Details</h6>
+                                    <Row className="g-3">
+                                        <Col sm={6}>
+                                            <div className="mb-2">
+                                                <small className="text-muted d-block">Document Type</small>
+                                                <strong>{selectedUser.kyc?.idType || "-"}</strong>
+                                            </div>
+                                        </Col>
+                                        <Col sm={6}>
+                                            <div className="mb-2">
+                                                <small className="text-muted d-block">Submitted Date</small>
+                                                <strong>
+                                                    {selectedUser.kyc?.createdAt
+                                                        ? new Date(selectedUser.kyc.createdAt).toLocaleDateString('en-GB')
+                                                        : "-"}
+                                                </strong>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </div>
+
+                                <div>
+                                    <h6 className="text-muted mb-3">Document Preview</h6>
+                                    {selectedUser?.kyc?.idImageName ? (
+                                        <div className="text-center">
+                                            <img
+                                                src={`${Image_Url}/${selectedUser.kyc.idImageName}`}
+                                                alt={selectedUser.kyc.idType || "Document"}
+                                                className="img-fluid border rounded"
+                                                style={{
+                                                    maxHeight: "300px",
+                                                    maxWidth: "100%",
+                                                }}
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = defaultDocImg;
+                                                }}
+                                            />
+                                            <p className="text-muted mt-2">
+                                                Click and drag to view full size
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 border rounded bg-light">
+                                            <i className="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                            <p className="text-muted">No document uploaded</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </Col>
+                        </Row>
                     )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setSelectedUser(null)}>
+                <Modal.Footer className="border-top">
+                    <Button variant="light" onClick={() => setSelectedUser(null)}>
                         Close
                     </Button>
                 </Modal.Footer>

@@ -94,7 +94,7 @@ export const approveFundraiser = async (req, res) => {
       });
     }
 
-    // 1️⃣ Update fundraiser status
+    //  Update fundraiser status
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -111,7 +111,7 @@ export const approveFundraiser = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch user email
+    //  Fetch user email
     let userEmail = null;
     if (fundraiser.f_fk_uc_uuid) {
       const user = await UsersCredentialsModel.findOne({
@@ -120,7 +120,7 @@ export const approveFundraiser = async (req, res) => {
       if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    // 3️⃣ Send approval email (TEXT FIXED)
+    //  Send approval email (TEXT FIXED)
     if (userEmail) {
       try {
         const approvalDate = new Date(
@@ -145,11 +145,11 @@ You can now start receiving support from users.
 Team KPIGI`
         );
       } catch (emailError) {
-        console.error("❌ Failed to send approval email:", emailError);
+        console.error(" Failed to send approval email:", emailError);
       }
     }
 
-    // 4️⃣ Push Notification (TEXT FIXED)
+    // Push Notification (TEXT FIXED)
     try {
       const userId = fundraiser.f_fk_uc_uuid;
 
@@ -163,7 +163,7 @@ Team KPIGI`
         .filter(Boolean);
 
       if (tokens.length > 0) {
-        const title = "🎉 Fundraiser Approved";
+        const title = " Fundraiser Approved";
         const body =
           "Your fundraiser is now active and visible to users. You can start receiving support.";
 
@@ -191,7 +191,7 @@ Team KPIGI`
         });
       }
     } catch (pushErr) {
-      console.error("⚠️ Push notification error:", pushErr);
+      console.error(" Push notification error:", pushErr);
     }
 
     return res.json({
@@ -227,7 +227,7 @@ export const rejectFundraiser = async (req, res) => {
       reason ||
       "Support feature is currently unavailable due to review requirements.";
 
-    // 1️⃣ Update fundraiser
+    //  Update fundraiser
     const fundraiser = await FundModel.findOneAndUpdate(
       { f_uuid: fund_uuid },
       {
@@ -244,7 +244,7 @@ export const rejectFundraiser = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch user email
+    //  Fetch user email
     let userEmail = null;
     if (fundraiser.f_fk_uc_uuid) {
       const user = await UsersCredentialsModel.findOne({
@@ -253,7 +253,7 @@ export const rejectFundraiser = async (req, res) => {
       if (user?.uc_email) userEmail = user.uc_email;
     }
 
-    // 3️⃣ Send rejection email (TEXT FIXED)
+    //  Send rejection email (TEXT FIXED)
     if (userEmail) {
       try {
         await sendMail(
@@ -270,11 +270,11 @@ This is not a permanent rejection. You will be able to resubmit your fundraiser 
 Team KPIGI`
         );
       } catch (emailError) {
-        console.error("❌ Failed to send rejection email:", emailError);
+        console.error(" Failed to send rejection email:", emailError);
       }
     }
 
-    // 4️⃣ Push Notification (TEXT FIXED)
+    // Push Notification (TEXT FIXED)
     try {
       const userId = fundraiser.f_fk_uc_uuid;
 
@@ -315,7 +315,7 @@ Team KPIGI`
         });
       }
     } catch (pushErr) {
-      console.error("⚠️ Push notification error (reject):", pushErr);
+      console.error(" Push notification error (reject):", pushErr);
     }
 
     return res.json({
