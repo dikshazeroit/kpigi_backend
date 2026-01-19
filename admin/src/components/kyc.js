@@ -132,12 +132,12 @@ export default function KycManagement() {
         }
     };
 
-   const openReason = (user, type) => {
-    setSelectedUser(null); 
-    setActionType(type);
-    setReason("");
-    setShowReasonModal(true); 
-};
+    const openReason = (user, type) => {
+        setSelectedUser(null);
+        setActionType(type);
+        setReason("");
+        setShowReasonModal(true);
+    };
 
     const submitReason = async () => {
         if (!reason.trim()) {
