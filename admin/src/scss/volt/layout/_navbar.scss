@@ -3,13 +3,14 @@
  */
 
  .navbar-main {
-    position: absolute;
+    
     top: 3px;
     width: 70%;
     z-index: 100;
     padding-top: 16px;
     padding-bottom: 16px;
     margin: 16px;
+    
 
     .navbar-toggler-icon {
         background-image: $navbar-dark-toggler-icon-bg;

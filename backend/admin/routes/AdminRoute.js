@@ -36,6 +36,7 @@ import{getDashboardSummary,getDashboardStats,getRecentActivities} from "../contr
 import {createFaq, getAllFaqs, getFaqById, updateFaq, deleteFaq, toggleFaqStatus} from "../controllers/FaqController.js";
 import{savePrivacyPolicy,getPrivacyPolicys}from "../controllers/AboutController.js"
 import { getAllwithdrawal,approveWithdrawal,rejectWithdrawal } from "../controllers/withdrawals.js";
+import{getAllUsersWithKyc,approveKyc,rejectKYC} from "../controllers/kyc.js"
 
 const router = express.Router();
 
@@ -138,6 +139,10 @@ router.post("/private/approveWithdrawal", adminAuth, approveWithdrawal);
 router.post("/private/rejectWithdrawal", adminAuth, rejectWithdrawal);
 
 
+//****************************************************************************************************** *//
+router.get("/private/getAllUsersWithKyc", adminAuth, getAllUsersWithKyc);
+router.post("/private/approveKyc", adminAuth, approveKyc);
+router.post("/private/rejectKyc", adminAuth, rejectKYC);
 
 
 export default router;
