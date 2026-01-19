@@ -42,6 +42,7 @@ import FaqsPage from "./support/FaqsPage";
 import PrivacyPage from "./PrivacyPolicy/privacy";
 import TermsPage from "./TERMS/Terms";
 import ProtectedRoute from "./examples/ProtectedRoute";
+import KycManagement from "../components/kyc";
 
 
 
@@ -187,6 +188,12 @@ export default function AppRoutes() {
         path={Routes.FaqsPage.path}
         component={() => <RouteWithSidebar component={FaqsPage} />}
       />
+
+    <ProtectedRoute
+  exact
+  path={Routes.KycPage.path}
+  component={() => <RouteWithSidebar component={KycManagement} />}
+ />
       {/* Non-protected sidebar routes */}
       <RouteWithSidebar exact path={Routes.DisputesWrapper.path} component={Disputes} />
       <RouteWithSidebar exact path={Routes.Help.path} component={HelpWrapper} />
