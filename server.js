@@ -43,7 +43,12 @@ const server = http.createServer(app);
 
 
 /* ================= STRIPE WEBHOOK (MUST BE FIRST) ================= */
-app.use("/api", stripeWebhookRoute);
+/* ========== STRIPE WEBHOOK (RAW BODY FIRST) ========== */
+app.use(
+  "/api",
+  express.raw({ type: "application/json" }),
+  stripeWebhookRoute
+)
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
