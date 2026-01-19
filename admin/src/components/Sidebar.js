@@ -14,6 +14,7 @@ import {
   faFunnelDollar,
   faClipboardList,
   faChartPie,
+  faIdCard
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Nav, Image, Button, Dropdown, Navbar } from "@themesberg/react-bootstrap";
@@ -257,6 +258,13 @@ export default function Sidebar({ userName = "Jane" }) {
                 textColor="#dc143c"
                 iconColor="#dc143c"
               />
+              <NavItem
+                title="KYC Management"
+                link={Routes.KycPage.path}
+                icon={faIdCard}
+                textColor="#dc143c"
+                iconColor="#dc143c"
+              />
               {/* <NavItem
                 title="Terms & Conditions"
                 link={Routes.TermsAndConditions.path}
@@ -285,6 +293,7 @@ export default function Sidebar({ userName = "Jane" }) {
                   </span>
                 </Nav.Link>
               </Nav.Item> */}
+             
 
 
             </Nav>
