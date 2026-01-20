@@ -134,6 +134,7 @@ export default function TopNavbar() {
                 fontSize: "14px",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
+                
               }}
             >
               <span
