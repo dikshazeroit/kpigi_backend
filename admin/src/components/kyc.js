@@ -30,7 +30,6 @@ const defaultProfileImg =
     "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 const defaultDocImg = "https://via.placeholder.com/200x150?text=Document+Not+Found";
 
-
 export default function KycManagement() {
     const [kycList, setKycList] = useState([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -43,7 +42,6 @@ export default function KycManagement() {
     const [showReasonModal, setShowReasonModal] = useState(false);
     const [reason, setReason] = useState("");
     const [actionType, setActionType] = useState("");
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,7 +66,6 @@ export default function KycManagement() {
 
         fetchData();
     }, [page, search, filter]);
-
 
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
@@ -112,7 +109,7 @@ export default function KycManagement() {
             updateStatus(user.uc_uuid, newStatus);
 
             console.log("KYC approved:", res.data);
-            Swal.fire("Approved", "KYC approved successfully", "success");
+            Swal.fire("Approved", "KYC VERIFIED successfully", "success");
         } catch (error) {
             console.error("KYC approval failed:", error);
             Swal.fire("Error", "Failed to approve KYC", "error");
@@ -127,8 +124,8 @@ export default function KycManagement() {
         setReason("");
         setShowReasonModal(true);
     };
-    const submitReason = async () => {
 
+    const submitReason = async () => {
         if (actionType === "REJECT" && !reason.trim()) {
             Swal.fire("Warning", "Please enter a reason", "warning");
             console.log("Rejected action aborted: reason empty");
@@ -144,7 +141,6 @@ export default function KycManagement() {
                 if (!updatedKyc) {
                     console.warn("No KYC data returned from API");
                 }
-
 
                 setKycList((prev) =>
                     prev.map((u) =>
@@ -190,9 +186,6 @@ export default function KycManagement() {
         }
     };
 
-
-
-
     return (
         <Card border="light" className="shadow-sm p-3" style={{ marginBottom: "10px" }}>
             <Card.Body>
@@ -214,7 +207,6 @@ export default function KycManagement() {
                                 <option value="PAUSED">Paused</option>
                                 <option value="REJECTED">Rejected</option>
                             </Form.Select>
-
                         </Form.Group>
                     </Col>
                     <Col md={8} className="d-flex justify-content-end">
@@ -330,7 +322,6 @@ export default function KycManagement() {
                                                     )}
                                                 </td>
 
-
                                                 {/* Status */}
                                                 <td>{statusBadge(kyc?.status || "NOT_STARTED")}</td>
 
@@ -428,12 +419,18 @@ export default function KycManagement() {
                                 Next
                             </Pagination.Next>
                         </Pagination>
-
                     </>
                 )}
             </Card.Body>
+
             {/* VIEW MODAL */}
-            <Modal show={!!selectedUser} onHide={() => setSelectedUser(null)} centered size="lg">
+            <Modal
+                show={!!selectedUser && !showReasonModal}
+                onHide={() => setSelectedUser(null)}
+                centered
+                size="lg"
+
+            >
                 <Modal.Header closeButton className="border-bottom">
                     <Modal.Title>KYC Details</Modal.Title>
                 </Modal.Header>
@@ -459,7 +456,6 @@ export default function KycManagement() {
                                         e.target.src = defaultProfileImg;
                                     }}
                                 />
-
 
                                 <h5 className="mb-1">{selectedUser.uc_full_name}</h5>
                                 <p className="text-muted mb-0">{selectedUser.uc_email}</p>
@@ -569,7 +565,13 @@ export default function KycManagement() {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowReasonModal(false)}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            setShowReasonModal(false);
+                            setSelectedUser(null);  
+                        }}
+                    >
                         Cancel
                     </Button>
                     <Button variant="danger" onClick={submitReason}>
