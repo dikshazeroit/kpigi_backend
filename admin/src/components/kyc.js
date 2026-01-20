@@ -133,15 +133,16 @@ export default function KycManagement() {
     };
 
     const openReason = (user, type) => {
-        setSelectedUser(null);
+        setSelectedUser(user);
         setActionType(type);
         setReason("");
         setShowReasonModal(true);
     };
-
     const submitReason = async () => {
-        if (!reason.trim()) {
+
+        if (actionType === "REJECT" && !reason.trim()) {
             Swal.fire("Warning", "Please enter a reason", "warning");
+            console.log("Rejected action aborted: reason empty");
             return;
         }
 
@@ -150,30 +151,58 @@ export default function KycManagement() {
             if (actionType === "REJECT") {
                 const res = await rejectKYC(selectedUser.kyc?.kyc_uuid, reason);
 
-                const newStatus = res?.data?.status || "REJECTED";
-                updateStatus(selectedUser.uc_uuid, newStatus);
+                const updatedKyc = res?.data?.data;
+                if (!updatedKyc) {
+                    console.warn("No KYC data returned from API");
+                }
 
-                console.log("KYC rejected:", res.data);
+
+                setKycList((prev) =>
+                    prev.map((u) =>
+                        u.uc_uuid === selectedUser.uc_uuid
+                            ? { ...u, kyc: updatedKyc }
+                            : u
+                    )
+                );
+
                 Swal.fire("Rejected", "KYC rejected successfully", "success");
             }
 
             if (actionType === "PAUSE") {
-                updateStatus(selectedUser.uc_uuid, "PAUSED");
+                console.log("Pausing KYC for user:", selectedUser.uc_uuid);
+                setKycList((prev) =>
+                    prev.map((u) =>
+                        u.uc_uuid === selectedUser.uc_uuid
+                            ? { ...u, kyc: { ...u.kyc, status: "PAUSED" } }
+                            : u
+                    )
+                );
                 Swal.fire("Paused", "KYC paused successfully", "success");
             }
 
             if (actionType === "RESUME") {
-                updateStatus(selectedUser.uc_uuid, "VERIFIED");
+                console.log("Resuming KYC for user:", selectedUser.uc_uuid);
+                setKycList((prev) =>
+                    prev.map((u) =>
+                        u.uc_uuid === selectedUser.uc_uuid
+                            ? { ...u, kyc: { ...u.kyc, status: "VERIFIED" } }
+                            : u
+                    )
+                );
                 Swal.fire("Resumed", "KYC resumed successfully", "success");
             }
         } catch (error) {
             console.error("Action failed:", error);
             Swal.fire("Error", "Failed to complete action", "error");
         } finally {
+            console.log("submitReason finished, hiding modal and stopping loading");
             setShowReasonModal(false);
             setLoading(false);
         }
     };
+
+
+
 
     return (
         <Card border="light" className="shadow-sm p-3" style={{ marginBottom: "10px" }}>
@@ -254,18 +283,14 @@ export default function KycManagement() {
                                                 {/* Profile Image */}
                                                 <td className="text-center">
                                                     <img
-                                                        src={
-                                                            u.uc_profile_photo
-                                                                ? `${Image_Url}/${u.uc_profile_photo}`
-                                                                : defaultProfileImg
-                                                        }
+                                                        src={u.uc_profile_photo ? Image_Url + u.uc_profile_photo : defaultProfileImg}
                                                         alt="profile"
                                                         style={{
-                                                            width: "40px",
-                                                            height: "40px",
+                                                            width: "45px",
+                                                            height: "45px",
                                                             borderRadius: "50%",
                                                             objectFit: "cover",
-                                                            border: "1px solid #ddd",
+                                                            border: "2px solid #ddd",
                                                         }}
                                                         onError={(e) => {
                                                             e.target.onerror = null;
@@ -288,8 +313,8 @@ export default function KycManagement() {
                                                     {kyc.idImageName ? (
                                                         <>
                                                             <img
-                                                                src={`${Image_Url}/${kyc.idImageName}`}
-                                                                alt={kyc.idType}
+                                                                src={`${Image_Url.replace(/\/$/, "")}/${kyc.idImageName}`}
+                                                                alt={kyc.idType || "Document"}
                                                                 style={{
                                                                     width: "45px",
                                                                     height: "45px",
@@ -302,18 +327,18 @@ export default function KycManagement() {
                                                                 onClick={() => setSelectedUser(u)}
                                                                 onError={(e) => {
                                                                     e.target.onerror = null;
-                                                                    e.target.src =
-                                                                        "https://via.placeholder.com/45x45?text=No+Img";
+                                                                    e.target.src = "https://via.placeholder.com/45x45?text=No+Img";
                                                                 }}
                                                             />
                                                             <div style={{ fontSize: "12px" }}>
-                                                                {kyc.idType}
+                                                                {kyc.idType || "-"}
                                                             </div>
                                                         </>
                                                     ) : (
                                                         "-"
                                                     )}
                                                 </td>
+
 
                                                 {/* Status */}
                                                 <td>{statusBadge(kyc.status)}</td>
@@ -431,11 +456,11 @@ export default function KycManagement() {
                             <Col md={4} className="text-center">
                                 <img
                                     src={
-                                        selectedUser.uc_profile_photo
-                                            ? `${Image_Url}/${selectedUser.uc_profile_photo}`
+                                        selectedUser?.uc_profile_photo
+                                            ? `${Image_Url.replace(/\/$/, '')}/${selectedUser.uc_profile_photo}`
                                             : defaultProfileImg
                                     }
-                                    alt={selectedUser.uc_full_name}
+                                    alt={selectedUser?.uc_full_name || "User"}
                                     className="rounded-circle border mb-3"
                                     style={{
                                         width: "120px",
@@ -447,6 +472,8 @@ export default function KycManagement() {
                                         e.target.src = defaultProfileImg;
                                     }}
                                 />
+
+
                                 <h5 className="mb-1">{selectedUser.uc_full_name}</h5>
                                 <p className="text-muted mb-0">{selectedUser.uc_email}</p>
                                 <div className="mt-3">
@@ -506,13 +533,14 @@ export default function KycManagement() {
                                     {selectedUser?.kyc?.idImageName ? (
                                         <div className="text-center">
                                             <img
-                                                src={`${Image_Url}/${selectedUser.kyc.idImageName}`}
-                                                alt={selectedUser.kyc.idType || "Document"}
+                                                src={
+                                                    selectedUser?.kyc?.idImageName
+                                                        ? `${Image_Url.replace(/\/$/, '')}/${selectedUser.kyc.idImageName}`
+                                                        : defaultDocImg
+                                                }
+                                                alt={selectedUser?.kyc?.idType || "Document"}
                                                 className="img-fluid border rounded"
-                                                style={{
-                                                    maxHeight: "300px",
-                                                    maxWidth: "100%",
-                                                }}
+                                                style={{ maxHeight: "300px", maxWidth: "100%" }}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = defaultDocImg;
