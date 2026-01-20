@@ -180,6 +180,15 @@ export default function Sidebar({ userName = "Jane" }) {
                 textColor="#ff6347"
                 iconColor="#ff6347"
               />
+
+  <NavItem
+                title="Categories"
+                link={Routes.CategoriesPage.path}
+                icon={faClipboardList}
+                textColor="#ffa500"
+                iconColor="#ffa500"
+              />
+
               <NavItem
                 title="User Management"
                 link={Routes.BootstrapTables.path}
@@ -208,13 +217,15 @@ export default function Sidebar({ userName = "Jane" }) {
                 textColor="#ffa500"
                 iconColor="#ffa500"
               />
-              <NavItem
-                title="Categories"
-                link={Routes.CategoriesPage.path}
-                icon={faClipboardList}
-                textColor="#ffa500"
-                iconColor="#ffa500"
+
+                 <NavItem
+                title="KYC Management"
+                link={Routes.KycPage.path}
+                icon={faIdCard}
+                textColor="#dc143c"
+                iconColor="#dc143c"
               />
+           
               {/* <NavItem
                 title="Wallet"
                 link={Routes.WalletPage.path}
@@ -258,13 +269,7 @@ export default function Sidebar({ userName = "Jane" }) {
                 textColor="#dc143c"
                 iconColor="#dc143c"
               />
-              <NavItem
-                title="KYC Management"
-                link={Routes.KycPage.path}
-                icon={faIdCard}
-                textColor="#dc143c"
-                iconColor="#dc143c"
-              />
+           
               {/* <NavItem
                 title="Terms & Conditions"
                 link={Routes.TermsAndConditions.path}
