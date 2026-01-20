@@ -81,8 +81,8 @@ export default function KycManagement() {
                 return <Badge bg="secondary">Paused</Badge>;
             case "REJECTED":
                 return <Badge bg="danger">Rejected</Badge>;
-            default:
-                return <Badge bg="secondary">NOT STARTED</Badge>;
+            // default:
+            //     return <Badge bg="secondary">NOT STARTED</Badge>;
         }
     };
 
@@ -109,7 +109,7 @@ export default function KycManagement() {
             updateStatus(user.uc_uuid, newStatus);
 
             console.log("KYC approved:", res.data);
-            Swal.fire("VERIFIED", "KYC VERIFIED successfully", "success");
+            Swal.fire("VERIFIED", "KYC verified successfully", "success");
         } catch (error) {
             console.error("KYC VERIFIED failed:", error);
             Swal.fire("Error", "Failed to verify KYC", "error");
@@ -133,28 +133,27 @@ export default function KycManagement() {
         }
 
         setLoading(true);
+
         try {
             if (actionType === "REJECT") {
-                const res = await rejectKYC(selectedUser.kyc?.kyc_uuid, reason);
+                
+                await rejectKYC(selectedUser.kyc?.kyc_uuid, reason);
 
-                const updatedKyc = res?.data?.data;
-                if (!updatedKyc) {
-                    console.warn("No KYC data returned from API");
-                }
-
+            
                 setKycList((prev) =>
                     prev.map((u) =>
                         u.uc_uuid === selectedUser.uc_uuid
-                            ? { ...u, kyc: updatedKyc }
+                            ? { ...u, kyc: { ...u.kyc, status: "REJECTED" } }
                             : u
                     )
                 );
 
-                Swal.fire("Rejected", "KYC REJECTED successfully", "success");
+                Swal.fire("Rejected", "KYC rejected successfully", "success");
             }
 
             if (actionType === "PAUSE") {
                 console.log("Pausing KYC for user:", selectedUser.uc_uuid);
+
                 setKycList((prev) =>
                     prev.map((u) =>
                         u.uc_uuid === selectedUser.uc_uuid
@@ -162,11 +161,13 @@ export default function KycManagement() {
                             : u
                     )
                 );
+
                 Swal.fire("Paused", "KYC paused successfully", "success");
             }
 
             if (actionType === "RESUME") {
                 console.log("Resuming KYC for user:", selectedUser.uc_uuid);
+
                 setKycList((prev) =>
                     prev.map((u) =>
                         u.uc_uuid === selectedUser.uc_uuid
@@ -174,6 +175,7 @@ export default function KycManagement() {
                             : u
                     )
                 );
+
                 Swal.fire("Resumed", "KYC resumed successfully", "success");
             }
         } catch (error) {
@@ -181,8 +183,12 @@ export default function KycManagement() {
             Swal.fire("Error", "Failed to complete action", "error");
         } finally {
             console.log("submitReason finished, hiding modal and stopping loading");
+
+        
             setShowReasonModal(false);
-            setSelectedUser(null); 
+            setSelectedUser(null);
+            setReason("");
+            setActionType("");
             setLoading(false);
         }
     };
