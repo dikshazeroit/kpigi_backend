@@ -109,10 +109,10 @@ export default function KycManagement() {
             updateStatus(user.uc_uuid, newStatus);
 
             console.log("KYC approved:", res.data);
-            Swal.fire("Approved", "KYC VERIFIED successfully", "success");
+            Swal.fire("VERIFIED", "KYC VERIFIED successfully", "success");
         } catch (error) {
-            console.error("KYC approval failed:", error);
-            Swal.fire("Error", "Failed to approve KYC", "error");
+            console.error("KYC VERIFIED failed:", error);
+            Swal.fire("Error", "Failed to verify KYC", "error");
         } finally {
             setLoading(false);
         }
