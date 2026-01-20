@@ -770,10 +770,14 @@ userObj.createWithdrawalRequest = async function (req, res) {
   try {
     const userUuid = await appHelper.getUUIDByToken(req);
     if (!userUuid) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "Unauthorized",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "Unauthorized",
+        },
+        200
+      );
     }
 
     let { amount, accountHolderName, accountNumber, ifscCode } = req.body;
@@ -787,27 +791,51 @@ userObj.createWithdrawalRequest = async function (req, res) {
       !accountNumber ||
       !ifscCode
     ) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "All fields are required",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "All fields are required",
+        },
+        200
+      );
+    }
+
+    // ✅ Minimum withdrawal amount check
+    if (withdrawAmount < 100) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "Minimum withdrawal amount is 100",
+        },
+        200
+      );
     }
 
     // ✅ User check
     const user = await userModel.findOne({ uc_uuid: userUuid });
     if (!user) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "User not found",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "User not found",
+        },
+        200
+      );
     }
 
     // ✅ Balance check
     if (user.uc_balance < withdrawAmount) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "Insufficient wallet balance",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "Insufficient wallet balance",
+        },
+        200
+      );
     }
 
     // 🚫 Prevent multiple pending withdrawals
@@ -817,10 +845,14 @@ userObj.createWithdrawalRequest = async function (req, res) {
     });
 
     if (pendingRequest) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "You already have a pending withdrawal request",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          message: "You already have a pending withdrawal request",
+        },
+        200
+      );
     }
 
     // 1️⃣ Deduct balance
@@ -846,12 +878,17 @@ userObj.createWithdrawalRequest = async function (req, res) {
   } catch (error) {
     console.error("❌ Withdrawal Error:", error);
 
-    return commonHelper.errorHandler(res, {
-      status: false,
-      message: "Withdrawal failed",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        message: "Withdrawal failed",
+      },
+      200
+    );
   }
 };
+
 
 /**
  *  FUNCTION: getWithdrawalHistory

@@ -60,48 +60,79 @@ donationObj.createDonation = async function (req, res) {
     /* 🔐 Get Donor UUID from Token */
     const donorUuid = await appHelper.getUUIDByToken(req);
     if (!donorUuid) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1000",
-        message: "Unauthorized",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "DON-E1000",
+          message: "Unauthorized",
+        },
+        200
+      );
     }
 
     /* 👤 Get User */
     const user = await UsersCredentialsModel.findOne({ uc_uuid: donorUuid });
     if (!user || !user.uc_full_name || !user.uc_email) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1003",
-        message: "User name or email not found",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "DON-E1003",
+          message: "User name or email not found",
+        },
+        200
+      );
     }
 
     const { fund_uuid, amount, is_anonymous } = req.body;
-    if (!fund_uuid || !amount || Number(amount) <= 0) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1001",
-        message: "fund_uuid and valid amount are required",
-      }, 200);
+    const donationAmount = Number(amount);
+
+    if (!fund_uuid || !donationAmount || donationAmount <= 0) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "DON-E1001",
+          message: "fund_uuid and valid amount are required",
+        },
+        200
+      );
+    }
+
+    // ✅ Minimum donation amount check ($10)
+    if (donationAmount < 10) {
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "DON-E1004",
+          message: "Minimum donation amount is $10",
+        },
+        200
+      );
     }
 
     /* 📦 Fetch Fund */
     const fund = await FundModel.findOne({ f_uuid: fund_uuid });
     if (!fund) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        code: "DON-E1002",
-        message: "Fund not found",
-      }, 200);
+      return commonHelper.errorHandler(
+        res,
+        {
+          status: false,
+          code: "DON-E1002",
+          message: "Fund not found",
+        },
+        200
+      );
     }
 
     /* 💰 Amount calc */
-    const amountInCents = Math.round(Number(amount) * 100);
+    const amountInCents = Math.round(donationAmount * 100);
     const platformFee = Math.round(amountInCents * 0.028);
     const netAmount = amountInCents - platformFee;
 
-    /* 🧍‍♂️ 1️⃣ CREATE STRIPE CUSTOMER (MANDATORY – INDIA) */
+    /* 🧍‍♂️ CREATE STRIPE CUSTOMER */
     const customer = await stripe.customers.create({
       name: user.uc_full_name,
       email: user.uc_email,
@@ -111,14 +142,13 @@ donationObj.createDonation = async function (req, res) {
         city: "Mumbai",
         state: "MH",
         postal_code: "400001",
-        country: "IN", // ⚠️ MUST BE IN
+        country: "IN",
       },
     });
 
-    /* 🧾 Donation UUID */
     const donationUuid = uuidv4();
 
-    /* 💳 2️⃣ PAYMENT INTENT WITH CUSTOMER + SHIPPING */
+    /* 💳 PAYMENT INTENT */
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: "usd",
@@ -148,7 +178,7 @@ donationObj.createDonation = async function (req, res) {
       d_uuid: donationUuid,
       d_fk_uc_uuid: donorUuid,
       d_fk_f_uuid: fund_uuid,
-      d_amount: Number(amount),
+      d_amount: donationAmount,
       d_platform_fee: platformFee / 100,
       d_amount_to_owner: netAmount / 100,
       d_is_anonymous: !!is_anonymous,
@@ -161,7 +191,6 @@ donationObj.createDonation = async function (req, res) {
       },
     });
 
-    /* 📤 Response */
     return commonHelper.successHandler(res, {
       status: true,
       message: "Donation initiated",
@@ -173,11 +202,15 @@ donationObj.createDonation = async function (req, res) {
 
   } catch (error) {
     console.error("❌ createDonation error:", error);
-    return commonHelper.errorHandler(res, {
-      status: false,
-      code: "DON-E9999",
-      message: error.message || "Donation failed",
-    }, 200);
+    return commonHelper.errorHandler(
+      res,
+      {
+        status: false,
+        code: "DON-E9999",
+        message: error.message || "Donation failed",
+      },
+      200
+    );
   }
 };
 
