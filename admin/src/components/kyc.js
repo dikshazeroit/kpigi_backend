@@ -150,7 +150,7 @@ export default function KycManagement() {
                     )
                 );
 
-                Swal.fire("Rejected", "KYC rejected successfully", "success");
+                Swal.fire("Rejected", "KYC REJECTED successfully", "success");
             }
 
             if (actionType === "PAUSE") {
