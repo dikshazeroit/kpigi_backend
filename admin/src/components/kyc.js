@@ -52,11 +52,9 @@ export default function KycManagement() {
                 const res = await getAllUsersWithKyc(
                     page,
                     ITEMS_PER_PAGE,
-                    search,
+                    search.trim(),
                     filter === "ALL" ? "" : filter
                 );
-
-                console.log("API Response:", res);
 
                 setKycList(res.data || []);
                 setTotalItems(res.pagination?.total || 0);
@@ -70,6 +68,7 @@ export default function KycManagement() {
 
         fetchData();
     }, [page, search, filter]);
+
 
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
@@ -401,13 +400,35 @@ export default function KycManagement() {
                         </Table>
 
                         {/* ================= PAGINATION ================= */}
-                        {totalPages > 1 && (
-                            <Pagination className="justify-content-end mt-3">
-                                <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
-                                <Pagination.Item active>{page}</Pagination.Item>
-                                <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
-                            </Pagination>
-                        )}
+                        <Pagination className="justify-content-end mt-3">
+                            <Pagination.Prev
+                                disabled={page === 1 || totalPages === 0}
+                                onClick={() => setPage(Math.max(page - 1, 1))}
+                            >
+                                Prev
+                            </Pagination.Prev>
+
+                            {[...Array(totalPages || 1)].map((_, idx) => {
+                                const pageNum = idx + 1;
+                                return (
+                                    <Pagination.Item
+                                        key={pageNum}
+                                        active={page === pageNum}
+                                        onClick={() => setPage(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </Pagination.Item>
+                                );
+                            })}
+
+                            <Pagination.Next
+                                disabled={page === totalPages || totalPages === 0}
+                                onClick={() => setPage(Math.min(page + 1, totalPages || 1))}
+                            >
+                                Next
+                            </Pagination.Next>
+                        </Pagination>
+
                     </>
                 )}
             </Card.Body>

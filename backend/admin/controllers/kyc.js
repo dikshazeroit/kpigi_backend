@@ -9,80 +9,64 @@ export const getAllUsersWithKyc = async (req, res) => {
     try {
         let { page = 1, limit = 10, search = "", status = "" } = req.query;
 
-        // parse & validate pagination
         page = Math.max(parseInt(page) || 1, 1);
-        limit = parseInt(limit) || 10;
-
-        // restrict limit between 1 and 10
-        if (limit < 1) limit = 1;
-        if (limit > 10) limit = 10;
-
+        limit = Math.min(Math.max(parseInt(limit) || 10, 1), 10);
         const skip = (page - 1) * limit;
 
-        // -----------------------------
-        // user search query
-        // -----------------------------
-        const userQuery = {};
+        
+        const kycQuery = {};
+        if (status) kycQuery.status = status;
 
+        // We need to search users via KYC
         if (search) {
-            userQuery.$or = [
-                { uc_full_name: { $regex: search, $options: "i" } },
-                { uc_email: { $regex: search, $options: "i" } },
-            ];
+            // find users whose name/email matches
+            const usersMatching = await User.find({
+                $or: [
+                    { uc_full_name: { $regex: search, $options: "i" } },
+                    { uc_email: { $regex: search, $options: "i" } },
+                ],
+            }).select("uc_uuid").lean();
+
+            const userUuids = usersMatching.map(u => u.uc_uuid);
+            kycQuery.k_fk_uc_uuid = { $in: userUuids };
         }
 
-        // total users count (after search)
-        const totalUsers = await User.countDocuments(userQuery);
+        // Fetch KYC records with pagination
+        const totalKycs = await Kyc.countDocuments(kycQuery);
 
-        if (!totalUsers) {
+        if (!totalKycs) {
             return res.status(200).json({
                 success: true,
                 count: 0,
                 data: [],
-                pagination: {
-                    total: 0,
-                    page,
-                    limit,
-                    totalPages: 0,
-                },
+                pagination: { total: 0, page, limit, totalPages: 0 },
             });
-        }
-
-        const users = await User.find(userQuery)
-            .select(
-                "uc_uuid uc_full_name uc_email uc_role uc_login_type uc_registeration_type uc_card_verified uc_profile_photo"
-            )
-            .skip(skip)
-            .limit(limit)
-            .lean();
-
-       
-        const userUuids = users.map((u) => u.uc_uuid);
-
-        const kycQuery = {
-            k_fk_uc_uuid: { $in: userUuids },
-        };
-
-        if (status) {
-            kycQuery.status = status; 
         }
 
         const kycs = await Kyc.find(kycQuery)
             .select(
                 "kyc_uuid k_fk_uc_uuid fullName dateOfBirth address idType idImageName status createdAt"
             )
+            .skip(skip)
+            .limit(limit)
             .lean();
 
-        // map kyc by user uuid
-        const kycMap = {};
-        kycs.forEach((k) => {
-            kycMap[k.k_fk_uc_uuid] = k;
-        });
+        // Fetch user details for these KYC records
+        const userUuids = kycs.map(k => k.k_fk_uc_uuid);
+        const users = await User.find({ uc_uuid: { $in: userUuids } })
+            .select(
+                "uc_uuid uc_full_name uc_email uc_role uc_login_type uc_registeration_type uc_card_verified uc_profile_photo"
+            )
+            .lean();
 
-       
-        const response = users.map((u) => ({
-            ...u,
-            kyc: kycMap[u.uc_uuid] || null,
+        // Map users by uuid
+        const userMap = {};
+        users.forEach(u => { userMap[u.uc_uuid] = u; });
+
+        // Combine KYC + user
+        const response = kycs.map(k => ({
+            ...userMap[k.k_fk_uc_uuid],
+            kyc: k,
         }));
 
         return res.status(200).json({
@@ -90,18 +74,15 @@ export const getAllUsersWithKyc = async (req, res) => {
             count: response.length,
             data: response,
             pagination: {
-                total: totalUsers,
+                total: totalKycs,
                 page,
                 limit,
-                totalPages: Math.ceil(totalUsers / limit),
+                totalPages: Math.ceil(totalKycs / limit),
             },
         });
     } catch (error) {
         console.error("getAllUsersWithKyc error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
@@ -120,7 +101,7 @@ export const approveKyc = async (req, res) => {
 
         console.log("Received kyc_uuid:", kyc_uuid);
 
-        
+
         const kyc = await Kyc.findOneAndUpdate(
             { kyc_uuid: kyc_uuid.trim() },
             { status: "VERIFIED", approvedAt: new Date() },
