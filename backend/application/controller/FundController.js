@@ -31,6 +31,7 @@ import NotificationModel from "../model/NotificationModel.js";
 import newModelObj from "../model/CommonModel.js";
 import DonationModel from "../model/DonationModel.js";
 import CategoryModel from "../model/CategoryModel.js";
+import KycModel from "../model/KycModel.js";
 
 let fundObj = {};
 
@@ -386,14 +387,11 @@ fundObj.getFundDetails = async function (req, res) {
       );
     }
 
-    // 2️⃣ Category fetch (UUID based)
+    // 2️⃣ Category fetch
     let categoryName = "";
     if (fund.f_category_id) {
       const category = await CategoryModel.findOne(
-        {
-          c_uuid: fund.f_category_id,
-          c_is_deleted: false,
-        },
+        { c_uuid: fund.f_category_id, c_is_deleted: false },
         { c_name: 1 }
       ).lean();
 
@@ -414,7 +412,13 @@ fundObj.getFundDetails = async function (req, res) {
       }
     ).lean();
 
-    // 4️⃣ Merge (FLAT RESPONSE)
+    // 4️⃣ Creator KYC fetch (IMPORTANT)
+    const creatorKyc = await KycModel.findOne(
+      { k_fk_uc_uuid: fund.f_fk_uc_uuid },
+      { status: 1, _id: 0 }
+    ).lean();
+
+    // 5️⃣ Merge response (FLAT)
     const responsePayload = {
       ...fund,
 
@@ -429,6 +433,9 @@ fundObj.getFundDetails = async function (req, res) {
       creator_country_name: creator?.uc_country_name || "",
       creator_profile_photo: creator?.uc_profile_photo || "",
       creator_bio: creator?.uc_bio || "",
+
+      // ✅ Creator KYC status
+      creator_kyc_status: creatorKyc?.status || "NOT_STARTED",
     };
 
     return commonHelper.successHandler(res, {
@@ -436,8 +443,10 @@ fundObj.getFundDetails = async function (req, res) {
       message: "Fund details fetched.",
       payload: responsePayload,
     });
+
   } catch (error) {
     console.error("❌ getFundDetails Error:", error);
+
     return commonHelper.errorHandler(
       res,
       {

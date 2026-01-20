@@ -40,6 +40,7 @@ let userObj = {};
  * @returns {void}
  * @developer Sangeeta
  */
+
 userObj.getUserProfile = async function (req, res) {
   try {
     const userId = await appHelper.getUUIDByToken(req);
@@ -56,7 +57,10 @@ userObj.getUserProfile = async function (req, res) {
       );
     }
 
-    const user = await userModel.findOne({ uc_uuid: userId, uc_deleted: "0" }).lean();
+    // 1️⃣ Get user
+    const user = await userModel
+      .findOne({ uc_uuid: userId, uc_deleted: "0" })
+      .lean();
 
     if (!user) {
       return commonHelper.errorHandler(
@@ -70,6 +74,17 @@ userObj.getUserProfile = async function (req, res) {
       );
     }
 
+    // 2️⃣ Get KYC status
+    const kyc = await KycModel.findOne(
+      { k_fk_uc_uuid: userId },
+      { status: 1, rejectionReason: 1 }
+    ).lean();
+
+    // 3️⃣ Attach KYC info
+    user.kyc_status = kyc?.status || "NOT_STARTED";
+    user.kyc_rejection_reason = kyc?.rejectionReason || null;
+
+    // 4️⃣ Success response
     return commonHelper.successHandler(
       res,
       {
@@ -93,6 +108,7 @@ userObj.getUserProfile = async function (req, res) {
     );
   }
 };
+
 /**
  *  Update the user's current latitude and longitude
  *
@@ -1050,15 +1066,25 @@ userObj.submitKyc = async function (req, res) {
       }, 200);
     }
 
-    // 🔁 Prevent duplicate KYC
+    // 🔍 Check existing KYC
     const existingKyc = await KycModel.findOne({ k_fk_uc_uuid: userUuid });
+
     if (existingKyc) {
-      return commonHelper.errorHandler(res, {
-        status: false,
-        message: "KYC already submitted.",
-      }, 200);
+      // ❌ Block if pending or verified
+      if (["PENDING", "VERIFIED"].includes(existingKyc.status)) {
+        return commonHelper.errorHandler(res, {
+          status: false,
+          message: `KYC is already ${existingKyc.status}.`,
+        }, 200);
+      }
+
+      // ✅ If rejected → delete old record
+      if (existingKyc.status === "REJECTED") {
+        await KycModel.deleteOne({ _id: existingKyc._id });
+      }
     }
 
+    // 📁 Upload ID image
     const file = req.files.idImage[0];
     const ext = path.extname(file.originalname).toLowerCase();
     const fileName = `${Date.now()}${ext}`.replace(/ /g, "_");
@@ -1071,14 +1097,15 @@ userObj.submitKyc = async function (req, res) {
       uploadFolder: process.env.AWS_USER_FILE_FOLDER,
     });
 
-    // ✅ Save with auto-generated kyc_uuid
+    // ✅ Create new KYC
     const kyc = await KycModel.create({
       k_fk_uc_uuid: userUuid,
       fullName,
       dateOfBirth,
       address,
       idType,
-      idImageName: fileName
+      idImageName: fileName,
+      status: "PENDING"
     });
 
     return commonHelper.successHandler(res, {
@@ -1088,7 +1115,7 @@ userObj.submitKyc = async function (req, res) {
         kyc_uuid: kyc.kyc_uuid,
         kycStatus: kyc.status
       },
-    });
+    }, 200);
 
   } catch (error) {
     console.error("❌ submitKyc Error:", error);
@@ -1099,6 +1126,7 @@ userObj.submitKyc = async function (req, res) {
     }, 200);
   }
 };
+
 
 
 export default userObj;
