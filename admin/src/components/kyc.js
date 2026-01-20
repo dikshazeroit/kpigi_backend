@@ -75,12 +75,18 @@ export default function KycManagement() {
 
     const statusBadge = (status) => {
         switch (status) {
-            case "NOT_STARTED": return <Badge bg="secondary">Not Started</Badge>;
-            case "PENDING": return <Badge bg="warning">Pending</Badge>;
-            case "VERIFIED": return <Badge bg="success">Verified</Badge>;
-            case "PAUSED": return <Badge bg="secondary">Paused</Badge>;
-            case "REJECTED": return <Badge bg="danger">Rejected</Badge>;
-            default: return "-";
+            case "NOT_STARTED":
+                return <Badge bg="secondary">Not Started</Badge>;
+            case "PENDING":
+                return <Badge bg="warning">Pending</Badge>;
+            case "VERIFIED":
+                return <Badge bg="success">Verified</Badge>;
+            case "PAUSED":
+                return <Badge bg="secondary">Paused</Badge>;
+            case "REJECTED":
+                return <Badge bg="danger">Rejected</Badge>;
+            default:
+                return <Badge bg="secondary">NOT STARTED</Badge>;
         }
     };
 
@@ -327,7 +333,7 @@ export default function KycManagement() {
 
 
                                                 {/* Status */}
-                                                <td>{statusBadge(kyc.status)}</td>
+                                                <td>{statusBadge(kyc?.status || "NOT_STARTED")}</td>
 
                                                 {/* Date */}
                                                 <td>
