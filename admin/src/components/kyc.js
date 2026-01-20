@@ -33,6 +33,7 @@ const defaultDocImg = "https://via.placeholder.com/200x150?text=Document+Not+Fou
 
 export default function KycManagement() {
     const [kycList, setKycList] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("ALL");
     const [page, setPage] = useState(1);
@@ -43,50 +44,39 @@ export default function KycManagement() {
     const [reason, setReason] = useState("");
     const [actionType, setActionType] = useState("");
 
-    // Fetch KYC data from API
+
     useEffect(() => {
-        const fetchKycData = async () => {
+        const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await getAllUsersWithKyc();
-                console.log("KYC Data:", response.data);
-                setKycList(response.data || []);
-            } catch (error) {
-                console.error("Failed to fetch KYC data:", error);
+                const res = await getAllUsersWithKyc(
+                    page,
+                    ITEMS_PER_PAGE,
+                    search,
+                    filter === "ALL" ? "" : filter
+                );
+
+                console.log("API Response:", res);
+
+                setKycList(res.data || []);
+                setTotalItems(res.pagination?.total || 0);
+            } catch (err) {
+                console.error("Fetch error:", err);
                 Swal.fire("Error", "Failed to fetch KYC data", "error");
             } finally {
                 setLoading(false);
             }
         };
-        fetchKycData();
-    }, []);
 
-    // Filter + search
-    const filteredData = Array.isArray(kycList)
-        ? kycList.filter((item) => {
-            const kyc = item.kyc || {};
-            const matchesSearch =
-                (item.uc_full_name || "")
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
-                (item.uc_email || "").toLowerCase().includes(search.toLowerCase()) ||
-                (kyc.idType || "").toLowerCase().includes(search.toLowerCase());
+        fetchData();
+    }, [page, search, filter]);
 
-            const matchesFilter =
-                filter === "ALL" ? true : (kyc.status || "") === filter;
-
-            return matchesSearch && matchesFilter;
-        })
-        : [];
-
-    const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-    const paginatedData = filteredData.slice(
-        (page - 1) * ITEMS_PER_PAGE,
-        page * ITEMS_PER_PAGE
-    );
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
     const statusBadge = (status) => {
         switch (status) {
+            case "NOT_STARTED":
+                return <Badge bg="secondary">Not Started</Badge>;
             case "PENDING":
                 return <Badge bg="warning">Pending</Badge>;
             case "VERIFIED":
@@ -96,7 +86,7 @@ export default function KycManagement() {
             case "REJECTED":
                 return <Badge bg="danger">Rejected</Badge>;
             default:
-                return status;
+                return <Badge bg="secondary">NOT STARTED</Badge>;
         }
     };
 
@@ -219,11 +209,13 @@ export default function KycManagement() {
                                 }}
                             >
                                 <option value="ALL">All</option>
+                                <option value="NOT_STARTED">Not Started</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="VERIFIED">Verified</option>
                                 <option value="PAUSED">Paused</option>
                                 <option value="REJECTED">Rejected</option>
                             </Form.Select>
+
                         </Form.Group>
                     </Col>
                     <Col md={8} className="d-flex justify-content-end">
@@ -265,14 +257,14 @@ export default function KycManagement() {
                             </thead>
 
                             <tbody>
-                                {paginatedData.length === 0 ? (
+                                {kycList.length === 0 ? (
                                     <tr>
                                         <td colSpan="9" className="text-center text-muted">
                                             No records found
                                         </td>
                                     </tr>
                                 ) : (
-                                    paginatedData.map((u, i) => {
+                                    kycList.map((u, i) => {
                                         const kyc = u.kyc || {};
 
                                         return (
@@ -341,7 +333,7 @@ export default function KycManagement() {
 
 
                                                 {/* Status */}
-                                                <td>{statusBadge(kyc.status)}</td>
+                                                <td>{statusBadge(kyc?.status || "NOT_STARTED")}</td>
 
                                                 {/* Date */}
                                                 <td>
@@ -408,40 +400,14 @@ export default function KycManagement() {
                             </tbody>
                         </Table>
 
-                        {/* Pagination */}
-                        {totalPages > 0 && (
-                            <div className="d-flex justify-content-end mt-3">
-
-                                {totalPages >= 1 && (
-                                    <Pagination className="justify-content-end mt-3">
-                                        <Pagination.Prev
-                                            disabled={page === 1}
-                                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                                        >
-                                            Prev
-                                        </Pagination.Prev>
-
-                                        {[...Array(totalPages)].map((_, i) => (
-                                            <Pagination.Item
-                                                key={i + 1}
-                                                active={i + 1 === page}
-                                                onClick={() => setPage(i + 1)}
-                                            >
-                                                {i + 1}
-                                            </Pagination.Item>
-                                        ))}
-
-                                        <Pagination.Next
-                                            disabled={page === totalPages}
-                                            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                                        >
-                                            Next
-                                        </Pagination.Next>
-                                    </Pagination>
-                                )}
-                            </div>
+                        {/* ================= PAGINATION ================= */}
+                        {totalPages > 1 && (
+                            <Pagination className="justify-content-end mt-3">
+                                <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
+                                <Pagination.Item active>{page}</Pagination.Item>
+                                <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
+                            </Pagination>
                         )}
-
                     </>
                 )}
             </Card.Body>

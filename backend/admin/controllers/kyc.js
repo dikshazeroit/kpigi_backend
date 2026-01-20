@@ -5,38 +5,81 @@ import NotificationModel from "../../application/model/NotificationModel.js";
 import UserDevice from "../../application/model/UserDeviceModel.js";
 import UsersCredentialsModel from "../../application/model/UserModel.js";
 
-
-
 export const getAllUsersWithKyc = async (req, res) => {
     try {
-        // get all users
-        const users = await User.find({})
-            .select(
-                "uc_uuid uc_full_name uc_email uc_role uc_login_type uc_registeration_type uc_card_verified uc_profile_photo"
-            )
-            .lean();
+        let { page = 1, limit = 10, search = "", status = "" } = req.query;
 
-        if (!users.length) {
+        // parse & validate pagination
+        page = Math.max(parseInt(page) || 1, 1);
+        limit = parseInt(limit) || 10;
+
+        // restrict limit between 1 and 10
+        if (limit < 1) limit = 1;
+        if (limit > 10) limit = 10;
+
+        const skip = (page - 1) * limit;
+
+        // -----------------------------
+        // user search query
+        // -----------------------------
+        const userQuery = {};
+
+        if (search) {
+            userQuery.$or = [
+                { uc_full_name: { $regex: search, $options: "i" } },
+                { uc_email: { $regex: search, $options: "i" } },
+            ];
+        }
+
+        // total users count (after search)
+        const totalUsers = await User.countDocuments(userQuery);
+
+        if (!totalUsers) {
             return res.status(200).json({
                 success: true,
+                count: 0,
                 data: [],
+                pagination: {
+                    total: 0,
+                    page,
+                    limit,
+                    totalPages: 0,
+                },
             });
         }
 
-        // get all kyc
-        const kycs = await Kyc.find({})
+        const users = await User.find(userQuery)
+            .select(
+                "uc_uuid uc_full_name uc_email uc_role uc_login_type uc_registeration_type uc_card_verified uc_profile_photo"
+            )
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+       
+        const userUuids = users.map((u) => u.uc_uuid);
+
+        const kycQuery = {
+            k_fk_uc_uuid: { $in: userUuids },
+        };
+
+        if (status) {
+            kycQuery.status = status; 
+        }
+
+        const kycs = await Kyc.find(kycQuery)
             .select(
                 "kyc_uuid k_fk_uc_uuid fullName dateOfBirth address idType idImageName status createdAt"
             )
             .lean();
 
-        //  map kyc by user uuid
+        // map kyc by user uuid
         const kycMap = {};
         kycs.forEach((k) => {
             kycMap[k.k_fk_uc_uuid] = k;
         });
 
-        // merge user + kyc
+       
         const response = users.map((u) => ({
             ...u,
             kyc: kycMap[u.uc_uuid] || null,
@@ -46,6 +89,12 @@ export const getAllUsersWithKyc = async (req, res) => {
             success: true,
             count: response.length,
             data: response,
+            pagination: {
+                total: totalUsers,
+                page,
+                limit,
+                totalPages: Math.ceil(totalUsers / limit),
+            },
         });
     } catch (error) {
         console.error("getAllUsersWithKyc error:", error);
@@ -55,8 +104,6 @@ export const getAllUsersWithKyc = async (req, res) => {
         });
     }
 };
-
-
 
 
 
@@ -73,10 +120,10 @@ export const approveKyc = async (req, res) => {
 
         console.log("Received kyc_uuid:", kyc_uuid);
 
-        //  Update KYC status
+        
         const kyc = await Kyc.findOneAndUpdate(
             { kyc_uuid: kyc_uuid.trim() },
-            { status: "APPROVED", approvedAt: new Date() },
+            { status: "VERIFIED", approvedAt: new Date() },
             { new: true }
         );
 
@@ -87,7 +134,7 @@ export const approveKyc = async (req, res) => {
             });
         }
 
-        // Fetch user email
+
         let userEmail = null;
         const userId = kyc.k_fk_uc_uuid;
         if (userId) {
@@ -95,25 +142,28 @@ export const approveKyc = async (req, res) => {
             if (user?.uc_email) userEmail = user.uc_email;
         }
 
-        
         // Send email
         if (userEmail) {
             try {
+                const approvalDate = kyc.approvedAt
+                    ? new Date(kyc.approvedAt).toLocaleString()
+                    : new Date().toLocaleString();
+
                 await sendMail(
                     userEmail,
-                    "Your KYC has been approved",
+                    "Your KYC has been verified",
                     `Hello ${kyc.fullName || "there"},
 
-Great news! Your KYC has been approved.
+Great news! Your KYC has been verified.
 
-Approval Date: ${approvalDate}
+Verification Date: ${approvalDate}
 
 You can now continue using all features.
 
 Team KPIGI`
                 );
             } catch (emailError) {
-                console.error("Failed to send KYC approval email:", emailError);
+                console.error("Failed to send KYC verification email:", emailError);
             }
         }
 
@@ -128,32 +178,43 @@ Team KPIGI`
                 const tokens = receiverDevices.map(d => d.ud_device_fcmToken).filter(Boolean);
 
                 if (tokens.length > 0) {
-                    const title = "KYC Approved";
-                    const body = "Your KYC has been approved successfully.";
+                    const title = "KYC Verified";
+                    const body = "Your KYC has been verified successfully.";
 
                     await NotificationModel.create({
                         n_uuid: uuidv4(),
                         n_fk_uc_uuid: userId,
                         n_title: title,
                         n_body: body,
-                        n_payload: { type: "KYC_APPROVED", kycId: kyc.kyc_uuid },
+                        n_payload: { type: "KYC_VERIFIED", kycId: kyc.kyc_uuid },
                         n_channel: "push",
                     });
 
-                    await newModelObj.sendNotificationToUser({ userId, title, body, tokens, data: { type: "KYC_APPROVED", kycId: kyc.kyc_uuid } });
+                    await newModelObj.sendNotificationToUser({
+                        userId,
+                        title,
+                        body,
+                        tokens,
+                        data: { type: "KYC_VERIFIED", kycId: kyc.kyc_uuid }
+                    });
                 }
             } catch (pushErr) {
                 console.error("Push notification error:", pushErr);
             }
         }
 
-        return res.json({ status: true, message: "KYC approved successfully", data: kyc });
+        return res.json({
+            status: true,
+            message: "KYC verified successfully",
+            data: kyc
+        });
 
     } catch (err) {
         console.error("Approve KYC error:", err);
         return res.status(500).json({ status: false, message: err.message });
     }
 };
+
 
 
 
