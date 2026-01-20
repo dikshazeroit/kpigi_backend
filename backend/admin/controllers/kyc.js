@@ -95,15 +95,10 @@ export const approveKyc = async (req, res) => {
             if (user?.uc_email) userEmail = user.uc_email;
         }
 
+        
         // Send email
         if (userEmail) {
             try {
-                const approvalDate = new Date(kyc.approvedAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "2-digit",
-                });
-
                 await sendMail(
                     userEmail,
                     "Your KYC has been approved",
@@ -159,7 +154,9 @@ Team KPIGI`
         return res.status(500).json({ status: false, message: err.message });
     }
 };
-   
+
+
+
 export const rejectKYC = async (req, res) => {
     try {
         let { kyc_uuid, reason } = req.body;
