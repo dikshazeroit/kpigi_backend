@@ -1061,14 +1061,14 @@ userObj.submitKyc = async function (req, res) {
 
     const file = req.files.idImage[0];
     const ext = path.extname(file.originalname).toLowerCase();
-    const fileName = `kyc-${userUuid}-${Date.now()}${ext}`.replace(/ /g, "_");
+    const fileName = `${Date.now()}${ext}`.replace(/ /g, "_");
 
     await commonHelper.uploadFile({
       fileName,
       chunks: [file.buffer],
       encoding: file.encoding,
       contentType: file.mimetype,
-      uploadFolder: process.env.AWS_KYC_FILE_FOLDER,
+      uploadFolder: process.env.AWS_USER_FILE_FOLDER,
     });
 
     // ✅ Save with auto-generated kyc_uuid
