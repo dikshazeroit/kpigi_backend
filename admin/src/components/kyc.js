@@ -182,6 +182,7 @@ export default function KycManagement() {
         } finally {
             console.log("submitReason finished, hiding modal and stopping loading");
             setShowReasonModal(false);
+            setSelectedUser(null); 
             setLoading(false);
         }
     };
@@ -569,7 +570,7 @@ export default function KycManagement() {
                         variant="secondary"
                         onClick={() => {
                             setShowReasonModal(false);
-                            setSelectedUser(null);  
+                            setSelectedUser(null);
                         }}
                     >
                         Cancel
