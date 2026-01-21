@@ -284,7 +284,7 @@ export default function Campaign() {
                     <th>Requester</th>
                     <th>Status</th>
                     <th>Raised / Goal</th>
-                    <th>Date</th>
+                    <th>Deadline</th>
                     <th>Verification</th>
                     <th>Story</th>
                     <th>Media</th>

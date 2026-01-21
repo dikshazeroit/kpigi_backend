@@ -76,7 +76,7 @@ export default function DonationAdminPanel() {
     useEffect(() => {
         fetchDonations(currentPage);
     }, [currentPage, fetchDonations]);
-    
+
     // ================= EXPORT CSV =================
     const exportCSV = () => {
         if (!donations.length) return;
@@ -186,6 +186,7 @@ export default function DonationAdminPanel() {
                             <Table bordered hover responsive>
                                 <thead>
                                     <tr>
+                                        <th>Sr.No</th>
                                         <th>Donor</th>
                                         <th>Fundraiser</th>
                                         <th>Amount</th>
