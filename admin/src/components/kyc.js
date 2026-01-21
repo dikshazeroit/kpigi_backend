@@ -23,6 +23,8 @@ import {
 import Swal from "sweetalert2";
 import { Image_Url } from "../api/ApiClient";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+
+
 import { getAllUsersWithKyc, approveKyc, rejectKYC } from "../api/ApiServices";
 
 const ITEMS_PER_PAGE = 10;
@@ -42,6 +44,8 @@ export default function KycManagement() {
     const [showReasonModal, setShowReasonModal] = useState(false);
     const [reason, setReason] = useState("");
     const [actionType, setActionType] = useState("");
+    
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -486,21 +490,49 @@ export default function KycManagement() {
                                     <h6 className="text-muted mb-3">Document Preview</h6>
                                     {selectedUser?.kyc?.idImageName ? (
                                         <div className="text-center">
-                                            <img
-                                                src={
-                                                    selectedUser?.kyc?.idImageName
-                                                        ? `${Image_Url.replace(/\/$/, "")}/${selectedUser.kyc.idImageName}`
-                                                        : defaultDocImg
-                                                }
-                                                alt={selectedUser?.kyc?.idType || "Document"}
-                                                className="img-fluid border rounded"
-                                                style={{ maxHeight: "300px", maxWidth: "100%" }}
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = defaultDocImg;
+                                            <div
+                                                className="border rounded overflow-hidden position-relative"
+                                                style={{
+                                                    maxHeight: "300px",
+                                                    cursor: "pointer"
                                                 }}
-                                            />
-                                            <p className="text-muted mt-2">Click and drag to view full size</p>
+                                                onClick={() => {
+                                                    if (selectedUser?.kyc?.idImageName) {
+                                                        const imageUrl = `${Image_Url.replace(/\/$/, "")}/${selectedUser.kyc.idImageName}`;
+                                                        window.open(imageUrl, '_blank');
+                                                    }
+                                                }}
+                                                title="Click to view full size"
+                                            >
+                                                <img
+                                                    src={
+                                                        selectedUser?.kyc?.idImageName
+                                                            ? `${Image_Url.replace(/\/$/, "")}/${selectedUser.kyc.idImageName}`
+                                                            : defaultDocImg
+                                                    }
+                                                    alt={selectedUser?.kyc?.idType || "Document"}
+                                                    className="img-fluid"
+                                                    style={{
+                                                        maxHeight: "300px",
+                                                        width: "auto"
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = defaultDocImg;
+                                                    }}
+                                                />
+                                                <div className="position-absolute top-0 end-0 m-2">
+                                                    <span className="badge bg-dark bg-opacity-75">
+                                                        <i className="fas fa-expand"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="text-muted mt-2">
+                                                <small>
+                                                    <i className="fas fa-mouse-pointer me-1"></i>
+                                                    Click on image to view in full size
+                                                </small>
+                                            </p>
                                         </div>
                                     ) : (
                                         <div className="text-center py-4 border rounded bg-light">
@@ -514,7 +546,7 @@ export default function KycManagement() {
                     )}
                 </Modal.Body>
                 <Modal.Footer className="border-top">
-                    <Button variant="light" onClick={() => setSelectedUser(null)}>
+                    <Button variant="primary" onClick={() => setSelectedUser(null)}>
                         Close
                     </Button>
                 </Modal.Footer>

@@ -509,35 +509,36 @@ export default function Campaign() {
               </Table>
 
               {/* PAGINATION */}
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <Pagination>
-                    <Pagination.Prev
-                      onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                    >
-                      Prev
-                    </Pagination.Prev>
+              {totalPages >= 1 && (
+                <div className="d-flex justify-content-end mt-4">       
+                           <Pagination>
+                  <Pagination.Prev
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                  >
+                    Prev
+                  </Pagination.Prev>
 
-                    {Array.from({ length: Math.max(totalPages, 1) }, (_, i) => i + 1).map(num => (
-                      <Pagination.Item
-                        key={num}
-                        active={num === page}
-                        onClick={() => setPage(num)}
-                      >
-                        {num}
-                      </Pagination.Item>
-                    ))}
-
-                    <Pagination.Next
-                      onClick={() => setPage(prev => Math.min(prev + 1, Math.max(totalPages, 1)))}
-                      disabled={page === Math.max(totalPages, 1)}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                    <Pagination.Item
+                      key={num}
+                      active={num === page}
+                      onClick={() => setPage(num)}
                     >
-                      Next
-                    </Pagination.Next>
-                  </Pagination>
+                      {num}
+                    </Pagination.Item>
+                  ))}
+
+                  <Pagination.Next
+                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Pagination.Next>
+                </Pagination>
                 </div>
               )}
+
             </>
           )}
         </Card.Body>

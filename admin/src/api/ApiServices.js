@@ -117,13 +117,35 @@ export const editFundraiserAPI = async (payload) => {
 // Get donations list
 export const getAllDonations = async (params = {}) => {
   try {
-    const response = await apiClient.get("private/donations-list", { params });
+
+    const cleanParams = {};
+    for (const key in params) {
+      if (params[key] !== "" && params[key] != null) {
+        cleanParams[key] = params[key];
+      }
+    }
+    
+    const response = await apiClient.get("private/donations-list", {
+      params: cleanParams,
+      timeout: 60000,
+    });
+    
     return response.data;
+    
   } catch (error) {
-    console.error("Error fetching donations:", error);
-    throw error;
+    if (error.code === 'ECONNABORTED') {
+      throw new Error("Request timeout. Please try again.");
+    } else if (error.response?.status === 401) {
+      throw new Error("Authentication failed.");
+    } else if (!error.response) {
+      throw new Error("Network error. Check your connection.");
+    } else {
+      throw new Error("Failed to fetch donations.");
+    }
   }
 };
+
+
 
 // Mark Safe
 export const markDonationSafe = async ({ d_uuid }) => {
