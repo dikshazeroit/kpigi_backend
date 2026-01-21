@@ -39,6 +39,8 @@ const Category = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [saving, setSaving] = useState(false);
+
 
   const [form, setForm] = useState({
     c_name: "",
@@ -83,7 +85,7 @@ const Category = () => {
   const currentCategories = filtered.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
-  // Handle add/update category
+
   const handleSubmit = async () => {
     if (!form.c_name.trim()) {
       return Swal.fire({
@@ -92,6 +94,9 @@ const Category = () => {
         text: "Please enter a category name.",
       });
     }
+
+    if (saving) return;
+    setSaving(true);
 
     try {
       if (editData) {
@@ -125,8 +130,11 @@ const Category = () => {
         title: "Failed",
         text: "Unable to save category.",
       });
+    } finally {
+      setSaving(false);
     }
   };
+
 
   // Toggle category status
   const handleStatus = async (cat) => {
@@ -372,11 +380,26 @@ const Category = () => {
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowModal(false)}>
+          {/* Cancel Button */}
+          <Button
+            variant="primary"
+            onClick={() => {
+              setShowModal(false);
+              setEditData(null);    
+              setForm({ c_name: "", c_description: "" });
+              setSaving(false);    
+            }}
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit}>
-            Save Category
+
+          {/* Save Button */}
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Category"}
           </Button>
         </Modal.Footer>
       </Modal>

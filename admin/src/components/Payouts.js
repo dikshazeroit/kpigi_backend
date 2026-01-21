@@ -263,33 +263,30 @@ const WithdrawalManagement = () => {
             </Table>
 
             {/* ================= PAGINATION ================= */}
-            {totalPages >= 1 && (
-              <Pagination className="justify-content-end mt-3">
-                <Pagination.Prev
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                >
-                  Prev
-                </Pagination.Prev>
-
-                {[...Array(totalPages)].map((_, i) => (
-                  <Pagination.Item
-                    key={i + 1}
-                    active={i + 1 === currentPage}
-                    onClick={() => setCurrentPage(i + 1)}
+            {/* Pagination */}
+            {totalPages > 0 && (
+              <div className="d-flex justify-content-end mt-3">
+                <Pagination className="justify-content-end mt-3">
+                  <Pagination.Prev
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   >
-                    {i + 1}
-                  </Pagination.Item>
-                ))}
+                    Prev
+                  </Pagination.Prev>
 
-                <Pagination.Next
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                >
-                  Next
-                </Pagination.Next>
-              </Pagination>
+                  {/* Show only the current page */}
+                  <Pagination.Item active>{currentPage}</Pagination.Item>
+
+                  <Pagination.Next
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  >
+                    Next
+                  </Pagination.Next>
+                </Pagination>
+              </div>
             )}
+
           </>
         )}
       </Card>
