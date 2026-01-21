@@ -17,8 +17,8 @@ import {
     faEye,
     faUserCheck,
     faUserTimes,
-    faPause,
     faPlay,
+    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { Image_Url } from "../api/ApiClient";
@@ -77,12 +77,8 @@ export default function KycManagement() {
                 return <Badge bg="warning">Pending</Badge>;
             case "VERIFIED":
                 return <Badge bg="success">Verified</Badge>;
-            case "PAUSED":
-                return <Badge bg="secondary">Paused</Badge>;
             case "REJECTED":
                 return <Badge bg="danger">Rejected</Badge>;
-            // default:
-            //     return <Badge bg="secondary">NOT STARTED</Badge>;
         }
     };
 
@@ -108,7 +104,6 @@ export default function KycManagement() {
             const newStatus = res?.data?.status || "VERIFIED";
             updateStatus(user.uc_uuid, newStatus);
 
-            console.log("KYC approved:", res.data);
             Swal.fire("VERIFIED", "KYC verified successfully", "success");
         } catch (error) {
             console.error("KYC VERIFIED failed:", error);
@@ -128,7 +123,6 @@ export default function KycManagement() {
     const submitReason = async () => {
         if (actionType === "REJECT" && !reason.trim()) {
             Swal.fire("Warning", "Please enter a reason", "warning");
-            console.log("Rejected action aborted: reason empty");
             return;
         }
 
@@ -136,10 +130,8 @@ export default function KycManagement() {
 
         try {
             if (actionType === "REJECT") {
-                
                 await rejectKYC(selectedUser.kyc?.kyc_uuid, reason);
 
-            
                 setKycList((prev) =>
                     prev.map((u) =>
                         u.uc_uuid === selectedUser.uc_uuid
@@ -151,23 +143,7 @@ export default function KycManagement() {
                 Swal.fire("Rejected", "KYC rejected successfully", "success");
             }
 
-            if (actionType === "PAUSE") {
-                console.log("Pausing KYC for user:", selectedUser.uc_uuid);
-
-                setKycList((prev) =>
-                    prev.map((u) =>
-                        u.uc_uuid === selectedUser.uc_uuid
-                            ? { ...u, kyc: { ...u.kyc, status: "PAUSED" } }
-                            : u
-                    )
-                );
-
-                Swal.fire("Paused", "KYC paused successfully", "success");
-            }
-
             if (actionType === "RESUME") {
-                console.log("Resuming KYC for user:", selectedUser.uc_uuid);
-
                 setKycList((prev) =>
                     prev.map((u) =>
                         u.uc_uuid === selectedUser.uc_uuid
@@ -182,9 +158,6 @@ export default function KycManagement() {
             console.error("Action failed:", error);
             Swal.fire("Error", "Failed to complete action", "error");
         } finally {
-            console.log("submitReason finished, hiding modal and stopping loading");
-
-        
             setShowReasonModal(false);
             setSelectedUser(null);
             setReason("");
@@ -196,6 +169,16 @@ export default function KycManagement() {
     return (
         <Card border="light" className="shadow-sm p-3" style={{ marginBottom: "10px" }}>
             <Card.Body>
+                {/* ================= HEADER ================= */}
+                <Row className="mb-4 align-items-center">
+                    <Col>
+                        <h4 className="mb-0 d-flex align-items-center">
+                            <FontAwesomeIcon icon={faIdCard} className="me-2 text-primary" />
+                            KYC Management
+                        </h4>
+                    </Col>
+                </Row>
+
                 {/* SEARCH + FILTER */}
                 <Row className="mb-4 align-items-center" style={{ marginBottom: "10px" }}>
                     <Col md={4}>
@@ -211,7 +194,6 @@ export default function KycManagement() {
                                 <option value="NOT_STARTED">Not Started</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="VERIFIED">Verified</option>
-                                <option value="PAUSED">Paused</option>
                                 <option value="REJECTED">Rejected</option>
                             </Form.Select>
                         </Form.Group>
@@ -249,7 +231,7 @@ export default function KycManagement() {
                                     <th>Address</th>
                                     <th>Document</th>
                                     <th>Status</th>
-                                    <th>Date</th>
+                                    <th>Date of Birth</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -267,10 +249,8 @@ export default function KycManagement() {
 
                                         return (
                                             <tr key={u.uc_uuid}>
-                                                {/* Sr No */}
                                                 <td>{(page - 1) * ITEMS_PER_PAGE + i + 1}</td>
 
-                                                {/* Profile Image */}
                                                 <td className="text-center">
                                                     <img
                                                         src={u.uc_profile_photo ? Image_Url + u.uc_profile_photo : defaultProfileImg}
@@ -289,16 +269,12 @@ export default function KycManagement() {
                                                     />
                                                 </td>
 
-                                                {/* Name */}
                                                 <td>{u.uc_full_name}</td>
 
-                                                {/* Email */}
                                                 <td>{u.uc_email}</td>
 
-                                                {/* Address */}
                                                 <td>{kyc.address || "-"}</td>
 
-                                                {/* Document Image + Type */}
                                                 <td className="text-center">
                                                     {kyc.idImageName ? (
                                                         <>
@@ -329,17 +305,14 @@ export default function KycManagement() {
                                                     )}
                                                 </td>
 
-                                                {/* Status */}
                                                 <td>{statusBadge(kyc?.status || "NOT_STARTED")}</td>
 
-                                                {/* Date */}
                                                 <td>
                                                     {kyc.createdAt
-                                                        ? new Date(kyc.createdAt).toLocaleDateString()
+                                                        ? new Date(kyc.dateOfBirth).toLocaleDateString()
                                                         : "-"}
                                                 </td>
 
-                                                {/* Actions */}
                                                 <td>
                                                     <Button
                                                         size="sm"
@@ -380,15 +353,7 @@ export default function KycManagement() {
                                                         </Button>
                                                     )}
 
-                                                    {kyc.status === "VERIFIED" && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="warning"
-                                                            onClick={() => openReason(u, "PAUSE")}
-                                                        >
-                                                            <FontAwesomeIcon icon={faPause} />
-                                                        </Button>
-                                                    )}
+                                                    {/* Pause button removed for VERIFIED status */}
                                                 </td>
                                             </tr>
                                         );
@@ -397,7 +362,7 @@ export default function KycManagement() {
                             </tbody>
                         </Table>
 
-                        {/* ================= PAGINATION ================= */}
+                        {/* PAGINATION */}
                         <Pagination className="justify-content-end mt-3">
                             <Pagination.Prev
                                 disabled={page === 1 || totalPages === 0}
@@ -436,7 +401,6 @@ export default function KycManagement() {
                 onHide={() => setSelectedUser(null)}
                 centered
                 size="lg"
-
             >
                 <Modal.Header closeButton className="border-bottom">
                     <Modal.Title>KYC Details</Modal.Title>
@@ -448,7 +412,7 @@ export default function KycManagement() {
                                 <img
                                     src={
                                         selectedUser?.uc_profile_photo
-                                            ? `${Image_Url.replace(/\/$/, '')}/${selectedUser.uc_profile_photo}`
+                                            ? `${Image_Url.replace(/\/$/, "")}/${selectedUser.uc_profile_photo}`
                                             : defaultProfileImg
                                     }
                                     alt={selectedUser?.uc_full_name || "User"}
@@ -466,9 +430,7 @@ export default function KycManagement() {
 
                                 <h5 className="mb-1">{selectedUser.uc_full_name}</h5>
                                 <p className="text-muted mb-0">{selectedUser.uc_email}</p>
-                                <div className="mt-3">
-                                    {statusBadge(selectedUser.kyc?.status)}
-                                </div>
+                                <div className="mt-3">{statusBadge(selectedUser.kyc?.status)}</div>
                             </Col>
 
                             <Col md={8}>
@@ -507,10 +469,12 @@ export default function KycManagement() {
                                         </Col>
                                         <Col sm={6}>
                                             <div className="mb-2">
-                                                <small className="text-muted d-block">Submitted Date</small>
+                                                <small className="text-muted d-block">Date of Birth</small>
                                                 <strong>
-                                                    {selectedUser.kyc?.createdAt
-                                                        ? new Date(selectedUser.kyc.createdAt).toLocaleDateString('en-GB')
+                                                    {selectedUser.kyc?.dateOfBirth
+                                                        ? new Date(selectedUser.kyc.dateOfBirth).toLocaleDateString(
+                                                            "en-GB"
+                                                        )
                                                         : "-"}
                                                 </strong>
                                             </div>
@@ -525,7 +489,7 @@ export default function KycManagement() {
                                             <img
                                                 src={
                                                     selectedUser?.kyc?.idImageName
-                                                        ? `${Image_Url.replace(/\/$/, '')}/${selectedUser.kyc.idImageName}`
+                                                        ? `${Image_Url.replace(/\/$/, "")}/${selectedUser.kyc.idImageName}`
                                                         : defaultDocImg
                                                 }
                                                 alt={selectedUser?.kyc?.idType || "Document"}
@@ -536,9 +500,7 @@ export default function KycManagement() {
                                                     e.target.src = defaultDocImg;
                                                 }}
                                             />
-                                            <p className="text-muted mt-2">
-                                                Click and drag to view full size
-                                            </p>
+                                            <p className="text-muted mt-2">Click and drag to view full size</p>
                                         </div>
                                     ) : (
                                         <div className="text-center py-4 border rounded bg-light">
@@ -561,7 +523,7 @@ export default function KycManagement() {
             {/* REASON MODAL */}
             <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Enter Reason</Modal.Title>
+                    <Modal.Title>Enter reject Reason</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form.Control

@@ -159,7 +159,7 @@ const AppContentManagement = () => {
                 <FontAwesomeIcon icon={faUserShield} className="me-2" />
                 Privacy Policy
               </h6>
-              <Button size="sm" variant="dark" onClick={savePrivacy}>
+              <Button size="sm" variant="primary" onClick={savePrivacy}>
                 Save
               </Button>
             </Card.Header>
@@ -184,7 +184,7 @@ const AppContentManagement = () => {
                 <FontAwesomeIcon icon={faFileContract} className="me-2" />
                 Terms & Conditions
               </h6>
-              <Button size="sm" variant="dark" onClick={saveTerms}>
+              <Button size="sm" variant="primary" onClick={saveTerms}>
                 Save
               </Button>
             </Card.Header>
@@ -209,7 +209,7 @@ const AppContentManagement = () => {
                 <FontAwesomeIcon icon={faAddressBook} className="me-2" />
                 Contact Details
               </h6>
-              <Button size="sm" variant="dark" onClick={saveContact}>
+              <Button size="sm" variant="primary" onClick={saveContact}>
                 Save
               </Button>
             </Card.Header>

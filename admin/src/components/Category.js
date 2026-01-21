@@ -275,7 +275,7 @@ const Category = () => {
                       <td className="text-end">
                         <Button
                           size="sm"
-                          variant="outline-primary"
+                          variant="blue"
                           className="me-2"
                           onClick={() => {
                             setEditData(cat);
@@ -286,19 +286,20 @@ const Category = () => {
                             setShowModal(true);
                           }}
                         >
-                          <FontAwesomeIcon icon={faEdit} />
+                          <FontAwesomeIcon icon={faEdit} className="text-white" />
                         </Button>
 
                         {!cat.c_is_default && (
                           <Button
                             size="sm"
-                            variant="outline-danger"
+                            variant="danger"
                             onClick={() => handleDelete(cat)}
                           >
-                            <FontAwesomeIcon icon={faTrash} />
+                            <FontAwesomeIcon icon={faTrash} className="text-white" />
                           </Button>
                         )}
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
@@ -306,7 +307,7 @@ const Category = () => {
 
               {/* PAGINATION */}
               {totalPages >= 1 && (
-                   <div className="d-flex justify-content-end mt-3">
+                <div className="d-flex justify-content-end mt-3">
                   <Pagination>
                     <Pagination.Prev
                       disabled={currentPage === 1}
@@ -371,7 +372,7 @@ const Category = () => {
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="light" onClick={() => setShowModal(false)}>
+          <Button variant="primary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSubmit}>

@@ -266,7 +266,7 @@ const Faq = () => {
                                         <td className="text-end">
                                             <Button
                                                 size="sm"
-                                                variant="outline-primary"
+                                                variant="blue"
                                                 className="me-2"
                                                 onClick={() => {
                                                     setEditData(faq);
@@ -277,17 +277,18 @@ const Faq = () => {
                                                     setShowModal(true);
                                                 }}
                                             >
-                                                <FontAwesomeIcon icon={faEdit} />
+                                                <FontAwesomeIcon icon={faEdit} className="text-white" />
                                             </Button>
 
                                             <Button
                                                 size="sm"
-                                                variant="outline-danger"
+                                                variant="danger"
                                                 onClick={() => handleDelete(faq)}
                                             >
-                                                <FontAwesomeIcon icon={faTrash} />
+                                                <FontAwesomeIcon icon={faTrash} className="text-white" />
                                             </Button>
                                         </td>
+
                                     </tr>
                                 ))}
                             </tbody>
@@ -296,36 +297,27 @@ const Faq = () => {
                         {/* Pagination */}
                         {totalPages > 0 && (
                             <div className="d-flex justify-content-end mt-3">
+                                <Pagination className="justify-content-end mt-3">
+                                    <Pagination.Prev
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    >
+                                        Prev
+                                    </Pagination.Prev>
 
-                                {totalPages >= 1 && (
-                                    <Pagination className="justify-content-end mt-3">
-                                        <Pagination.Prev
-                                            disabled={currentPage === 1}
-                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        >
-                                            Prev
-                                        </Pagination.Prev>
+                                    {/* Show only the current page */}
+                                    <Pagination.Item active>{currentPage}</Pagination.Item>
 
-                                        {[...Array(totalPages)].map((_, i) => (
-                                            <Pagination.Item
-                                                key={i + 1}
-                                                active={i + 1 === currentPage}
-                                                onClick={() => setCurrentPage(i + 1)}
-                                            >
-                                                {i + 1}
-                                            </Pagination.Item>
-                                        ))}
-
-                                        <Pagination.Next
-                                            disabled={currentPage === totalPages}
-                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                        >
-                                            Next
-                                        </Pagination.Next>
-                                    </Pagination>
-                                )}
+                                    <Pagination.Next
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    >
+                                        Next
+                                    </Pagination.Next>
+                                </Pagination>
                             </div>
                         )}
+
                     </>
                 )}
             </Card.Body>
@@ -361,7 +353,7 @@ const Faq = () => {
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <Button variant="light" onClick={() => setShowModal(false)}>
+                    <Button variant="primary" onClick={() => setShowModal(false)}>
                         Cancel
                     </Button>
                     <Button variant="primary" onClick={handleSubmit}>

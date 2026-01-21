@@ -3,16 +3,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import {
-
   Nav,
   Image,
   Navbar,
   Dropdown,
   Container,
-
 } from "@themesberg/react-bootstrap";
 import { useHistory } from "react-router-dom";
-import Swal from "sweetalert2";
 
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
 import { Routes } from "../routes";
@@ -32,7 +29,9 @@ export default function TopNavbar() {
 
         // Use au_name and au_surname if available, fallback to admin.name if needed
         const fullName =
-          (admin.au_name || admin.name ? `${admin.au_name || ""} ${admin.au_surname || ""}`.trim() : "") || admin.name || "Admin";
+          (admin.au_name || admin.name
+            ? `${admin.au_name || ""} ${admin.au_surname || ""}`.trim()
+            : "") || admin.name || "Admin";
 
         setAdminName(fullName);
 
@@ -61,57 +60,34 @@ export default function TopNavbar() {
     };
 
     window.addEventListener("profile-updated", handleProfileUpdate);
-    return () => window.removeEventListener("profile-updated", handleProfileUpdate);
+    return () =>
+      window.removeEventListener("profile-updated", handleProfileUpdate);
   }, []);
 
+ const handleLogout = () => {
 
-  const handleLogout = () => {
-    Swal.fire({
-      title: "Logout Confirmation",
-      text: "Are you sure you want to logout?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Logout",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem("token");
-        sessionStorage.clear();
+  localStorage.removeItem("token");
+  sessionStorage.clear();
 
-        Swal.fire({
-          title: "Logged Out",
-          text: "You have been successfully logged out.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-
-        setTimeout(() => {
-          window.location.href = Routes.Signin.path;
-        }, 1500);
-      }
-    });
-  };
-
+  window.location.href = Routes.Signin.path;
+};
 
   return (
     <Navbar
       expand="lg"
-      className="navbar-main shadow-sm"
+      className="navbar-main shadow-sm "
       style={{ padding: "10px 20px" }}
     >
       <Container fluid className="px-0">
-        <div className="d-flex justify-content-between align-items-center w-100">
+        <div className="d-flex align-items-center w-100" style={{ gap: "300px", position: "absolute", left: "0", right: "0",possition:"fixed" }}>
 
-          {/* DASHBOARD */}
+          {/* DASHBOARD (LEFT) */}
           <h6
-            className="mb-0 fw-bold text- dark"
+            className="mb-0 fw-bold text-dark"
             style={{
               fontSize: "1.2rem",
               letterSpacing: "0.5px",
               whiteSpace: "nowrap",
-              fontWeight: "bold",
               fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
             }}
           >
@@ -119,8 +95,7 @@ export default function TopNavbar() {
           </h6>
 
           {/* RIGHT SIDE (SEARCH + PROFILE) */}
-          <div className="d-flex align-items-center gap-3"style={{marginBottom: "10px",marginLeft: "280px"}}>
-
+          <div className="d-flex align-items-center gap-3">
             {/* WELCOME / SEARCH BOX */}
             <div
               style={{
@@ -134,6 +109,7 @@ export default function TopNavbar() {
                 fontSize: "14px",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
+                
                 
               }}
             >
@@ -161,6 +137,7 @@ export default function TopNavbar() {
                       src={adminImage}
                       className="user-avatar md-avatar rounded-circle"
                       onError={(e) => (e.target.src = Profile3)}
+                      style={{ width: "36px", height: "36px" }}
                     />
                     <span className="ms-2 fw-bold text-black d-none d-lg-block">
                       {adminName}
@@ -186,12 +163,9 @@ export default function TopNavbar() {
                 </Dropdown.Menu>
               </Dropdown>
             </Nav>
-
           </div>
         </div>
       </Container>
-
     </Navbar>
   );
-
 }
