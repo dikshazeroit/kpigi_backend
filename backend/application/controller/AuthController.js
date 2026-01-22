@@ -276,73 +276,73 @@ authObj.verifyEmail = async function (req, res) {
   try {
     const { email, otp } = req.body;
 
-    // Validate input
+    // ---------------- VALIDATION ----------------
     if (!email || !otp) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "CCS-E2001",
-          message: "All fields are required (email, OTP).",
-          status: false,
-        },
-        200
-      );
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "VERIFY-001",
+        message: "Email and OTP are required",
+      }, 200);
     }
 
     const lowerEmail = email.toLowerCase();
     let user = await userModel.findOne({ uc_email: lowerEmail });
 
-    // User must exist
+    // ---------------- USER CHECK ----------------
     if (!user) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "ZIS-E2004",
-          message: "OTP expired or invalid request.",
-          status: false,
-        },
-        200
-      );
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "VERIFY-002",
+        message: "OTP expired or invalid request",
+      }, 200);
     }
 
-    // OTP validation
+    // ---------------- OTP CHECK ----------------
     if (!user.uc_activation_token || user.uc_activation_token !== otp) {
-      return commonHelper.errorHandler(
-        res,
-        {
-          code: "ZIS-E2004",
-          message: "OTP did not match.",
-          status: false,
-        },
-        200
-      );
+      return commonHelper.errorHandler(res, {
+        status: false,
+        code: "VERIFY-003",
+        message: "Invalid OTP",
+      }, 200);
     }
 
-    // Activate user
+    // ---------------- ACTIVATE USER ----------------
     user.uc_active = "1";
-    user.uc_activation_token = ""; 
+    user.uc_activation_token = "";
     await user.save();
 
-    // SIMPLE SUCCESS RESPONSE
+    // ---------------- TOKEN ----------------
+    const token = jwt.sign(
+      { userId: user.uc_uuid },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // =================================================
+    // ✅ SAME RESPONSE, ONLY PAYLOAD CHANGED
+    // =================================================
     return commonHelper.successHandler(res, {
       status: true,
+      code: "EMAIL_VERIFIED",
       message: "Email verified successfully",
+      payload: {
+        token: token,
+        user_uuid: user.uc_uuid,
+        email: user.uc_email,
+      },
     });
 
   } catch (error) {
     console.error("Error during email verification:", error);
 
-    return commonHelper.errorHandler(
-      res,
-      {
-        code: "ZIS-10003",
-        message: "Internal server error",
-        status: false,
-      },
-      200
-    );
+    return commonHelper.errorHandler(res, {
+      status: false,
+      code: "VERIFY-500",
+      message: "Internal server error",
+    }, 200);
   }
 };
+
 
 
 /**
