@@ -41,6 +41,7 @@ export const PageUserTable = () => {
       setLoading(true);
       const res = await getAllUsers(page, limit, search);
       let data = res.payload || [];
+      console.log("Fetched users:", data);
 
       // Apply role filter
       if (role) {

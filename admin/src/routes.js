@@ -40,5 +40,5 @@ export const Routes = {
   Navs: { path: "/components/navs" },
   Navbars: { path: "/components/navbars" },
   Tables: { path: "/components/tables" },
-  KycPage: { path: "/kyc" }
+  KycPage: { path: "/kyc-management" }
 };

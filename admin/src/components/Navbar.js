@@ -94,7 +94,7 @@ export default function TopNavbar() {
             DASHBOARD
           </h6>
 
-          {/* RIGHT SIDE (SEARCH + PROFILE) */}
+          
           <div className="d-flex align-items-center gap-3">
             {/* WELCOME / SEARCH BOX */}
             <div

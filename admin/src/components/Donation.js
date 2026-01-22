@@ -289,7 +289,7 @@ export default function DonationAdminPanel() {
                         <div className="text-center py-5">
                             <Spinner animation="border" variant={darkMode ? "light" : "primary"} />
                             <div className={`mt-3 ${darkMode ? "text-light" : "text-muted"}`}>
-                                Loading donations...
+                            Loading data, please wait...
                             </div>
                         </div>
                     ) : (
@@ -430,7 +430,7 @@ export default function DonationAdminPanel() {
                             </Row>
                             <Row className="mb-2">
                                 <Col sm={4}><strong>Fundraiser:</strong></Col>
-                                <Col sm={8}>{selectedDonation.fundraiser?.f_title || 'N/A'}</Col>
+                                <Col sm={8}>{selectedDonation.fundraiser?.f_title || 'No Data Found'}</Col>
                             </Row>
                             <Row className="mb-2">
                                 <Col sm={4}><strong>Amount:</strong></Col>
@@ -459,7 +459,7 @@ export default function DonationAdminPanel() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
-                        variant="secondary"
+                        variant="primary"
                         onClick={() => setSelectedDonation(null)}
                         disabled={actionLoading}
                     >
