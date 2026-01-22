@@ -215,7 +215,7 @@ const WithdrawalManagement = () => {
                       <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
                       <td>{w.w_account_holder_name || "No Data Found"}</td>
                       <td>{w.user?.uc_email || "No Data Found"}</td>
-                      <td>₹ {w.w_amount}</td>
+                      <td>${w.w_amount}</td>
                       <td>{w.w_account_number}</td>
                       <td>{w.w_ifsc_code}</td>
                       <td>{getStatusBadge(w.w_status)}</td>
