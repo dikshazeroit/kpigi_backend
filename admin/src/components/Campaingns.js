@@ -510,32 +510,32 @@ export default function Campaign() {
 
               {/* PAGINATION */}
               {totalPages >= 1 && (
-                <div className="d-flex justify-content-end mt-4">       
-                           <Pagination>
-                  <Pagination.Prev
-                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                  >
-                    Prev
-                  </Pagination.Prev>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-                    <Pagination.Item
-                      key={num}
-                      active={num === page}
-                      onClick={() => setPage(num)}
+                <div className="d-flex justify-content-end mt-4">
+                  <Pagination>
+                    <Pagination.Prev
+                      onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
                     >
-                      {num}
-                    </Pagination.Item>
-                  ))}
+                      Prev
+                    </Pagination.Prev>
 
-                  <Pagination.Next
-                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={page === totalPages}
-                  >
-                    Next
-                  </Pagination.Next>
-                </Pagination>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                      <Pagination.Item
+                        key={num}
+                        active={num === page}
+                        onClick={() => setPage(num)}
+                      >
+                        {num}
+                      </Pagination.Item>
+                    ))}
+
+                    <Pagination.Next
+                      onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                    >
+                      Next
+                    </Pagination.Next>
+                  </Pagination>
                 </div>
               )}
 
@@ -568,10 +568,32 @@ export default function Campaign() {
               </Row>
 
               {/* Story Section */}
-              <p><strong>Story:</strong></p>
-              <div className="p-3 bg-light rounded">
-                <p>{selectedCampaign.f_story || "No story available"}</p>
-              </div>
+              <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: "12px" }}>
+                <Card.Body className="p-4">
+                  <h6 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: "#495057" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 20H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M16.5 3.5C16.8978 3.10217 17.4374 2.87868 18 2.87868C18.2786 2.87868 18.5544 2.93355 18.8118 3.04015C19.0692 3.14676 19.303 3.30301 19.5 3.5C19.697 3.69699 19.8532 3.93083 19.9598 4.1882C20.0665 4.44558 20.1213 4.72142 20.1213 5C20.1213 5.27858 20.0665 5.55442 19.9598 5.8118C19.8532 6.06917 19.697 6.30301 19.5 6.5L7 19L3 20L4 16L16.5 3.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Campaign Story
+                  </h6>
+
+                  <div className="p-4 bg-light rounded" style={{
+                    borderLeft: "4px solid #0d6efd",
+                    backgroundColor: "#f0f7ff"
+                  }}>
+                    <p className="mb-0" style={{
+                      color: "#495057",
+                      fontSize: "14px",
+                      lineHeight: "1.6"
+                    }}>
+                      {selectedCampaign.f_story || (
+                        <span className="text-muted fst-italic">No story available for this campaign</span>
+                      )}
+                    </p>
+                  </div>
+                </Card.Body>
+              </Card>
 
               {/* Media Section */}
               <p className="mt-3"><strong>Media:</strong></p>
