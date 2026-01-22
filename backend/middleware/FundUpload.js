@@ -16,30 +16,39 @@
  * 📝 Description   : Fund media document middleware
  * ================================================================================
  */
-// utils/FundUpload.js
-// utils/FundUpload.js
+
 import multer from "multer";
 
 const storage = multer.memoryStorage();
 
-// File type validation (images + videos)
+// Allowed file types
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
+    // Images
     "image/jpeg",
     "image/png",
     "image/jpg",
     "image/webp",
+
+    // Videos
     "video/mp4",
     "video/mpeg",
     "video/quicktime", // .mov
-    "video/x-msvideo"  // .avi
+    "video/x-msvideo", // .avi
+
+    // Audio
+    "audio/mpeg",   // mp3
+    "audio/wav",
+    "audio/ogg",
+    "audio/mp4",    // m4a
+    "audio/x-m4a"
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(
-      new Error("Only image and video files are allowed (jpg, png, mp4, mov, etc)"),
+      new Error("Only image, video, and audio files are allowed"),
       false
     );
   }
@@ -53,7 +62,9 @@ const fundUpload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB per file
   },
 }).fields([
-  { name: "media", maxCount: 5 },
+  { name: "images", maxCount: 5 },   // 🖼 max 5 images only
+  { name: "videos", maxCount: 5 },   // 🎥 videos allowed
+  { name: "audios", maxCount: 5 },   // 🎵 audios allowed
 ]);
 
 export default fundUpload;
