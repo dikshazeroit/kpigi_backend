@@ -1,27 +1,10 @@
-/**
- * ================================================================================
- * ⛔ COPYRIGHT NOTICE
- * --------------------------------------------------------------------------------
- * © Zero IT Solutions – All Rights Reserved
- * 
- * ⚠️ Unauthorized copying, distribution, or reproduction of this file, 
- *     via any medium, is strictly prohibited.
- * 
- * 🔒 This file contains proprietary and confidential information. Dissemination 
- *     or use of this material is forbidden unless prior written permission is 
- *     obtained from Zero IT Solutions.
- * --------------------------------------------------------------------------------
- * 🧑‍💻 Author       : Sangeeta Kumari <sangeeta.zeroit@gmail.com>
- * 📅 Created On    : Dec 2025
- * 📝 Description   : Fund media document middleware
- * ================================================================================
- */
-
 import multer from "multer";
 
 const storage = multer.memoryStorage();
 
-// Allowed file types
+// Counters per request
+const requestCounter = new WeakMap();
+
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
     // Images
@@ -30,41 +13,49 @@ const fileFilter = (req, file, cb) => {
     "image/jpg",
     "image/webp",
 
-    // Videos
+    // Video
     "video/mp4",
     "video/mpeg",
-    "video/quicktime", // .mov
-    "video/x-msvideo", // .avi
-
-    // Audio
-    "audio/mpeg",   // mp3
-    "audio/wav",
-    "audio/ogg",
-    "audio/mp4",    // m4a
-    "audio/x-m4a"
+    "video/quicktime",
+    "video/x-msvideo",
   ];
 
-  if (allowedMimeTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(
-      new Error("Only image, video, and audio files are allowed"),
-      false
-    );
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    return cb(new Error("Only images and one video allowed"), false);
   }
+
+  // init counters
+  if (!requestCounter.has(req)) {
+    requestCounter.set(req, { images: 0, videos: 0 });
+  }
+
+  const counter = requestCounter.get(req);
+
+  // image limit
+  if (file.mimetype.startsWith("image/")) {
+    if (counter.images >= 5) {
+      return cb(new Error("Maximum 5 images allowed"), false);
+    }
+    counter.images++;
+  }
+
+  // video limit
+  if (file.mimetype.startsWith("video/")) {
+    if (counter.videos >= 1) {
+      return cb(new Error("Only 1 video allowed"), false);
+    }
+    counter.videos++;
+  }
+
+  cb(null, true);
 };
 
-// Multer config
 const fundUpload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB per file
+    fileSize: 100 * 1024 * 1024, // 100MB
   },
-}).fields([
-  { name: "images", maxCount: 5 },   // 🖼 max 5 images only
-  { name: "videos", maxCount: 5 },   // 🎥 videos allowed
-  { name: "audios", maxCount: 5 },   // 🎵 audios allowed
-]);
+}).array("media", 6); // 5 images + 1 video max
 
 export default fundUpload;

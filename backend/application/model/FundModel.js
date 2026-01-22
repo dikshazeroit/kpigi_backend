@@ -50,6 +50,7 @@ const FundSchema = new mongoose.Schema(
     f_media_three: String,
     f_media_four: String,
     f_media_five: String,
+    f_media_six: String,
 
     f_status: {
       type: String,

@@ -97,34 +97,37 @@ fundObj.createFundRequest = async function (req, res) {
       );
     }
 
-    // 📸 Upload media (max 5)
-    const uploadedMedia = [];
+    const uploadedImages = [];
+let uploadedVideo = null;
 
-    if (req.files?.media?.length > 0) {
-      for (let i = 0; i < 5; i++) {
-        const file = req.files.media[i];
-        if (file) {
-          const fileName = `fund-${Date.now()}-${file.originalname}`.replace(
-            / /g,
-            "_"
-          );
+if (req.files?.length > 0) {
+  for (const file of req.files) {
+    const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
 
-          await commonHelper.uploadFile({
-            fileName,
-            chunks: [file.buffer],
-            encoding: file.encoding,
-            contentType: file.mimetype,
-            uploadFolder: process.env.AWS_USER_FILE_FOLDER,
-          });
+    await commonHelper.uploadFile({
+      fileName,
+      chunks: [file.buffer],
+      encoding: file.encoding,
+      contentType: file.mimetype,
+      uploadFolder: process.env.AWS_USER_FILE_FOLDER,
+    });
 
-          uploadedMedia.push(fileName);
-        } else {
-          uploadedMedia.push(null);
-        }
+    if (file.mimetype.startsWith("image/")) {
+      if (uploadedImages.length < 5) {
+        uploadedImages.push(fileName);
       }
-    } else {
-      uploadedMedia.push(null, null, null, null, null);
     }
+
+    if (file.mimetype.startsWith("video/")) {
+      uploadedVideo = fileName; // single video
+    }
+  }
+}
+
+// Fill image slots
+while (uploadedImages.length < 5) {
+  uploadedImages.push(null);
+}
 
     // 🆕 Create fund
     const uuid = v4();
@@ -143,6 +146,7 @@ fundObj.createFundRequest = async function (req, res) {
       f_media_three: uploadedMedia[2],
       f_media_four: uploadedMedia[3],
       f_media_five: uploadedMedia[4],
+      f_media_six: uploadedVideo,
     });
 
     await newFund.save();
