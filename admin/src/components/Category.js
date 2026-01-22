@@ -314,9 +314,9 @@ const Category = () => {
               </Table>
 
               {/* PAGINATION */}
-              {totalPages >= 1 && (
+              {totalPages > 0 && (
                 <div className="d-flex justify-content-end mt-3">
-                  <Pagination>
+                  <Pagination className="justify-content-end mt-3">
                     <Pagination.Prev
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -324,15 +324,8 @@ const Category = () => {
                       Prev
                     </Pagination.Prev>
 
-                    {[...Array(totalPages)].map((_, i) => (
-                      <Pagination.Item
-                        key={i + 1}
-                        active={i + 1 === currentPage}
-                        onClick={() => setCurrentPage(i + 1)}
-                      >
-                        {i + 1}
-                      </Pagination.Item>
-                    ))}
+                    {/* Show only the current page */}
+                    <Pagination.Item active>{currentPage}</Pagination.Item>
 
                     <Pagination.Next
                       disabled={currentPage === totalPages}
@@ -343,7 +336,6 @@ const Category = () => {
                   </Pagination>
                 </div>
               )}
-
             </>
           )}
         </Card.Body>
@@ -385,9 +377,9 @@ const Category = () => {
             variant="primary"
             onClick={() => {
               setShowModal(false);
-              setEditData(null);    
+              setEditData(null);
               setForm({ c_name: "", c_description: "" });
-              setSaving(false);    
+              setSaving(false);
             }}
           >
             Cancel

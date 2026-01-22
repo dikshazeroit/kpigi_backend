@@ -509,34 +509,12 @@ export default function Campaign() {
               </Table>
 
               {/* PAGINATION */}
-              {totalPages >= 1 && (
-                <div className="d-flex justify-content-end mt-4">
-                  <Pagination>
-                    <Pagination.Prev
-                      onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                    >
-                      Prev
-                    </Pagination.Prev>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-                      <Pagination.Item
-                        key={num}
-                        active={num === page}
-                        onClick={() => setPage(num)}
-                      >
-                        {num}
-                      </Pagination.Item>
-                    ))}
-
-                    <Pagination.Next
-                      onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                    </Pagination.Next>
-                  </Pagination>
-                </div>
+              {totalPages > 1 && (
+                <Pagination className="justify-content-end mt-3">
+                  <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Pagination.Prev>
+                  <Pagination.Item active>{page}</Pagination.Item>
+                  <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Pagination.Next>
+                </Pagination>
               )}
 
             </>

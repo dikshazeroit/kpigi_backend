@@ -79,7 +79,7 @@ export default function TopNavbar() {
       style={{ padding: "10px 20px" }}
     >
       <Container fluid className="px-0">
-        <div className="d-flex align-items-center  justify-content-between w-100" style={{ gap: "300px", left: "0", right: "0",possition:"fixed" }}>
+        <div className="d-flex align-items-center  justify-content-between w-100" style={{ gap: "45%", left: "0", right: "0", }}>
 
           {/* DASHBOARD (LEFT) */}
           <h6
