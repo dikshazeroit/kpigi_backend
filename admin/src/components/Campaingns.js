@@ -210,15 +210,17 @@ export default function Campaign() {
   };
 
   // ====== GET ALL MEDIA FOR A CAMPAIGN ======
-  const getAllMedia = (campaign) => {
-    return [
-      campaign.f_media_one,
-      campaign.f_media_two,
-      campaign.f_media_three,
-      campaign.f_media_four,
-      campaign.f_media_five
-    ].filter(Boolean);
-  };
+ const getAllMedia = (campaign) => {
+  return [
+    campaign.f_media_one,
+    campaign.f_media_two,
+    campaign.f_media_three,
+    campaign.f_media_four,
+    campaign.f_media_five,
+    campaign.f_media_six  
+  ].filter(Boolean);
+};
+
 
   // ====== GET IMAGES ONLY FOR LIGHTBOX ======
   const getImagesOnly = (campaign) => {
