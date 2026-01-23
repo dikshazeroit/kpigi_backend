@@ -66,14 +66,6 @@ let fundObj = {};
  * ================================================================================
  */
 
-import { v4 } from "uuid";
-import FundModel from "../models/FundModel.js";
-import CategoryModel from "../models/CategoryModel.js";
-import UserDevice from "../models/UserDeviceModel.js";
-import NotificationModel from "../models/NotificationModel.js";
-import appHelper from "../helpers/appHelper.js";
-import commonHelper from "../helpers/commonHelper.js";
-import newModelObj from "../helpers/newModelObj.js"; // notifications sending
 
 fundObj.createFundRequest = async function (req, res) {
   try {
@@ -125,34 +117,38 @@ fundObj.createFundRequest = async function (req, res) {
       );
     }
 
-    // 📸 Upload media
-    const uploadedImages = [];
-    let uploadedVideo = null;
+   // 📸 Upload media
+const uploadedImages = [];
+let uploadedVideo = null;
 
-    if (req.files?.media?.length > 0) {
-      for (const file of req.files.media) {
-        const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
+console.log("FILES >>>", req.files); // debug
 
-        await commonHelper.uploadFile({
-          fileName,
-          chunks: [file.buffer],
-          encoding: file.encoding,
-          contentType: file.mimetype,
-          uploadFolder: process.env.AWS_USER_FILE_FOLDER,
-        });
+if (req.files && req.files.length > 0) {
+  for (const file of req.files) {   // ✅ DIRECT req.files
+    const fileName = `fund-${Date.now()}-${file.originalname}`.replace(/ /g, "_");
 
-        if (file.mimetype.startsWith("image/")) {
-          if (uploadedImages.length < 5) uploadedImages.push(fileName);
-        }
+    await commonHelper.uploadFile({
+      fileName,
+      chunks: [file.buffer],
+      encoding: file.encoding,
+      contentType: file.mimetype,
+      uploadFolder: process.env.AWS_USER_FILE_FOLDER,
+    });
 
-        if (file.mimetype.startsWith("video/")) {
-          uploadedVideo = fileName; // only 1 video allowed
-        }
+    if (file.mimetype.startsWith("image/")) {
+      if (uploadedImages.length < 5) {
+        uploadedImages.push(fileName);
       }
     }
 
-    // fill empty image slots
-    while (uploadedImages.length < 5) uploadedImages.push(null);
+    if (file.mimetype.startsWith("video/")) {
+      uploadedVideo = fileName; // only 1 video
+    }
+  }
+}
+
+// fill empty image slots
+while (uploadedImages.length < 5) uploadedImages.push(null);
 
     // 🆕 Create fund
     const uuid = v4();
