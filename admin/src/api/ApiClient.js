@@ -1,6 +1,6 @@
 import axios from "axios";
 
-          const BASE_URL = "http://localhost:3000/admin/";
+       const BASE_URL = "http://localhost:3000/admin/";
       // const BASE_URL = "http://3.137.82.51:3002/admin/";
 
   export const Image_Url =
