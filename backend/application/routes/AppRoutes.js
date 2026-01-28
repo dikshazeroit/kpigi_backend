@@ -22,7 +22,6 @@ import authObj from "../controller/AuthController.js";
 import userObj from "../controller/UserController.js";
 import fundObj from "../controller/FundController.js";
 import donationObj from "../controller/DonationController.js";
-import payoutObj from "../controller/PayoutController.js";
 import { allowHeaders } from "../../middleware/Cors.js";
 import { authenticate } from "../../middleware/JsonWebToken.js";
 import combinedUpload from "../../middleware/CombinedUploadMiddleware.js";
@@ -92,9 +91,7 @@ router.post("/private/donation-fund-donors", donationObj.getFundDonors);
 router.post("/private/received-donations", donationObj.getReceivedDonations);
 router.post("/private/donation-add-message", donationObj.addDonationMessage);
 router.post("/private/my-donations-dashboard",donationObj.getMyDonationsDashboard);
-//****************************** 💰 Payout Routes *******************************************//
-router.post("/private/payout-process", payoutObj.processPayout);
-router.post("/private/payout-history", payoutObj.getPayoutHistory);
+
 
 //************************************* 🔔 Notifications ****************************************//
 router.post("/private/notifications-send", notificationObj.sendNotification);

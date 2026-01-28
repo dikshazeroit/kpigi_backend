@@ -38,7 +38,7 @@ import appRoutes from "./backend/application/routes/AppRoutes.js";
 import adminRoute from "./backend/admin/routes/AdminRoute.js";
 import stripeWebhookRoute from "./backend/application/routes/StripeWebhookRoute.js";
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT;
 const server = http.createServer(app);
 
 

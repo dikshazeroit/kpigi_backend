@@ -19,7 +19,6 @@
 
 import { v4 as uuidv4 } from "uuid";
 import DonationModel from "../model/DonationModel.js";
-import PayoutModel from "../model/PayoutModel.js";
 import commonHelper from "../../utils/Helper.js";
 import appHelper from "../helpers/Index.js";
 import FundModel from "../model/FundModel.js";

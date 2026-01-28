@@ -1,7 +1,6 @@
 import User from "../../application/model/UserModel.js";
 import Fund from "../../application/model/FundModel.js";
 import Donation from "../../application/model/DonationModel.js";
-import Payout from "../../application/model/PayoutModel.js";
 
 /**
  * Dashboard Summary

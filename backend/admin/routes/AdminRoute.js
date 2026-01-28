@@ -23,7 +23,6 @@ import {
   closeFundraisers,
 } from "../controllers/FundraisersController.js";
 import {getAllDonations,markDonationSafe,markDonationFraud} from "../controllers/DonationController.js";
-import {getAllPayouts,approvePayout,rejectPayout,updatePayoutStatus} from "../controllers/PayoutController.js";
 import {
   getAllCategories,
   createCategory,
@@ -93,13 +92,6 @@ router.post("/private/closeFundraisers", adminAuth, closeFundraisers);
 router.get("/private/donations-list", adminAuth, getAllDonations);
 router.post("/private/donation-mark-safe", adminAuth, markDonationSafe);
 router.post("/private/donation-mark-fraud", adminAuth, markDonationFraud);
-
-//****************************** 🔐 Payout Routes *******************************************//
-router.get("/private/payouts-list", adminAuth, getAllPayouts);
-router.post("/private/payout-approve", adminAuth, approvePayout);
-router.post("/private/payout-reject", adminAuth, rejectPayout);
-router.post("/private/payout-update-status", adminAuth, updatePayoutStatus);
-
 
 //****************************** 🔐 Category Routes *******************************************//
 
